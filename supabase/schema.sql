@@ -84,11 +84,11 @@ BEGIN
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'name', 'User'),
     CASE 
-      WHEN NEW.email = 'admin@verifiedhomeowner.com' THEN 'admin'
+      WHEN NEW.email = 'el@admin.com' THEN 'admin'
       ELSE 'wholesaler'
     END,
     CASE 
-      WHEN NEW.email = 'admin@verifiedhomeowner.com' THEN 'elite'
+      WHEN NEW.email = 'el@admin.com' THEN 'elite'
       ELSE 'free'
     END,
     'active'
