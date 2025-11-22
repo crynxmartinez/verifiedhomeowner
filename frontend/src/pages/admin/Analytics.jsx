@@ -26,7 +26,7 @@ export default function AdminAnalytics() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">Loading analytics...</div>
+          <div className="text-gray-500 dark:text-gray-400">Loading analytics...</div>
         </div>
       </Layout>
     );
@@ -36,8 +36,8 @@ export default function AdminAnalytics() {
     <Layout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-gray-600 mt-2">Detailed system insights and metrics</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Detailed system insights and metrics</p>
         </div>
 
         {/* Key Metrics */}
@@ -65,10 +65,10 @@ export default function AdminAnalytics() {
         </div>
 
         {/* Plan Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-6">
           <div className="flex items-center space-x-2 mb-6">
-            <PieChart className="h-6 w-6 text-gray-700" />
-            <h2 className="text-2xl font-bold text-gray-900">Plan Distribution</h2>
+            <PieChart className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Plan Distribution</h2>
           </div>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-4">
@@ -78,12 +78,12 @@ export default function AdminAnalytics() {
                 return (
                   <div key={plan}>
                     <div className="flex justify-between mb-2">
-                      <span className="text-gray-700 capitalize font-medium">{plan}</span>
-                      <span className="text-gray-900 font-semibold">
+                      <span className="text-gray-700 dark:text-gray-300 capitalize font-medium">{plan}</span>
+                      <span className="text-gray-900 dark:text-white font-semibold">
                         {count} ({percentage}%)
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                       <div
                         className={`h-3 rounded-full ${
                           plan === 'free'
@@ -103,18 +103,18 @@ export default function AdminAnalytics() {
             </div>
             <div className="flex items-center justify-center">
               <div className="text-center">
-                <div className="text-6xl font-bold text-gray-900 mb-2">
+                <div className="text-6xl font-bold text-gray-900 dark:text-white mb-2">
                   {analytics?.overview?.totalWholesalers || 0}
                 </div>
-                <div className="text-gray-600">Total Wholesalers</div>
+                <div className="text-gray-600 dark:text-gray-400">Total Wholesalers</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Status Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Lead Status Distribution</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Lead Status Distribution</h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-4">
               {Object.entries(analytics?.statusDistribution || {}).map(([status, count]) => {
@@ -123,14 +123,14 @@ export default function AdminAnalytics() {
                 return (
                   <div key={status}>
                     <div className="flex justify-between mb-2">
-                      <span className="text-gray-700 capitalize font-medium">
+                      <span className="text-gray-700 dark:text-gray-300 capitalize font-medium">
                         {status.replace('_', ' ')}
                       </span>
-                      <span className="text-gray-900 font-semibold">
+                      <span className="text-gray-900 dark:text-white font-semibold">
                         {count} ({percentage}%)
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                       <div
                         className={`h-3 rounded-full ${
                           status === 'new'
@@ -149,40 +149,40 @@ export default function AdminAnalytics() {
               })}
             </div>
             <div className="space-y-6">
-              <div className="bg-blue-50 rounded-lg p-4">
-                <div className="text-3xl font-bold text-blue-600 mb-1">
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
                   {analytics?.statusDistribution?.new || 0}
                 </div>
-                <div className="text-blue-900 font-medium">New Leads</div>
+                <div className="text-blue-900 dark:text-blue-300 font-medium">New Leads</div>
               </div>
-              <div className="bg-green-50 rounded-lg p-4">
-                <div className="text-3xl font-bold text-green-600 mb-1">
+              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
                   {analytics?.statusDistribution?.called || 0}
                 </div>
-                <div className="text-green-900 font-medium">Called</div>
+                <div className="text-green-900 dark:text-green-300 font-medium">Called</div>
               </div>
-              <div className="bg-yellow-50 rounded-lg p-4">
-                <div className="text-3xl font-bold text-yellow-600 mb-1">
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+                <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
                   {analytics?.statusDistribution?.follow_up || 0}
                 </div>
-                <div className="text-yellow-900 font-medium">Follow-ups</div>
+                <div className="text-yellow-900 dark:text-yellow-300 font-medium">Follow-ups</div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Action Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Action Distribution</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Action Distribution</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-green-50 rounded-lg p-6">
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-4xl font-bold text-green-600 mb-2">
+                  <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
                     {analytics?.actionDistribution?.call_now || 0}
                   </div>
-                  <div className="text-green-900 font-medium">Call Now</div>
-                  <div className="text-sm text-green-700 mt-1">
+                  <div className="text-green-900 dark:text-green-300 font-medium">Call Now</div>
+                  <div className="text-sm text-green-700 dark:text-green-400 mt-1">
                     {(
                       ((analytics?.actionDistribution?.call_now || 0) /
                         (analytics?.overview?.totalAssignments || 1)) *
@@ -194,14 +194,14 @@ export default function AdminAnalytics() {
                 <Activity className="h-16 w-16 text-green-300" />
               </div>
             </div>
-            <div className="bg-gray-50 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-4xl font-bold text-gray-600 mb-2">
+                  <div className="text-4xl font-bold text-gray-600 dark:text-gray-300 mb-2">
                     {analytics?.actionDistribution?.pending || 0}
                   </div>
-                  <div className="text-gray-900 font-medium">Pending</div>
-                  <div className="text-sm text-gray-700 mt-1">
+                  <div className="text-gray-900 dark:text-white font-medium">Pending</div>
+                  <div className="text-sm text-gray-700 dark:text-gray-400 mt-1">
                     {(
                       ((analytics?.actionDistribution?.pending || 0) /
                         (analytics?.overview?.totalAssignments || 1)) *
@@ -217,29 +217,29 @@ export default function AdminAnalytics() {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Recent Activity (Last 30 Days)</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-6">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Recent Activity (Last 30 Days)</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            <div className="flex items-center space-x-4 bg-blue-50 rounded-lg p-6">
-              <div className="bg-blue-100 w-16 h-16 rounded-lg flex items-center justify-center">
-                <Users className="h-8 w-8 text-blue-600" />
+            <div className="flex items-center space-x-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
+              <div className="bg-blue-100 dark:bg-blue-900 w-16 h-16 rounded-lg flex items-center justify-center">
+                <Users className="h-8 w-8 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <div className="text-3xl font-bold text-blue-600">
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
                   {analytics?.recentActivity?.newWholesalersLast30Days || 0}
                 </div>
-                <div className="text-blue-900 font-medium">New Wholesalers</div>
+                <div className="text-blue-900 dark:text-blue-300 font-medium">New Wholesalers</div>
               </div>
             </div>
-            <div className="flex items-center space-x-4 bg-green-50 rounded-lg p-6">
-              <div className="bg-green-100 w-16 h-16 rounded-lg flex items-center justify-center">
-                <FileText className="h-8 w-8 text-green-600" />
+            <div className="flex items-center space-x-4 bg-green-50 dark:bg-green-900/20 rounded-lg p-6">
+              <div className="bg-green-100 dark:bg-green-900 w-16 h-16 rounded-lg flex items-center justify-center">
+                <FileText className="h-8 w-8 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <div className="text-3xl font-bold text-green-600">
+                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
                   {analytics?.recentActivity?.newLeadsLast30Days || 0}
                 </div>
-                <div className="text-green-900 font-medium">New Leads Uploaded</div>
+                <div className="text-green-900 dark:text-green-300 font-medium">New Leads Uploaded</div>
               </div>
             </div>
           </div>
