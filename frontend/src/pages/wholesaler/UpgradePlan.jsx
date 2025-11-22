@@ -64,18 +64,18 @@ export default function UpgradePlan() {
     <Layout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Upgrade Your Plan</h1>
-          <p className="text-gray-600 mt-2">
-            Current Plan: <span className="font-semibold text-blue-600 uppercase">{user?.plan_type}</span>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Upgrade Your Plan</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Current Plan: <span className="font-semibold text-blue-600 dark:text-blue-400 uppercase">{user?.plan_type}</span>
           </p>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
           <div className="flex items-start space-x-3">
-            <TrendingUp className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
+            <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-blue-900">MVP Notice</h3>
-              <p className="text-sm text-blue-700 mt-1">
+              <h3 className="font-semibold text-blue-900 dark:text-blue-300">MVP Notice</h3>
+              <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
                 This is MVP mode - you can change plans instantly without payment. Payment integration coming soon!
               </p>
             </div>
@@ -88,7 +88,7 @@ export default function UpgradePlan() {
             return (
               <div
                 key={plan.id}
-                className={`bg-white rounded-xl shadow-lg p-6 ${
+                className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900 p-6 ${
                   plan.popular ? 'ring-4 ring-blue-600 relative' : ''
                 } ${isCurrentPlan ? 'ring-4 ring-green-600' : ''}`}
               >
@@ -107,15 +107,15 @@ export default function UpgradePlan() {
                   </div>
                 )}
 
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <div className="text-4xl font-bold mb-2">{plan.price}</div>
-                <div className="text-gray-600 mb-6">{plan.leads}</div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{plan.name}</h3>
+                <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">{plan.price}</div>
+                <div className="text-gray-600 dark:text-gray-400 mb-6">{plan.leads}</div>
 
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start space-x-2">
-                      <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-gray-600">{feature}</span>
+                      <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-700 dark:text-gray-300">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -138,47 +138,47 @@ export default function UpgradePlan() {
           })}
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Plan Comparison</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Plan Comparison</h2>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-4">Feature</th>
-                  <th className="text-center py-3 px-4">Free</th>
-                  <th className="text-center py-3 px-4">Basic</th>
-                  <th className="text-center py-3 px-4">Elite</th>
-                  <th className="text-center py-3 px-4">Pro</th>
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr className="border-b dark:border-gray-700">
+                  <th className="text-left py-3 px-4 text-gray-900 dark:text-white">Feature</th>
+                  <th className="text-center py-3 px-4 text-gray-900 dark:text-white">Free</th>
+                  <th className="text-center py-3 px-4 text-gray-900 dark:text-white">Basic</th>
+                  <th className="text-center py-3 px-4 text-gray-900 dark:text-white">Elite</th>
+                  <th className="text-center py-3 px-4 text-gray-900 dark:text-white">Pro</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b">
-                  <td className="py-3 px-4">Leads per week</td>
-                  <td className="text-center py-3 px-4">1</td>
-                  <td className="text-center py-3 px-4">7</td>
-                  <td className="text-center py-3 px-4">35</td>
-                  <td className="text-center py-3 px-4">70</td>
+                <tr className="border-b dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Leads per week</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">1</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">7</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">35</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">70</td>
                 </tr>
-                <tr className="border-b">
-                  <td className="py-3 px-4">Lead tracking</td>
-                  <td className="text-center py-3 px-4">✓</td>
-                  <td className="text-center py-3 px-4">✓</td>
-                  <td className="text-center py-3 px-4">✓</td>
-                  <td className="text-center py-3 px-4">✓</td>
+                <tr className="border-b dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Lead tracking</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">✓</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">✓</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">✓</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">✓</td>
                 </tr>
-                <tr className="border-b">
-                  <td className="py-3 px-4">Support</td>
-                  <td className="text-center py-3 px-4">Basic</td>
-                  <td className="text-center py-3 px-4">Priority</td>
-                  <td className="text-center py-3 px-4">Premium</td>
-                  <td className="text-center py-3 px-4">VIP</td>
+                <tr className="border-b dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Support</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Basic</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Priority</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Premium</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">VIP</td>
                 </tr>
-                <tr className="border-b">
-                  <td className="py-3 px-4">Analytics</td>
-                  <td className="text-center py-3 px-4">Basic</td>
-                  <td className="text-center py-3 px-4">Advanced</td>
-                  <td className="text-center py-3 px-4">Advanced</td>
-                  <td className="text-center py-3 px-4">Custom</td>
+                <tr className="border-b dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Analytics</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Basic</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Advanced</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Advanced</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Custom</td>
                 </tr>
               </tbody>
             </table>

@@ -109,28 +109,28 @@ export default function Marketplace() {
     <Layout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Lead Marketplace</h1>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Lead Marketplace</h1>
+          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
             <DollarSign size={16} />
             <span>Pay-Per-Lead</span>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-4">
           <div className="flex items-center gap-2 mb-4">
-            <Filter size={20} className="text-gray-600" />
-            <span className="font-medium text-gray-900">Filters</span>
+            <Filter size={20} className="text-gray-600 dark:text-gray-400" />
+            <span className="font-medium text-gray-900 dark:text-white">Filters</span>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Motivation
               </label>
               <select
                 value={filters.motivation}
                 onChange={(e) => handleFilterChange('motivation', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 {MOTIVATIONS.map(m => (
                   <option key={m} value={m}>{m}</option>
@@ -138,13 +138,13 @@ export default function Marketplace() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Timeline
               </label>
               <select
                 value={filters.timeline}
                 onChange={(e) => handleFilterChange('timeline', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 {TIMELINES.map(t => (
                   <option key={t} value={t}>{t}</option>
@@ -152,13 +152,13 @@ export default function Marketplace() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 State
               </label>
               <select
                 value={filters.state}
                 onChange={(e) => handleFilterChange('state', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 {US_STATES.map(s => (
                   <option key={s} value={s}>{s}</option>
@@ -171,38 +171,38 @@ export default function Marketplace() {
         {/* Leads Grid */}
         {loading ? (
           <div className="flex items-center justify-center h-64">
-            <div className="text-gray-500">Loading leads...</div>
+            <div className="text-gray-500 dark:text-gray-400">Loading leads...</div>
           </div>
         ) : leads.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <p className="text-gray-500">No leads available with current filters.</p>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-12 text-center">
+            <p className="text-gray-500 dark:text-gray-400">No leads available with current filters.</p>
           </div>
         ) : (
           <div className="grid grid-cols-5 gap-4">
             {leads.map((lead) => (
               <div
                 key={lead.id}
-                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-4 cursor-pointer"
+                className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 hover:shadow-lg dark:hover:shadow-gray-900 transition-shadow p-4 cursor-pointer"
                 onClick={() => setSelectedLead(lead)}
               >
                 <div className="text-center space-y-2">
                   <div className="text-2xl">💰</div>
-                  <div className="text-sm font-medium text-gray-900">
+                  <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {maskName(lead.owner_name)}
                   </div>
-                  <div className="text-xs text-gray-600">
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
                     {maskAddress(lead.property_address)}
                   </div>
-                  <div className="text-xs text-gray-600">
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
                     {lead.state}, {lead.zip_code}
                   </div>
                   <div className="border-t pt-2 mt-2">
-                    <div className="text-xs text-gray-500">Motivation:</div>
-                    <div className="text-xs font-medium text-gray-900">{lead.motivation}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Motivation:</div>
+                    <div className="text-xs font-medium text-gray-700 dark:text-gray-300">{lead.motivation}</div>
                   </div>
                   <div className="border-t pt-2">
-                    <div className="text-xs text-gray-500">Timeline:</div>
-                    <div className="text-xs font-medium text-gray-900">{lead.timeline}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Timeline:</div>
+                    <div className="text-xs font-medium text-gray-900 dark:text-white">{lead.timeline}</div>
                   </div>
                   <button className="w-full mt-3 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700">
                     Buy - ${parseFloat(lead.price).toFixed(2)}
@@ -216,27 +216,27 @@ export default function Marketplace() {
         {/* Purchase Modal */}
         {selectedLead && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h2 className="text-xl font-bold mb-4">Purchase Lead</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
+              <h2 className="text-xl font-bold mb-4 dark:text-white">Purchase Lead</h2>
               <div className="space-y-3 mb-6">
                 <div>
-                  <span className="text-sm text-gray-600">Address:</span>
-                  <div className="font-medium">{selectedLead.property_address}</div>
-                  <div className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Address:</span>
+                  <div className="font-medium dark:text-white">{selectedLead.property_address}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
                     {selectedLead.city}, {selectedLead.state} {selectedLead.zip_code}
                   </div>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-600">Motivation:</span>
-                  <div className="font-medium">{selectedLead.motivation}</div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Motivation:</span>
+                  <div className="font-medium dark:text-white">{selectedLead.motivation}</div>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-600">Timeline:</span>
-                  <div className="font-medium">{selectedLead.timeline}</div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Timeline:</span>
+                  <div className="font-medium dark:text-white">{selectedLead.timeline}</div>
                 </div>
-                <div className="border-t pt-3">
-                  <span className="text-sm text-gray-600">Price:</span>
-                  <div className="text-2xl font-bold text-green-600">
+                <div className="border-t dark:border-gray-700 pt-3">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Price:</span>
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                     ${parseFloat(selectedLead.price).toFixed(2)}
                   </div>
                 </div>
@@ -246,7 +246,7 @@ export default function Marketplace() {
                 <button
                   onClick={() => setSelectedLead(null)}
                   disabled={purchasing}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50"
                 >
                   Cancel
                 </button>
