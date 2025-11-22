@@ -1,4 +1,5 @@
 import { supabase, supabaseAdmin } from '../../lib/supabase.js';
+import { distributeLeadsToUser } from '../../lib/distributeLeads.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -49,6 +50,14 @@ export default async function handler(req, res) {
 
     if (sessionError) {
       console.error('Session creation error:', sessionError);
+    }
+
+    // Distribute initial leads to new user
+    try {
+      await distributeLeadsToUser(authData.user.id);
+    } catch (distError) {
+      console.error('Failed to distribute initial leads:', distError);
+      // Don't fail registration if lead distribution fails
     }
 
     res.status(201).json({

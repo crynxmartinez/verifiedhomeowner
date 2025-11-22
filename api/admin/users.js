@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '../../lib/supabase.js';
 import { requireAdmin } from '../../lib/auth.js';
+import { distributeLeadsToUser } from '../../lib/distributeLeads.js';
 
 async function handler(req, res) {
   if (req.method === 'GET') {
@@ -70,6 +71,14 @@ async function handler(req, res) {
         .single();
 
       if (error) throw error;
+
+      // Distribute leads immediately when plan is upgraded
+      try {
+        await distributeLeadsToUser(userId);
+      } catch (distError) {
+        console.error('Failed to distribute leads on plan upgrade:', distError);
+        // Don't fail the plan update if lead distribution fails
+      }
 
       res.status(200).json({ user: data });
     } catch (error) {
