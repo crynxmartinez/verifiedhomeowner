@@ -135,7 +135,7 @@ export default function AdminLeads() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">Loading...</div>
+          <div className="text-gray-500 dark:text-gray-400">Loading...</div>
         </div>
       </Layout>
     );
@@ -146,8 +146,8 @@ export default function AdminLeads() {
       <div className="space-y-8">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Leads Management</h1>
-            <p className="text-gray-600 mt-2">Upload and manage leads</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Leads Management</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">Upload and manage leads</p>
           </div>
           <div className="flex space-x-3">
             <button
@@ -174,25 +174,25 @@ export default function AdminLeads() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 overflow-hidden">
           {/* Pagination Controls */}
-          <div className="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
+          <div className="px-6 py-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-700">Show:</span>
+              <span className="text-sm text-gray-700 dark:text-gray-300">Show:</span>
               <select
                 value={itemsPerPage}
                 onChange={(e) => {
                   setItemsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="border border-gray-300 rounded px-3 py-1 text-sm"
+                className="border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value={10}>10</option>
                 <option value={30}>30</option>
                 <option value={50}>50</option>
                 <option value={100}>100</option>
               </select>
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-gray-700 dark:text-gray-300">
                 Showing {Math.min((currentPage - 1) * itemsPerPage + 1, leads.length)} to{' '}
                 {Math.min(currentPage * itemsPerPage, leads.length)} of {leads.length} leads
               </span>
@@ -201,17 +201,17 @@ export default function AdminLeads() {
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1 border rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                className="px-3 py-1 border dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
               >
                 Previous
               </button>
-              <span className="text-sm text-gray-700">
+              <span className="text-sm text-gray-700 dark:text-gray-300">
                 Page {currentPage} of {Math.ceil(leads.length / itemsPerPage) || 1}
               </span>
               <button
                 onClick={() => setCurrentPage((p) => Math.min(Math.ceil(leads.length / itemsPerPage), p + 1))}
                 disabled={currentPage >= Math.ceil(leads.length / itemsPerPage)}
-                className="px-3 py-1 border rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                className="px-3 py-1 border dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
               >
                 Next
               </button>
@@ -220,21 +220,21 @@ export default function AdminLeads() {
 
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Sequence #
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Owner Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Phone
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Property Address
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Mailing Address
                   </th>
                 </tr>
@@ -242,7 +242,7 @@ export default function AdminLeads() {
               <tbody>
                 {leads.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                       No leads found. Upload some leads to get started.
                     </td>
                   </tr>
@@ -250,25 +250,25 @@ export default function AdminLeads() {
                   leads
                     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                     .map((lead) => (
-                      <tr key={lead.id} className="border-b hover:bg-gray-50">
+                      <tr key={lead.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                         <td className="px-6 py-4">
-                          <span className="font-mono text-sm font-semibold">#{lead.sequence_number}</span>
+                          <span className="font-mono text-sm font-semibold dark:text-white">#{lead.sequence_number}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="font-medium text-gray-900">{lead.owner_name}</div>
+                          <div className="font-medium text-gray-900 dark:text-white">{lead.owner_name}</div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-gray-600">{lead.phone}</div>
+                          <div className="text-gray-600 dark:text-gray-400">{lead.phone}</div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-gray-900">{lead.property_address}</div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-gray-900 dark:text-white">{lead.property_address}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
                             {lead.city}, {lead.state} {lead.zip_code}
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-gray-900">{lead.mailing_address}</div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-gray-900 dark:text-white">{lead.mailing_address}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
                             {lead.mailing_city}, {lead.mailing_state} {lead.mailing_zip}
                           </div>
                         </td>
@@ -284,11 +284,11 @@ export default function AdminLeads() {
       {/* Single Lead Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Add Single Lead</h2>
-                <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Add Single Lead</h2>
+                <button onClick={() => setShowModal(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                   <X className="h-6 w-6" />
                 </button>
               </div>
@@ -296,115 +296,115 @@ export default function AdminLeads() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Owner Name *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Owner Name *</label>
                     <input
                       type="text"
                       name="owner_name"
                       value={formData.owner_name}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone *</label>
                     <input
                       type="text"
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Property Address *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Property Address *</label>
                   <input
                     type="text"
                     name="property_address"
                     value={formData.property_address}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     required
                   />
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City</label>
                     <input
                       type="text"
                       name="city"
                       value={formData.city}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State</label>
                     <input
                       type="text"
                       name="state"
                       value={formData.state}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Zip Code</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zip Code</label>
                     <input
                       type="text"
                       name="zip_code"
                       value={formData.zip_code}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   </div>
                 </div>
 
-                <div className="border-t pt-4">
-                  <h3 className="font-semibold text-gray-900 mb-3">Mailing Address (Optional)</h3>
+                <div className="border-t dark:border-gray-700 pt-4">
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Mailing Address (Optional)</h3>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Mailing Address</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mailing Address</label>
                     <input
                       type="text"
                       name="mailing_address"
                       value={formData.mailing_address}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   </div>
                   <div className="grid md:grid-cols-3 gap-4 mt-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Mailing City</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mailing City</label>
                       <input
                         type="text"
                         name="mailing_city"
                         value={formData.mailing_city}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg"
+                        className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Mailing State</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mailing State</label>
                       <input
                         type="text"
                         name="mailing_state"
                         value={formData.mailing_state}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg"
+                        className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Mailing Zip</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Mailing Zip</label>
                       <input
                         type="text"
                         name="mailing_zip"
                         value={formData.mailing_zip}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg"
+                        className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
                   </div>
@@ -414,7 +414,7 @@ export default function AdminLeads() {
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                    className="px-4 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     Cancel
                   </button>
@@ -435,31 +435,31 @@ export default function AdminLeads() {
       {/* CSV Upload Modal */}
       {showCSVModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Upload CSV</h2>
-                <button onClick={() => setShowCSVModal(false)} className="text-gray-400 hover:text-gray-600">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Upload CSV</h2>
+                <button onClick={() => setShowCSVModal(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                   <X className="h-6 w-6" />
                 </button>
               </div>
 
               <form onSubmit={handleCSVUpload} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Paste CSV Data
                   </label>
                   <textarea
                     value={csvData}
                     onChange={(e) => setCSVData(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg font-mono text-sm"
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg font-mono text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     rows="10"
                     placeholder="full_name,phone,address,city,state,zip,mailing_address,mailing_city,mailing_state,mailing_zip&#10;John Doe,555-1234,123 Main St,City,CA,12345,,,,"
                   />
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-sm text-blue-700">
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                  <p className="text-sm text-blue-700 dark:text-blue-400">
                     <strong>CSV Format:</strong> Include headers: full_name, phone, address, city, state, zip, mailing_address, mailing_city, mailing_state, mailing_zip
                   </p>
                 </div>
@@ -468,14 +468,14 @@ export default function AdminLeads() {
                   <button
                     type="button"
                     onClick={() => setShowCSVModal(false)}
-                    className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                    className="px-4 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={uploading}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                    className="px-4 py-2 bg-green-600 dark:bg-green-500 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50"
                   >
                     {uploading ? 'Uploading...' : 'Upload CSV'}
                   </button>
@@ -489,18 +489,18 @@ export default function AdminLeads() {
       {/* Distribute Modal */}
       {showDistributeModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Distribute Leads</h2>
-                <button onClick={() => setShowDistributeModal(false)} className="text-gray-400 hover:text-gray-600">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Distribute Leads</h2>
+                <button onClick={() => setShowDistributeModal(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                   <X className="h-6 w-6" />
                 </button>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Number of Leads to Distribute
                   </label>
                   <input
@@ -508,7 +508,7 @@ export default function AdminLeads() {
                     min="1"
                     value={distributeCount}
                     onChange={(e) => setDistributeCount(Number(e.target.value))}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="Enter number of leads"
                   />
                 </div>
@@ -524,26 +524,26 @@ export default function AdminLeads() {
                       }}
                       className="w-4 h-4 text-blue-600"
                     />
-                    <span className="text-sm font-medium text-gray-700">Distribute to All Users</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Distribute to All Users</span>
                   </label>
 
                   {!allUsers && (
                     <div className="relative">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Select User
                       </label>
                       <div className="relative">
-                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                         <input
                           type="text"
                           value={userSearch}
                           onChange={(e) => setUserSearch(e.target.value)}
                           placeholder="Search users..."
-                          className="w-full pl-10 pr-3 py-2 border rounded-lg"
+                          className="w-full pl-10 pr-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         />
                       </div>
                       {userSearch && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
                           {users
                             .filter((u) =>
                               u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
@@ -557,10 +557,10 @@ export default function AdminLeads() {
                                   setSelectedUser(user.id);
                                   setUserSearch(user.name);
                                 }}
-                                className="w-full text-left px-4 py-2 hover:bg-gray-100 flex flex-col"
+                                className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 flex flex-col"
                               >
-                                <span className="font-medium text-gray-900">{user.name}</span>
-                                <span className="text-sm text-gray-500">{user.email}</span>
+                                <span className="font-medium text-gray-900 dark:text-white">{user.name}</span>
+                                <span className="text-sm text-gray-500 dark:text-gray-400">{user.email}</span>
                               </button>
                             ))}
                         </div>
@@ -569,7 +569,7 @@ export default function AdminLeads() {
                   )}
 
                   {allUsers && (
-                    <div className="bg-gray-100 rounded-lg p-3 text-sm text-gray-600">
+                    <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 text-sm text-gray-600 dark:text-gray-300">
                       Leads will be distributed to all active wholesalers
                     </div>
                   )}
@@ -579,13 +579,13 @@ export default function AdminLeads() {
                   <button
                     type="button"
                     onClick={() => setShowDistributeModal(false)}
-                    className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                    className="px-4 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleDistribute}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                    className="px-4 py-2 bg-purple-600 dark:bg-purple-500 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600"
                   >
                     Distribute
                   </button>
