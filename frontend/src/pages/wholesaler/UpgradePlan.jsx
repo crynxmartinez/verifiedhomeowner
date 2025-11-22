@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import Layout from '../../components/Layout';
 import useAuthStore from '../../store/authStore';
+import { adminAPI } from '../../lib/api';
 import { CheckCircle, TrendingUp } from 'lucide-react';
 
 export default function UpgradePlan() {
   const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+  const [loading, setLoading] = useState(false);
 
   const plans = [
     {
@@ -37,8 +41,23 @@ export default function UpgradePlan() {
     },
   ];
 
-  const handleUpgrade = (planId) => {
-    alert(`Plan upgrade to ${planId} will be available once payment integration is complete. For now, contact admin to change your plan.`);
+  const handleUpgrade = async (planId) => {
+    if (!confirm(`Change your plan to ${planId.toUpperCase()}? (MVP - no payment required)`)) {
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      await adminAPI.updateUserPlan(user.id, planId);
+      // Update user in store
+      setUser({ ...user, plan_type: planId });
+      alert(`Plan changed to ${planId.toUpperCase()} successfully!`);
+    } catch (error) {
+      console.error('Failed to change plan:', error);
+      alert('Failed to change plan. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -57,7 +76,7 @@ export default function UpgradePlan() {
             <div>
               <h3 className="font-semibold text-blue-900">MVP Notice</h3>
               <p className="text-sm text-blue-700 mt-1">
-                Payment integration is coming soon. For now, contact the admin to upgrade your plan for testing purposes.
+                This is MVP mode - you can change plans instantly without payment. Payment integration coming soon!
               </p>
             </div>
           </div>
@@ -103,16 +122,16 @@ export default function UpgradePlan() {
 
                 <button
                   onClick={() => handleUpgrade(plan.id)}
-                  disabled={isCurrentPlan}
-                  className={`w-full py-3 rounded-lg font-semibold transition ${
+                  disabled={isCurrentPlan || loading}
+                  className={`w-full py-3 rounded-lg font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
                     isCurrentPlan
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      ? 'bg-green-600 text-white'
                       : plan.popular
                       ? 'bg-blue-600 text-white hover:bg-blue-700'
                       : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                   }`}
                 >
-                  {isCurrentPlan ? 'Current Plan' : 'Select Plan'}
+                  {loading ? 'Changing...' : isCurrentPlan ? 'Current Plan' : 'Select Plan'}
                 </button>
               </div>
             );
