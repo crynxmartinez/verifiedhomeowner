@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { adminAPI } from '../../lib/api';
-import { Edit2, Save, X } from 'lucide-react';
+import { Edit2, Save, X, ArrowUpDown } from 'lucide-react';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [editPlan, setEditPlan] = useState('');
+  const [sortField, setSortField] = useState('created_at');
+  const [sortDirection, setSortDirection] = useState('desc');
 
   useEffect(() => {
     fetchUsers();
@@ -45,6 +47,41 @@ export default function AdminUsers() {
     setEditPlan('');
   };
 
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedUsers = [...users].sort((a, b) => {
+    let aVal = a[sortField];
+    let bVal = b[sortField];
+    
+    if (sortField === 'lead_count') {
+      aVal = a.lead_count || 0;
+      bVal = b.lead_count || 0;
+    }
+    
+    if (sortField === 'created_at') {
+      aVal = new Date(a.created_at).getTime();
+      bVal = new Date(b.created_at).getTime();
+    }
+    
+    if (typeof aVal === 'string') {
+      aVal = aVal.toLowerCase();
+      bVal = bVal.toLowerCase();
+    }
+    
+    if (sortDirection === 'asc') {
+      return aVal > bVal ? 1 : -1;
+    } else {
+      return aVal < bVal ? 1 : -1;
+    }
+  });
+
   if (loading) {
     return (
       <Layout>
@@ -68,17 +105,41 @@ export default function AdminUsers() {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                    Name
+                  <th 
+                    onClick={() => handleSort('name')}
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:bg-gray-100"
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Name</span>
+                      <ArrowUpDown className="h-3 w-3" />
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                    Email
+                  <th 
+                    onClick={() => handleSort('email')}
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:bg-gray-100"
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Email</span>
+                      <ArrowUpDown className="h-3 w-3" />
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                    Plan
+                  <th 
+                    onClick={() => handleSort('plan_type')}
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:bg-gray-100"
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Plan</span>
+                      <ArrowUpDown className="h-3 w-3" />
+                    </div>
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                    Total Leads
+                  <th 
+                    onClick={() => handleSort('lead_count')}
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:bg-gray-100"
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Total Leads</span>
+                      <ArrowUpDown className="h-3 w-3" />
+                    </div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                     New
@@ -92,6 +153,15 @@ export default function AdminUsers() {
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                     Not Int.
                   </th>
+                  <th 
+                    onClick={() => handleSort('created_at')}
+                    className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase cursor-pointer hover:bg-gray-100"
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Registered</span>
+                      <ArrowUpDown className="h-3 w-3" />
+                    </div>
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                     Actions
                   </th>
@@ -100,12 +170,12 @@ export default function AdminUsers() {
               <tbody>
                 {users.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan="10" className="px-6 py-8 text-center text-gray-500">
                       No wholesalers found
                     </td>
                   </tr>
                 ) : (
-                  users.map((user) => {
+                  sortedUsers.map((user) => {
                     const isEditing = editingId === user.id;
                     return (
                       <tr key={user.id} className="border-b hover:bg-gray-50">
@@ -157,6 +227,15 @@ export default function AdminUsers() {
                         </td>
                         <td className="px-6 py-4">
                           <span className="text-red-600 font-medium">{user.stats.not_interested}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-600">
+                            {new Date(user.created_at).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           {isEditing ? (

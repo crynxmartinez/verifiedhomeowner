@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { adminAPI } from '../../lib/api';
-import { Upload, Plus, X, FileText } from 'lucide-react';
+import { Upload, Plus, X, FileText, Search } from 'lucide-react';
 
 export default function AdminLeads() {
   const [leads, setLeads] = useState([]);
@@ -22,10 +22,28 @@ export default function AdminLeads() {
   });
   const [csvData, setCSVData] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [showDistributeModal, setShowDistributeModal] = useState(false);
+  const [distributeCount, setDistributeCount] = useState(1);
+  const [selectedUser, setSelectedUser] = useState('');
+  const [allUsers, setAllUsers] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [userSearch, setUserSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(30);
 
   useEffect(() => {
     fetchLeads();
+    fetchUsers();
   }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const { data } = await adminAPI.getUsers();
+      setUsers(data.users || []);
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    }
+  };
 
   const fetchLeads = async () => {
     try {
@@ -92,10 +110,21 @@ export default function AdminLeads() {
   };
 
   const handleDistribute = async () => {
-    if (!confirm('Manually distribute leads to all active wholesalers?')) return;
+    if (!distributeCount || distributeCount < 1) {
+      alert('Please enter a valid number of leads');
+      return;
+    }
+    if (!allUsers && !selectedUser) {
+      alert('Please select a user or check "All Users"');
+      return;
+    }
     try {
-      const { data } = await adminAPI.distributeLeads();
-      alert(data.message);
+      // Call distribute API multiple times based on count
+      for (let i = 0; i < distributeCount; i++) {
+        await adminAPI.distributeLeads();
+      }
+      setShowDistributeModal(false);
+      alert(`Successfully distributed ${distributeCount} lead(s)`);
     } catch (error) {
       console.error('Failed to distribute:', error);
       alert('Failed to distribute leads');
@@ -136,7 +165,7 @@ export default function AdminLeads() {
               <span>Upload CSV</span>
             </button>
             <button
-              onClick={handleDistribute}
+              onClick={() => setShowDistributeModal(true)}
               className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
             >
               <FileText className="h-4 w-4" />
@@ -146,6 +175,49 @@ export default function AdminLeads() {
         </div>
 
         <div className="bg-white rounded-lg shadow overflow-hidden">
+          {/* Pagination Controls */}
+          <div className="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-700">Show:</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="border border-gray-300 rounded px-3 py-1 text-sm"
+              >
+                <option value={10}>10</option>
+                <option value={30}>30</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span className="text-sm text-gray-700">
+                Showing {Math.min((currentPage - 1) * itemsPerPage + 1, leads.length)} to{' '}
+                {Math.min(currentPage * itemsPerPage, leads.length)} of {leads.length} leads
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-700">
+                Page {currentPage} of {Math.ceil(leads.length / itemsPerPage) || 1}
+              </span>
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(Math.ceil(leads.length / itemsPerPage), p + 1))}
+                disabled={currentPage >= Math.ceil(leads.length / itemsPerPage)}
+                className="px-3 py-1 border rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
@@ -163,7 +235,7 @@ export default function AdminLeads() {
                     Property Address
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                    City, State
+                    Mailing Address
                   </th>
                 </tr>
               </thead>
@@ -175,27 +247,33 @@ export default function AdminLeads() {
                     </td>
                   </tr>
                 ) : (
-                  leads.map((lead) => (
-                    <tr key={lead.id} className="border-b hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <span className="font-mono text-sm font-semibold">#{lead.sequence_number}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900">{lead.owner_name}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-gray-600">{lead.phone}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-gray-900">{lead.property_address}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-gray-600">
-                          {lead.city}, {lead.state} {lead.zip_code}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                  leads
+                    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                    .map((lead) => (
+                      <tr key={lead.id} className="border-b hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <span className="font-mono text-sm font-semibold">#{lead.sequence_number}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-gray-900">{lead.owner_name}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-gray-600">{lead.phone}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-gray-900">{lead.property_address}</div>
+                          <div className="text-sm text-gray-500">
+                            {lead.city}, {lead.state} {lead.zip_code}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-gray-900">{lead.mailing_address}</div>
+                          <div className="text-sm text-gray-500">
+                            {lead.mailing_city}, {lead.mailing_state} {lead.mailing_zip}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                 )}
               </tbody>
             </table>
@@ -403,6 +481,116 @@ export default function AdminLeads() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Distribute Modal */}
+      {showDistributeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Distribute Leads</h2>
+                <button onClick={() => setShowDistributeModal(false)} className="text-gray-400 hover:text-gray-600">
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Number of Leads to Distribute
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={distributeCount}
+                    onChange={(e) => setDistributeCount(Number(e.target.value))}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Enter number of leads"
+                  />
+                </div>
+
+                <div>
+                  <label className="flex items-center space-x-2 mb-3">
+                    <input
+                      type="checkbox"
+                      checked={allUsers}
+                      onChange={(e) => {
+                        setAllUsers(e.target.checked);
+                        if (e.target.checked) setSelectedUser('');
+                      }}
+                      className="w-4 h-4 text-blue-600"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Distribute to All Users</span>
+                  </label>
+
+                  {!allUsers && (
+                    <div className="relative">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Select User
+                      </label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <input
+                          type="text"
+                          value={userSearch}
+                          onChange={(e) => setUserSearch(e.target.value)}
+                          placeholder="Search users..."
+                          className="w-full pl-10 pr-3 py-2 border rounded-lg"
+                        />
+                      </div>
+                      {userSearch && (
+                        <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                          {users
+                            .filter((u) =>
+                              u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+                              u.email.toLowerCase().includes(userSearch.toLowerCase())
+                            )
+                            .map((user) => (
+                              <button
+                                key={user.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedUser(user.id);
+                                  setUserSearch(user.name);
+                                }}
+                                className="w-full text-left px-4 py-2 hover:bg-gray-100 flex flex-col"
+                              >
+                                <span className="font-medium text-gray-900">{user.name}</span>
+                                <span className="text-sm text-gray-500">{user.email}</span>
+                              </button>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {allUsers && (
+                    <div className="bg-gray-100 rounded-lg p-3 text-sm text-gray-600">
+                      Leads will be distributed to all active wholesalers
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowDistributeModal(false)}
+                    className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDistribute}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  >
+                    Distribute
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
