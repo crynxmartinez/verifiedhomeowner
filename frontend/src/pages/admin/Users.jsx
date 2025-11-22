@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { adminAPI } from '../../lib/api';
-import { Edit2, Save, X, ArrowUpDown } from 'lucide-react';
+import { Edit2, Save, X, ArrowUpDown, Search } from 'lucide-react';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -10,6 +10,9 @@ export default function AdminUsers() {
   const [editPlan, setEditPlan] = useState('');
   const [sortField, setSortField] = useState('created_at');
   const [sortDirection, setSortDirection] = useState('desc');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchUsers();
@@ -56,7 +59,17 @@ export default function AdminUsers() {
     }
   };
 
-  const sortedUsers = [...users].sort((a, b) => {
+  // Filter users based on search query
+  const filteredUsers = users.filter(user => {
+    const query = searchQuery.toLowerCase();
+    return (
+      user.email?.toLowerCase().includes(query) ||
+      user.full_name?.toLowerCase().includes(query) ||
+      user.plan_type?.toLowerCase().includes(query)
+    );
+  });
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
     let aVal = a[sortField];
     let bVal = b[sortField];
     
@@ -82,6 +95,17 @@ export default function AdminUsers() {
     }
   });
 
+  // Pagination
+  const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedUsers = sortedUsers.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   if (loading) {
     return (
       <Layout>
@@ -98,6 +122,23 @@ export default function AdminUsers() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Wholesalers</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">Manage all wholesaler accounts</p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by name, email, or plan..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400"
+            />
+          </div>
+          <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Showing {paginatedUsers.length} of {sortedUsers.length} users
+          </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 overflow-hidden">
@@ -168,14 +209,14 @@ export default function AdminUsers() {
                 </tr>
               </thead>
               <tbody>
-                {users.length === 0 ? (
+                {paginatedUsers.length === 0 ? (
                   <tr>
                     <td colSpan="10" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                       No wholesalers found
                     </td>
                   </tr>
                 ) : (
-                  sortedUsers.map((user) => {
+                  paginatedUsers.map((user) => {
                     const isEditing = editingId === user.id;
                     return (
                       <tr key={user.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -270,6 +311,46 @@ export default function AdminUsers() {
             </table>
           </div>
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Page {currentPage} of {totalPages}
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 border dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <div className="flex space-x-1">
+                {[...Array(totalPages)].map((_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                      currentPage === i + 1
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 border dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
           <h3 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">Plan Management</h3>
