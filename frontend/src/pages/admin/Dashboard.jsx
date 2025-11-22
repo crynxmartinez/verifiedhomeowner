@@ -26,7 +26,7 @@ export default function AdminDashboard() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">Loading...</div>
+          <div className="text-gray-500 dark:text-gray-400">Loading...</div>
         </div>
       </Layout>
     );
@@ -63,8 +63,8 @@ export default function AdminDashboard() {
     <Layout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600 mt-2">Overview of your CRM system</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Overview of your CRM system</p>
         </div>
 
         {/* Stats Grid */}
@@ -72,11 +72,11 @@ export default function AdminDashboard() {
           {statCards.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <div key={index} className="bg-white rounded-lg shadow p-6">
+              <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-600 text-sm">{stat.label}</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">{stat.label}</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{stat.value}</p>
                   </div>
                   <div className={`${stat.color} w-12 h-12 rounded-lg flex items-center justify-center`}>
                     <Icon className="h-6 w-6 text-white" />
@@ -89,16 +89,16 @@ export default function AdminDashboard() {
 
         {/* Plan Distribution */}
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Plan Distribution</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-6">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Plan Distribution</h2>
             <div className="space-y-4">
               {Object.entries(analytics?.planDistribution || {}).map(([plan, count]) => (
                 <div key={plan}>
                   <div className="flex justify-between mb-2">
-                    <span className="text-gray-700 capitalize">{plan}</span>
-                    <span className="font-semibold">{count}</span>
+                    <span className="text-gray-700 dark:text-gray-300 capitalize">{plan}</span>
+                    <span className="font-semibold dark:text-white">{count}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
                       className="bg-blue-500 h-2 rounded-full"
                       style={{
@@ -113,16 +113,16 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Status Distribution</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-6">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Status Distribution</h2>
             <div className="space-y-4">
               {Object.entries(analytics?.statusDistribution || {}).map(([status, count]) => (
                 <div key={status}>
                   <div className="flex justify-between mb-2">
-                    <span className="text-gray-700 capitalize">{status.replace('_', ' ')}</span>
-                    <span className="font-semibold">{count}</span>
+                    <span className="text-gray-700 dark:text-gray-300 capitalize">{status.replace('_', ' ')}</span>
+                    <span className="font-semibold dark:text-white">{count}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full ${
                         status === 'new'
@@ -147,29 +147,29 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity (Last 30 Days)</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Recent Activity (Last 30 Days)</h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div className="flex items-center space-x-4">
-              <div className="bg-blue-100 w-12 h-12 rounded-lg flex items-center justify-center">
-                <Users className="h-6 w-6 text-blue-600" />
+              <div className="bg-blue-100 dark:bg-blue-900 w-12 h-12 rounded-lg flex items-center justify-center">
+                <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {analytics?.recentActivity?.newWholesalersLast30Days || 0}
                 </p>
-                <p className="text-gray-600">New Wholesalers</p>
+                <p className="text-gray-600 dark:text-gray-400">New Wholesalers</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="bg-green-100 w-12 h-12 rounded-lg flex items-center justify-center">
-                <FileText className="h-6 w-6 text-green-600" />
+              <div className="bg-green-100 dark:bg-green-900 w-12 h-12 rounded-lg flex items-center justify-center">
+                <FileText className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">
                   {analytics?.recentActivity?.newLeadsLast30Days || 0}
                 </p>
-                <p className="text-gray-600">New Leads Uploaded</p>
+                <p className="text-gray-600 dark:text-gray-400">New Leads Uploaded</p>
               </div>
             </div>
           </div>

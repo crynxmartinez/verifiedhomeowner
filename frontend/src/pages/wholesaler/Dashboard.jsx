@@ -53,7 +53,7 @@ export default function WholesalerDashboard() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">Loading...</div>
+          <div className="text-gray-500 dark:text-gray-400">Loading...</div>
         </div>
       </Layout>
     );
@@ -63,8 +63,8 @@ export default function WholesalerDashboard() {
     <Layout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-2">Welcome back! Here's your lead overview.</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Welcome back! Here's your lead overview.</p>
         </div>
 
         {/* Stats Grid */}
@@ -72,11 +72,11 @@ export default function WholesalerDashboard() {
           {statCards.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <div key={index} className="bg-white rounded-lg shadow p-6">
+              <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-600 text-sm">{stat.label}</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">{stat.label}</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{stat.value}</p>
                   </div>
                   <div className={`${stat.color} w-12 h-12 rounded-lg flex items-center justify-center`}>
                     <Icon className="h-6 w-6 text-white" />
@@ -88,15 +88,15 @@ export default function WholesalerDashboard() {
         </div>
 
         {/* Status Breakdown */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Lead Status Breakdown</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Lead Status Breakdown</h2>
           <div className="space-y-4">
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-gray-700">New</span>
-                <span className="font-semibold">{stats?.new || 0}</span>
+                <span className="text-gray-700 dark:text-gray-300">New</span>
+                <span className="font-semibold dark:text-white">{stats?.new || 0}</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
                   className="bg-blue-500 h-2 rounded-full"
                   style={{ width: `${((stats?.new || 0) / (stats?.total || 1)) * 100}%` }}
@@ -106,10 +106,10 @@ export default function WholesalerDashboard() {
 
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-gray-700">Called</span>
-                <span className="font-semibold">{stats?.called || 0}</span>
+                <span className="text-gray-700 dark:text-gray-300">Called</span>
+                <span className="font-semibold dark:text-white">{stats?.called || 0}</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
                   className="bg-green-500 h-2 rounded-full"
                   style={{ width: `${((stats?.called || 0) / (stats?.total || 1)) * 100}%` }}
@@ -119,10 +119,10 @@ export default function WholesalerDashboard() {
 
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-gray-700">Follow-up</span>
-                <span className="font-semibold">{stats?.followUp || 0}</span>
+                <span className="text-gray-700 dark:text-gray-300">Follow-up</span>
+                <span className="font-semibold dark:text-white">{stats?.followUp || 0}</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
                   className="bg-yellow-500 h-2 rounded-full"
                   style={{ width: `${((stats?.followUp || 0) / (stats?.total || 1)) * 100}%` }}
@@ -132,10 +132,10 @@ export default function WholesalerDashboard() {
 
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-gray-700">Not Interested</span>
-                <span className="font-semibold">{stats?.notInterested || 0}</span>
+                <span className="text-gray-700 dark:text-gray-300">Not Interested</span>
+                <span className="font-semibold dark:text-white">{stats?.notInterested || 0}</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
                   className="bg-red-500 h-2 rounded-full"
                   style={{ width: `${((stats?.notInterested || 0) / (stats?.total || 1)) * 100}%` }}
