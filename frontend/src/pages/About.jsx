@@ -8,7 +8,7 @@ export default function About() {
       
       <section className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800 text-white pt-16">
         <div className="max-w-5xl mx-auto px-4 text-center">
-          <img src="/logo.svg" alt="Verified Homeowner" className="h-24 mx-auto mb-8" />
+          <img src="/logo.png" alt="Verified Homeowner" className="h-24 mx-auto mb-8" />
           <h1 className="text-6xl font-bold mb-6">About Verified Homeowner</h1>
           <p className="text-2xl text-blue-100 mb-4">
             We understand the real estate wholesaling game because we've lived it.
