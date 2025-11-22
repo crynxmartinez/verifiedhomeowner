@@ -16,7 +16,7 @@ export default function UpgradePlan() {
     {
       id: 'basic',
       name: 'Basic',
-      price: '$99',
+      price: '$29',
       leads: '1 lead/day',
       features: ['Daily lead delivery', 'Priority support', 'Advanced tracking', 'Email notifications'],
       popular: true,
@@ -24,14 +24,14 @@ export default function UpgradePlan() {
     {
       id: 'elite',
       name: 'Elite',
-      price: '$299',
+      price: '$99',
       leads: '5 leads/day',
       features: ['5 daily leads', 'Premium support', 'Advanced analytics', 'Priority distribution'],
     },
     {
       id: 'pro',
       name: 'Pro',
-      price: '$499',
+      price: '$149',
       leads: '10 leads/day',
       features: ['10 daily leads', 'VIP support', 'Custom analytics', 'First in line'],
     },

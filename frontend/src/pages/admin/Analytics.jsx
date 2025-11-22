@@ -271,9 +271,9 @@ export default function AdminAnalytics() {
               <div className="text-3xl font-bold">
                 $
                 {(
-                  (analytics?.planDistribution?.basic || 0) * 99 +
-                  (analytics?.planDistribution?.elite || 0) * 299 +
-                  (analytics?.planDistribution?.pro || 0) * 499
+                  (analytics?.planDistribution?.basic || 0) * 29 +
+                  (analytics?.planDistribution?.elite || 0) * 99 +
+                  (analytics?.planDistribution?.pro || 0) * 149
                 ).toLocaleString()}
               </div>
             </div>
