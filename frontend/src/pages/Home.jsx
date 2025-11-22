@@ -66,29 +66,29 @@ export default function Home() {
       </section>
 
       {/* Problem Section */}
-      <section className="min-h-screen w-full flex items-center justify-center bg-gray-900 text-white py-20">
+      <section className="min-h-screen w-full flex items-center justify-center bg-white py-20">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-5xl font-bold text-center mb-12">We Know Your Pain</h2>
-          <p className="text-2xl text-center mb-16 text-gray-300">Every wholesaler faces the same frustrating problems...</p>
+          <h2 className="text-5xl font-bold text-center mb-12 text-gray-900">We Know Your Pain</h2>
+          <p className="text-2xl text-center mb-16 text-gray-600">Every wholesaler faces the same frustrating problems...</p>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-gray-800 p-8 rounded-xl">
+            <div className="bg-blue-50 border-2 border-blue-200 p-8 rounded-xl">
               <div className="text-6xl mb-4">📞</div>
-              <h3 className="text-2xl font-bold mb-4 text-red-400">Calling Thousands</h3>
-              <p className="text-gray-300">
+              <h3 className="text-2xl font-bold mb-4 text-blue-900">Calling Thousands</h3>
+              <p className="text-gray-700">
                 Spending hours dialing number after number, only to reach voicemails and disconnected lines.
               </p>
             </div>
-            <div className="bg-gray-800 p-8 rounded-xl">
+            <div className="bg-blue-50 border-2 border-blue-200 p-8 rounded-xl">
               <div className="text-6xl mb-4">❌</div>
-              <h3 className="text-2xl font-bold mb-4 text-red-400">Wrong Numbers</h3>
-              <p className="text-gray-300">
+              <h3 className="text-2xl font-bold mb-4 text-blue-900">Wrong Numbers</h3>
+              <p className="text-gray-700">
                 Outdated data means wasted time and money on leads that go nowhere.
               </p>
             </div>
-            <div className="bg-gray-800 p-8 rounded-xl">
+            <div className="bg-blue-50 border-2 border-blue-200 p-8 rounded-xl">
               <div className="text-6xl mb-4">🔍</div>
-              <h3 className="text-2xl font-bold mb-4 text-red-400">Skip Tracing Hell</h3>
-              <p className="text-gray-300">
+              <h3 className="text-2xl font-bold mb-4 text-blue-900">Skip Tracing Hell</h3>
+              <p className="text-gray-700">
                 Paying for expensive skip tracing services just to find current contact information.
               </p>
             </div>
@@ -97,36 +97,36 @@ export default function Home() {
       </section>
 
       {/* Solution Section */}
-      <section className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-green-600 to-green-800 text-white py-20">
+      <section className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 text-white py-20">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <h2 className="text-5xl font-bold mb-8">We Remove All That</h2>
           <p className="text-3xl mb-12 font-semibold">And Give You More Time to Close Deals</p>
           <div className="grid md:grid-cols-2 gap-8 text-left">
-            <div className="bg-white/10 backdrop-blur-sm p-8 rounded-xl">
+            <div className="bg-white/20 backdrop-blur-sm p-8 rounded-xl border-2 border-white/30">
               <div className="text-5xl mb-4">✅</div>
               <h3 className="text-2xl font-bold mb-4">Verified Contact Info</h3>
-              <p className="text-green-100 text-lg">
+              <p className="text-blue-50 text-lg">
                 Every lead comes with verified phone numbers and property owner information. No more wrong numbers.
               </p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm p-8 rounded-xl">
+            <div className="bg-white/20 backdrop-blur-sm p-8 rounded-xl border-2 border-white/30">
               <div className="text-5xl mb-4">📊</div>
               <h3 className="text-2xl font-bold mb-4">Pre-Qualified Leads</h3>
-              <p className="text-green-100 text-lg">
+              <p className="text-blue-50 text-lg">
                 We do the research and skip tracing for you. Get leads with motivation and timeline already identified.
               </p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm p-8 rounded-xl">
+            <div className="bg-white/20 backdrop-blur-sm p-8 rounded-xl border-2 border-white/30">
               <div className="text-5xl mb-4">⚡</div>
               <h3 className="text-2xl font-bold mb-4">Daily Delivery</h3>
-              <p className="text-green-100 text-lg">
+              <p className="text-blue-50 text-lg">
                 Fresh leads delivered to your dashboard every day. No pulling lists, no data cleanup.
               </p>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm p-8 rounded-xl">
+            <div className="bg-white/20 backdrop-blur-sm p-8 rounded-xl border-2 border-white/30">
               <div className="text-5xl mb-4">💰</div>
               <h3 className="text-2xl font-bold mb-4">More Time = More Deals</h3>
-              <p className="text-green-100 text-lg">
+              <p className="text-blue-50 text-lg">
                 Spend your time talking to motivated sellers, not chasing bad data. Close more deals, faster.
               </p>
             </div>
@@ -172,7 +172,7 @@ export default function Home() {
       </section>
 
       {/* Features - Full Screen */}
-      <section className="min-h-screen w-full flex items-center justify-center bg-gray-50 py-20">
+      <section className="min-h-screen w-full flex items-center justify-center bg-white py-20">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-5xl font-bold text-center mb-8 text-gray-900">Everything You Need</h2>
           <p className="text-xl text-center mb-16 text-gray-600">Built specifically for real estate wholesalers</p>
