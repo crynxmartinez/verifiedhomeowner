@@ -7,8 +7,8 @@ async function handler(req, res) {
   }
 
   try {
-    const { id } = req.query;
-    const { status, action, notes, follow_up_date } = req.body;
+    const { id, source } = req.query;
+    const { status, action, notes, follow_up_date, countdown_days } = req.body;
 
     const updateData = {
       updated_at: new Date().toISOString(),
@@ -18,13 +18,17 @@ async function handler(req, res) {
     if (action) updateData.action = action;
     if (notes !== undefined) updateData.notes = notes;
     if (follow_up_date) updateData.follow_up_date = follow_up_date;
+    if (countdown_days !== undefined) updateData.countdown_days = countdown_days;
     
     if (status === 'called') {
       updateData.last_called_at = new Date().toISOString();
     }
 
+    // Determine which table to update
+    const table = source === 'purchased' ? 'user_marketplace_leads' : 'user_leads';
+
     const { data, error } = await supabaseAdmin
-      .from('user_leads')
+      .from(table)
       .update(updateData)
       .eq('id', id)
       .eq('user_id', req.user.id)

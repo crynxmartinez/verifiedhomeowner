@@ -38,15 +38,57 @@ CREATE TABLE user_leads (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   lead_id UUID NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
-  status VARCHAR(50) NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'called', 'follow_up', 'not_interested')),
+  status VARCHAR(50) NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'called', 'follow_up', 'not_interested', 'pending')),
   action VARCHAR(50) NOT NULL DEFAULT 'call_now' CHECK (action IN ('call_now', 'pending')),
+  motivation VARCHAR(100),
   assigned_at TIMESTAMP DEFAULT NOW(),
   last_called_at TIMESTAMP,
   follow_up_date DATE,
+  countdown_days INTEGER,
   notes TEXT,
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW(),
   UNIQUE(user_id, lead_id)
+);
+
+-- Marketplace leads (pay-per-lead)
+CREATE TABLE marketplace_leads (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  owner_name VARCHAR(255),
+  phone VARCHAR(50),
+  property_address VARCHAR(500),
+  city VARCHAR(255),
+  state VARCHAR(100),
+  zip_code VARCHAR(20),
+  mailing_address VARCHAR(500),
+  mailing_city VARCHAR(255),
+  mailing_state VARCHAR(100),
+  mailing_zip VARCHAR(20),
+  motivation VARCHAR(100) NOT NULL,
+  timeline VARCHAR(100) NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  max_buyers INTEGER DEFAULT 0, -- 0 = unlimited
+  times_sold INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- User marketplace leads (purchased leads)
+CREATE TABLE user_marketplace_leads (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  marketplace_lead_id UUID NOT NULL REFERENCES marketplace_leads(id) ON DELETE CASCADE,
+  purchased_at TIMESTAMP DEFAULT NOW(),
+  price_paid DECIMAL(10,2) NOT NULL,
+  status VARCHAR(50) NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'called', 'follow_up', 'not_interested', 'pending')),
+  action VARCHAR(50) NOT NULL DEFAULT 'call_now' CHECK (action IN ('call_now', 'pending')),
+  last_called_at TIMESTAMP,
+  follow_up_date DATE,
+  countdown_days INTEGER,
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id, marketplace_lead_id)
 );
 
 -- Indexes for performance
@@ -54,9 +96,15 @@ CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_plan ON users(plan_type);
 CREATE INDEX idx_leads_sequence ON leads(sequence_number);
+CREATE INDEX idx_leads_address ON leads(property_address);
 CREATE INDEX idx_user_leads_user_id ON user_leads(user_id);
 CREATE INDEX idx_user_leads_status ON user_leads(status);
 CREATE INDEX idx_user_leads_action ON user_leads(action);
+CREATE INDEX idx_marketplace_leads_state ON marketplace_leads(state);
+CREATE INDEX idx_marketplace_leads_motivation ON marketplace_leads(motivation);
+CREATE INDEX idx_marketplace_leads_timeline ON marketplace_leads(timeline);
+CREATE INDEX idx_user_marketplace_leads_user_id ON user_marketplace_leads(user_id);
+CREATE INDEX idx_user_marketplace_leads_status ON user_marketplace_leads(status);
 
 -- Updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -72,6 +120,12 @@ CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_user_leads_updated_at BEFORE UPDATE ON user_leads
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_marketplace_leads_updated_at BEFORE UPDATE ON marketplace_leads
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_user_marketplace_leads_updated_at BEFORE UPDATE ON user_marketplace_leads
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Auto-create user profile when auth user is created

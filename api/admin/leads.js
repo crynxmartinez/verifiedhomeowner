@@ -24,7 +24,31 @@ async function handler(req, res) {
       const { csvData, singleLead } = req.body;
 
       if (singleLead) {
-        // Create single lead
+        // Check for duplicate by property_address
+        const { data: existing } = await supabaseAdmin
+          .from('leads')
+          .select('*')
+          .eq('property_address', singleLead.property_address)
+          .single();
+
+        if (existing) {
+          // Update existing lead
+          const { data, error } = await supabaseAdmin
+            .from('leads')
+            .update({
+              ...singleLead,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', existing.id)
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          return res.status(200).json({ lead: data, updated: true });
+        }
+
+        // Create new lead
         const { data: maxLead } = await supabaseAdmin
           .from('leads')
           .select('sequence_number')
@@ -45,7 +69,7 @@ async function handler(req, res) {
 
         if (error) throw error;
 
-        return res.status(201).json({ lead: data });
+        return res.status(201).json({ lead: data, updated: false });
       }
 
       if (csvData) {
@@ -55,6 +79,15 @@ async function handler(req, res) {
         if (parsed.errors.length > 0) {
           return res.status(400).json({ error: 'Invalid CSV format' });
         }
+
+        // Get existing leads for duplicate check
+        const { data: existingLeads } = await supabaseAdmin
+          .from('leads')
+          .select('id, property_address, sequence_number');
+
+        const existingAddresses = new Map(
+          existingLeads?.map(l => [l.property_address, l]) || []
+        );
 
         // Get next sequence number
         const { data: maxLead } = await supabaseAdmin
@@ -66,37 +99,68 @@ async function handler(req, res) {
 
         let nextSequence = (maxLead?.sequence_number || 0) + 1;
 
-        // Map CSV data to lead objects
-        const leads = parsed.data
-          .filter(row => row.full_name || row.owner_name) // Skip empty rows
-          .map(row => ({
-            owner_name: row.full_name || row.owner_name || '',
-            phone: row.phone || row.number || '',
-            property_address: row.address || '',
-            city: row.city || '',
-            state: row.state || '',
-            zip_code: row.zip || row.zip_code || '',
-            mailing_address: row.mailing_address || '',
-            mailing_city: row.mailing_city || '',
-            mailing_state: row.mailing_state || '',
-            mailing_zip: row.mailing_zip || '',
-            sequence_number: nextSequence++,
-          }));
+        const leadsToInsert = [];
+        const leadsToUpdate = [];
+        let updatedCount = 0;
 
-        if (leads.length === 0) {
-          return res.status(400).json({ error: 'No valid leads found in CSV' });
+        // Process each row
+        parsed.data
+          .filter(row => row.full_name || row.owner_name) // Skip empty rows
+          .forEach(row => {
+            const leadData = {
+              owner_name: row.full_name || row.owner_name || '',
+              phone: row.phone || row.number || '',
+              property_address: row.address || '',
+              city: row.city || '',
+              state: row.state || '',
+              zip_code: row.zip || row.zip_code || '',
+              mailing_address: row.mailing_address || '',
+              mailing_city: row.mailing_city || '',
+              mailing_state: row.mailing_state || '',
+              mailing_zip: row.mailing_zip || '',
+            };
+
+            const existing = existingAddresses.get(leadData.property_address);
+            if (existing) {
+              // Update existing
+              leadsToUpdate.push({
+                ...leadData,
+                id: existing.id,
+              });
+            } else {
+              // Insert new
+              leadsToInsert.push({
+                ...leadData,
+                sequence_number: nextSequence++,
+              });
+            }
+          });
+
+        // Insert new leads
+        if (leadsToInsert.length > 0) {
+          const { error: insertError } = await supabaseAdmin
+            .from('leads')
+            .insert(leadsToInsert);
+
+          if (insertError) throw insertError;
         }
 
-        const { data, error } = await supabaseAdmin
-          .from('leads')
-          .insert(leads)
-          .select();
+        // Update existing leads
+        for (const lead of leadsToUpdate) {
+          const { id, ...updateData } = lead;
+          const { error: updateError } = await supabaseAdmin
+            .from('leads')
+            .update(updateData)
+            .eq('id', id);
 
-        if (error) throw error;
+          if (!updateError) updatedCount++;
+        }
 
         return res.status(201).json({ 
-          message: `${data.length} leads uploaded successfully`,
-          leads: data 
+          message: `${leadsToInsert.length} new leads, ${updatedCount} updated`,
+          newCount: leadsToInsert.length,
+          updatedCount: updatedCount,
+          totalProcessed: leadsToInsert.length + updatedCount
         });
       }
 

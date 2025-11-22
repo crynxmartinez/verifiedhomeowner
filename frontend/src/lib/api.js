@@ -46,7 +46,13 @@ export const authAPI = {
 export const leadsAPI = {
   getLeads: () => api.get('/leads'),
   getStats: () => api.get('/leads/stats'),
-  updateLead: (id, data) => api.patch(`/leads/update?id=${id}`, data),
+  updateLead: (id, source, data) => api.patch(`/leads/update?id=${id}&source=${source}`, data),
+};
+
+// Marketplace API
+export const marketplaceAPI = {
+  getLeads: (filters) => api.get('/marketplace', { params: filters }),
+  purchaseLead: (leadId) => api.post('/marketplace/purchase', { leadId }),
 };
 
 // Admin API
@@ -58,4 +64,9 @@ export const adminAPI = {
   createLead: (singleLead) => api.post('/admin/leads', { singleLead }),
   uploadCSV: (csvData) => api.post('/admin/leads', { csvData }),
   distributeLeads: () => api.post('/admin/distribute'),
+  // Marketplace admin
+  getMarketplaceLeads: () => api.get('/admin/marketplace'),
+  createMarketplaceLead: (singleLead) => api.post('/admin/marketplace', { singleLead }),
+  uploadMarketplaceCSV: (csvData) => api.post('/admin/marketplace', { csvData }),
+  deleteMarketplaceLead: (leadId) => api.delete('/admin/marketplace', { data: { leadId } }),
 };
