@@ -203,23 +203,23 @@ export default function Home() {
       {/* Pricing - Full Screen */}
       <section className="min-h-screen w-full flex items-center justify-center bg-white py-20">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-5xl font-bold text-center mb-16 text-gray-900">Simple Pricing</h2>
-          <div className="grid md:grid-cols-4 gap-8">
+          <h2 className="text-5xl font-bold text-center mb-20 text-gray-900">Simple Pricing</h2>
+          <div className="grid md:grid-cols-4 gap-8 mt-8">
             {plans.map((plan, index) => (
               <div
                 key={index}
                 className={`bg-white rounded-xl shadow-lg p-8 ${
-                  plan.popular ? 'ring-4 ring-blue-600 relative' : ''
+                  plan.popular ? 'ring-4 ring-blue-600 relative mt-0' : 'mt-6'
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <span className="bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg whitespace-nowrap">
                       Most Popular
                     </span>
                   </div>
                 )}
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                <h3 className="text-2xl font-bold mb-2 mt-2">{plan.name}</h3>
                 <div className="text-4xl font-bold mb-2">{plan.price}</div>
                 <div className="text-gray-600 mb-6">{plan.leads}</div>
                 <ul className="space-y-3 mb-8">
