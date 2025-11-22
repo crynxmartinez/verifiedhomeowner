@@ -1,0 +1,299 @@
+import { useState, useEffect } from 'react';
+import Layout from '../../components/Layout';
+import { leadsAPI } from '../../lib/api';
+import { Phone, Clock, Edit2, Save, X } from 'lucide-react';
+
+export default function WholesalerLeads() {
+  const [leads, setLeads] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState(null);
+  const [editData, setEditData] = useState({});
+
+  useEffect(() => {
+    fetchLeads();
+  }, []);
+
+  const fetchLeads = async () => {
+    try {
+      const { data } = await leadsAPI.getLeads();
+      setLeads(data.leads || []);
+    } catch (error) {
+      console.error('Failed to fetch leads:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (lead) => {
+    setEditingId(lead.id);
+    setEditData({
+      status: lead.status,
+      action: lead.action,
+      notes: lead.notes || '',
+      follow_up_date: lead.follow_up_date || '',
+    });
+  };
+
+  const handleSave = async (leadId) => {
+    try {
+      await leadsAPI.updateLead(leadId, editData);
+      setEditingId(null);
+      fetchLeads();
+    } catch (error) {
+      console.error('Failed to update lead:', error);
+      alert('Failed to update lead');
+    }
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditData({});
+  };
+
+  const callNowLeads = leads.filter((l) => l.action === 'call_now');
+  const pendingLeads = leads.filter((l) => l.action === 'pending');
+
+  const renderLeadRow = (userLead) => {
+    const lead = userLead.lead;
+    const isEditing = editingId === userLead.id;
+
+    return (
+      <tr key={userLead.id} className="border-b hover:bg-gray-50">
+        <td className="px-4 py-3">
+          <div className="font-medium">{lead.owner_name}</div>
+          <div className="text-sm text-gray-500">{lead.phone}</div>
+        </td>
+        <td className="px-4 py-3">
+          <div>{lead.property_address}</div>
+          <div className="text-sm text-gray-500">
+            {lead.city}, {lead.state} {lead.zip_code}
+          </div>
+        </td>
+        <td className="px-4 py-3">
+          {isEditing ? (
+            <select
+              value={editData.status}
+              onChange={(e) => setEditData({ ...editData, status: e.target.value })}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              <option value="new">New</option>
+              <option value="called">Called</option>
+              <option value="follow_up">Follow-up</option>
+              <option value="not_interested">Not Interested</option>
+            </select>
+          ) : (
+            <span
+              className={`px-2 py-1 rounded text-xs font-semibold ${
+                userLead.status === 'new'
+                  ? 'bg-blue-100 text-blue-800'
+                  : userLead.status === 'called'
+                  ? 'bg-green-100 text-green-800'
+                  : userLead.status === 'follow_up'
+                  ? 'bg-yellow-100 text-yellow-800'
+                  : 'bg-red-100 text-red-800'
+              }`}
+            >
+              {userLead.status.replace('_', ' ')}
+            </span>
+          )}
+        </td>
+        <td className="px-4 py-3">
+          {isEditing ? (
+            <select
+              value={editData.action}
+              onChange={(e) => setEditData({ ...editData, action: e.target.value })}
+              className="border rounded px-2 py-1 text-sm"
+            >
+              <option value="call_now">Call Now</option>
+              <option value="pending">Pending</option>
+            </select>
+          ) : (
+            <span
+              className={`px-2 py-1 rounded text-xs font-semibold ${
+                userLead.action === 'call_now'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-gray-100 text-gray-800'
+              }`}
+            >
+              {userLead.action.replace('_', ' ')}
+            </span>
+          )}
+        </td>
+        <td className="px-4 py-3">
+          {isEditing ? (
+            <input
+              type="date"
+              value={editData.follow_up_date}
+              onChange={(e) => setEditData({ ...editData, follow_up_date: e.target.value })}
+              className="border rounded px-2 py-1 text-sm"
+            />
+          ) : (
+            <span className="text-sm">{userLead.follow_up_date || '-'}</span>
+          )}
+        </td>
+        <td className="px-4 py-3">
+          {isEditing ? (
+            <textarea
+              value={editData.notes}
+              onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
+              className="border rounded px-2 py-1 text-sm w-full"
+              rows="2"
+              placeholder="Add notes..."
+            />
+          ) : (
+            <span className="text-sm text-gray-600">{userLead.notes || '-'}</span>
+          )}
+        </td>
+        <td className="px-4 py-3">
+          {isEditing ? (
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handleSave(userLead.id)}
+                className="text-green-600 hover:text-green-800"
+              >
+                <Save className="h-4 w-4" />
+              </button>
+              <button onClick={handleCancel} className="text-red-600 hover:text-red-800">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => handleEdit(userLead)}
+              className="text-blue-600 hover:text-blue-800"
+            >
+              <Edit2 className="h-4 w-4" />
+            </button>
+          )}
+        </td>
+      </tr>
+    );
+  };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-gray-500">Loading leads...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">My Leads</h1>
+          <p className="text-gray-600 mt-2">Manage and track your leads</p>
+        </div>
+
+        {/* Call Now Table */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="px-6 py-4 border-b bg-green-50">
+            <div className="flex items-center space-x-2">
+              <Phone className="h-5 w-5 text-green-600" />
+              <h2 className="text-xl font-bold text-gray-900">
+                Call Now ({callNowLeads.length})
+              </h2>
+            </div>
+            <p className="text-sm text-gray-600 mt-1">These leads need to be called</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Contact
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Property
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Action
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Follow-up
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Notes
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {callNowLeads.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
+                      No leads to call right now
+                    </td>
+                  </tr>
+                ) : (
+                  callNowLeads.map(renderLeadRow)
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Pending Table */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="px-6 py-4 border-b bg-yellow-50">
+            <div className="flex items-center space-x-2">
+              <Clock className="h-5 w-5 text-yellow-600" />
+              <h2 className="text-xl font-bold text-gray-900">
+                Pending ({pendingLeads.length})
+              </h2>
+            </div>
+            <p className="text-sm text-gray-600 mt-1">Follow-ups and other pending leads</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Contact
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Property
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Action
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Follow-up
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Notes
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingLeads.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
+                      No pending leads
+                    </td>
+                  </tr>
+                ) : (
+                  pendingLeads.map(renderLeadRow)
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+}

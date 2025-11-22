@@ -1,0 +1,171 @@
+import Layout from '../../components/Layout';
+import useAuthStore from '../../store/authStore';
+import { CheckCircle, TrendingUp } from 'lucide-react';
+
+export default function UpgradePlan() {
+  const user = useAuthStore((state) => state.user);
+
+  const plans = [
+    {
+      id: 'free',
+      name: 'Free',
+      price: '$0',
+      leads: '1 lead/week',
+      features: ['1 lead every Monday', 'Basic support', 'Lead tracking'],
+    },
+    {
+      id: 'basic',
+      name: 'Basic',
+      price: '$99',
+      leads: '1 lead/day',
+      features: ['Daily lead delivery', 'Priority support', 'Advanced tracking', 'Email notifications'],
+      popular: true,
+    },
+    {
+      id: 'elite',
+      name: 'Elite',
+      price: '$299',
+      leads: '5 leads/day',
+      features: ['5 daily leads', 'Premium support', 'Advanced analytics', 'Priority distribution'],
+    },
+    {
+      id: 'pro',
+      name: 'Pro',
+      price: '$499',
+      leads: '10 leads/day',
+      features: ['10 daily leads', 'VIP support', 'Custom analytics', 'First in line'],
+    },
+  ];
+
+  const handleUpgrade = (planId) => {
+    alert(`Plan upgrade to ${planId} will be available once payment integration is complete. For now, contact admin to change your plan.`);
+  };
+
+  return (
+    <Layout>
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Upgrade Your Plan</h1>
+          <p className="text-gray-600 mt-2">
+            Current Plan: <span className="font-semibold text-blue-600 uppercase">{user?.plan_type}</span>
+          </p>
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <TrendingUp className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-blue-900">MVP Notice</h3>
+              <p className="text-sm text-blue-700 mt-1">
+                Payment integration is coming soon. For now, contact the admin to upgrade your plan for testing purposes.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {plans.map((plan) => {
+            const isCurrentPlan = user?.plan_type === plan.id;
+            return (
+              <div
+                key={plan.id}
+                className={`bg-white rounded-xl shadow-lg p-6 ${
+                  plan.popular ? 'ring-4 ring-blue-600 relative' : ''
+                } ${isCurrentPlan ? 'ring-4 ring-green-600' : ''}`}
+              >
+                {plan.popular && !isCurrentPlan && (
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <span className="bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                      Most Popular
+                    </span>
+                  </div>
+                )}
+                {isCurrentPlan && (
+                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <span className="bg-green-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                      Current Plan
+                    </span>
+                  </div>
+                )}
+
+                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                <div className="text-4xl font-bold mb-2">{plan.price}</div>
+                <div className="text-gray-600 mb-6">{plan.leads}</div>
+
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((feature, i) => (
+                    <li key={i} className="flex items-start space-x-2">
+                      <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-gray-600">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={() => handleUpgrade(plan.id)}
+                  disabled={isCurrentPlan}
+                  className={`w-full py-3 rounded-lg font-semibold transition ${
+                    isCurrentPlan
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : plan.popular
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                  }`}
+                >
+                  {isCurrentPlan ? 'Current Plan' : 'Select Plan'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Plan Comparison</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-3 px-4">Feature</th>
+                  <th className="text-center py-3 px-4">Free</th>
+                  <th className="text-center py-3 px-4">Basic</th>
+                  <th className="text-center py-3 px-4">Elite</th>
+                  <th className="text-center py-3 px-4">Pro</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b">
+                  <td className="py-3 px-4">Leads per week</td>
+                  <td className="text-center py-3 px-4">1</td>
+                  <td className="text-center py-3 px-4">7</td>
+                  <td className="text-center py-3 px-4">35</td>
+                  <td className="text-center py-3 px-4">70</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-3 px-4">Lead tracking</td>
+                  <td className="text-center py-3 px-4">✓</td>
+                  <td className="text-center py-3 px-4">✓</td>
+                  <td className="text-center py-3 px-4">✓</td>
+                  <td className="text-center py-3 px-4">✓</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-3 px-4">Support</td>
+                  <td className="text-center py-3 px-4">Basic</td>
+                  <td className="text-center py-3 px-4">Priority</td>
+                  <td className="text-center py-3 px-4">Premium</td>
+                  <td className="text-center py-3 px-4">VIP</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-3 px-4">Analytics</td>
+                  <td className="text-center py-3 px-4">Basic</td>
+                  <td className="text-center py-3 px-4">Advanced</td>
+                  <td className="text-center py-3 px-4">Advanced</td>
+                  <td className="text-center py-3 px-4">Custom</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+}
