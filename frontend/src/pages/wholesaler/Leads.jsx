@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
-import { Phone, Clock, Edit2, Save, X } from 'lucide-react';
+import { Phone, Clock, Edit2, Save, X, DollarSign, Package } from 'lucide-react';
 
 export default function WholesalerLeads() {
   const [leads, setLeads] = useState([]);
@@ -31,12 +31,13 @@ export default function WholesalerLeads() {
       action: lead.action,
       notes: lead.notes || '',
       follow_up_date: lead.follow_up_date || '',
+      countdown_days: lead.countdown_days || null,
     });
   };
 
-  const handleSave = async (leadId) => {
+  const handleSave = async (leadId, source) => {
     try {
-      await leadsAPI.updateLead(leadId, editData);
+      await leadsAPI.updateLead(leadId, source, editData);
       setEditingId(null);
       fetchLeads();
     } catch (error) {
@@ -50,18 +51,37 @@ export default function WholesalerLeads() {
     setEditData({});
   };
 
-  const callNowLeads = leads.filter((l) => l.action === 'call_now');
-  const pendingLeads = leads.filter((l) => l.action === 'pending');
+  const callNowLeads = leads.filter((l) => l.action === 'call_now' || l.status === 'new' || l.status === 'pending');
+  const pendingLeads = leads.filter((l) => l.action === 'pending' && l.status !== 'new' && l.status !== 'pending');
+
+  const getSourceIcon = (source) => {
+    if (source === 'purchased') {
+      return <DollarSign size={16} className="text-green-600" title="Purchased Lead" />;
+    }
+    return <Package size={16} className="text-blue-600" title="Subscription Lead" />;
+  };
+
+  const getCountdownDisplay = (lead) => {
+    if (!lead.countdown_days || lead.countdown_days <= 0) return null;
+    const action = lead.status === 'follow_up' ? 'Follow up' : 'Archive';
+    return `${action} in ${lead.countdown_days} day${lead.countdown_days > 1 ? 's' : ''}`;
+  };
 
   const renderLeadRow = (userLead) => {
     const lead = userLead.lead;
     const isEditing = editingId === userLead.id;
+    const countdownDisplay = getCountdownDisplay(userLead);
 
     return (
       <tr key={userLead.id} className="border-b hover:bg-gray-50">
         <td className="px-4 py-3">
-          <div className="font-medium">{lead.owner_name}</div>
-          <div className="text-sm text-gray-500">{lead.phone}</div>
+          <div className="flex items-center gap-2">
+            {getSourceIcon(userLead.source)}
+            <div>
+              <div className="font-medium">{lead.owner_name}</div>
+              <div className="text-sm text-gray-500">{lead.phone}</div>
+            </div>
+          </div>
         </td>
         <td className="px-4 py-3">
           <div>{lead.property_address}</div>
@@ -80,6 +100,7 @@ export default function WholesalerLeads() {
               <option value="called">Called</option>
               <option value="follow_up">Follow-up</option>
               <option value="not_interested">Not Interested</option>
+              <option value="pending">Pending</option>
             </select>
           ) : (
             <span
@@ -90,6 +111,8 @@ export default function WholesalerLeads() {
                   ? 'bg-green-100 text-green-800'
                   : userLead.status === 'follow_up'
                   ? 'bg-yellow-100 text-yellow-800'
+                  : userLead.status === 'pending'
+                  ? 'bg-purple-100 text-purple-800'
                   : 'bg-red-100 text-red-800'
               }`}
             >
@@ -99,37 +122,53 @@ export default function WholesalerLeads() {
         </td>
         <td className="px-4 py-3">
           {isEditing ? (
-            <select
-              value={editData.action}
-              onChange={(e) => setEditData({ ...editData, action: e.target.value })}
-              className="border rounded px-2 py-1 text-sm"
-            >
-              <option value="call_now">Call Now</option>
-              <option value="pending">Pending</option>
-            </select>
+            <div className="space-y-2">
+              <select
+                value={editData.action}
+                onChange={(e) => setEditData({ ...editData, action: e.target.value })}
+                className="border rounded px-2 py-1 text-sm w-full"
+              >
+                <option value="call_now">Call Now</option>
+                <option value="pending">Pending</option>
+              </select>
+              {(editData.status === 'follow_up' || editData.status === 'not_interested') && (
+                <select
+                  value={editData.countdown_days || ''}
+                  onChange={(e) => setEditData({ ...editData, countdown_days: parseInt(e.target.value) })}
+                  className="border rounded px-2 py-1 text-sm w-full"
+                >
+                  <option value="">Set countdown...</option>
+                  <option value="1">1 day</option>
+                  <option value="3">3 days</option>
+                  <option value="7">7 days</option>
+                  <option value="14">14 days</option>
+                  <option value="30">30 days</option>
+                </select>
+              )}
+            </div>
           ) : (
-            <span
-              className={`px-2 py-1 rounded text-xs font-semibold ${
-                userLead.action === 'call_now'
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-gray-100 text-gray-800'
-              }`}
-            >
-              {userLead.action.replace('_', ' ')}
-            </span>
+            <div>
+              <span
+                className={`px-2 py-1 rounded text-xs font-semibold ${
+                  userLead.action === 'call_now'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}
+              >
+                {userLead.action.replace('_', ' ')}
+              </span>
+              {countdownDisplay && (
+                <div className="text-xs text-orange-600 mt-1 font-medium">
+                  {countdownDisplay}
+                </div>
+              )}
+            </div>
           )}
         </td>
         <td className="px-4 py-3">
-          {isEditing ? (
-            <input
-              type="date"
-              value={editData.follow_up_date}
-              onChange={(e) => setEditData({ ...editData, follow_up_date: e.target.value })}
-              className="border rounded px-2 py-1 text-sm"
-            />
-          ) : (
-            <span className="text-sm">{userLead.follow_up_date || '-'}</span>
-          )}
+          <div className="text-sm">
+            {lead.motivation || '-'}
+          </div>
         </td>
         <td className="px-4 py-3">
           {isEditing ? (
@@ -148,7 +187,7 @@ export default function WholesalerLeads() {
           {isEditing ? (
             <div className="flex space-x-2">
               <button
-                onClick={() => handleSave(userLead.id)}
+                onClick={() => handleSave(userLead.id, userLead.source)}
                 className="text-green-600 hover:text-green-800"
               >
                 <Save className="h-4 w-4" />
@@ -216,7 +255,7 @@ export default function WholesalerLeads() {
                     Action
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                    Follow-up
+                    Motivation
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                     Notes
@@ -269,7 +308,7 @@ export default function WholesalerLeads() {
                     Action
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                    Follow-up
+                    Motivation
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                     Notes
