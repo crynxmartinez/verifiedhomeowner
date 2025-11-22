@@ -73,19 +73,19 @@ export default function WholesalerLeads() {
     const countdownDisplay = getCountdownDisplay(userLead);
 
     return (
-      <tr key={userLead.id} className="border-b hover:bg-gray-50">
+      <tr key={userLead.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
         <td className="px-4 py-3">
           <div className="flex items-center gap-2">
             {getSourceIcon(userLead.source)}
             <div>
-              <div className="font-medium">{lead.owner_name}</div>
-              <div className="text-sm text-gray-500">{lead.phone}</div>
+              <div className="font-medium dark:text-white">{lead.owner_name}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{lead.phone}</div>
             </div>
           </div>
         </td>
         <td className="px-4 py-3">
-          <div>{lead.property_address}</div>
-          <div className="text-sm text-gray-500">
+          <div className="dark:text-white">{lead.property_address}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
             {lead.city}, {lead.state} {lead.zip_code}
           </div>
         </td>
@@ -94,7 +94,7 @@ export default function WholesalerLeads() {
             <select
               value={editData.status}
               onChange={(e) => setEditData({ ...editData, status: e.target.value })}
-              className="border rounded px-2 py-1 text-sm"
+              className="border dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="new">New</option>
               <option value="called">Called</option>
@@ -126,7 +126,7 @@ export default function WholesalerLeads() {
               <select
                 value={editData.action}
                 onChange={(e) => setEditData({ ...editData, action: e.target.value })}
-                className="border rounded px-2 py-1 text-sm w-full"
+                className="border dark:border-gray-600 rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="call_now">Call Now</option>
                 <option value="pending">Pending</option>
@@ -135,7 +135,7 @@ export default function WholesalerLeads() {
                 <select
                   value={editData.countdown_days || ''}
                   onChange={(e) => setEditData({ ...editData, countdown_days: parseInt(e.target.value) })}
-                  className="border rounded px-2 py-1 text-sm w-full"
+                  className="border dark:border-gray-600 rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="">Set countdown...</option>
                   <option value="1">1 day</option>
@@ -166,7 +166,7 @@ export default function WholesalerLeads() {
           )}
         </td>
         <td className="px-4 py-3">
-          <div className="text-sm">
+          <div className="text-sm dark:text-white">
             {lead.motivation || '-'}
           </div>
         </td>
@@ -175,12 +175,12 @@ export default function WholesalerLeads() {
             <textarea
               value={editData.notes}
               onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
-              className="border rounded px-2 py-1 text-sm w-full"
+              className="border dark:border-gray-600 rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               rows="2"
               placeholder="Add notes..."
             />
           ) : (
-            <span className="text-sm text-gray-600">{userLead.notes || '-'}</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">{userLead.notes || '-'}</span>
           )}
         </td>
         <td className="px-4 py-3">
@@ -213,7 +213,7 @@ export default function WholesalerLeads() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500">Loading leads...</div>
+          <div className="text-gray-500 dark:text-gray-400">Loading leads...</div>
         </div>
       </Layout>
     );
@@ -223,44 +223,44 @@ export default function WholesalerLeads() {
     <Layout>
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Leads</h1>
-          <p className="text-gray-600 mt-2">Manage and track your leads</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Leads</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Manage and track your leads</p>
         </div>
 
         {/* Call Now Table */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b bg-green-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900">
+          <div className="px-6 py-4 border-b dark:border-gray-700 bg-green-50 dark:bg-green-900/20">
             <div className="flex items-center space-x-2">
-              <Phone className="h-5 w-5 text-green-600" />
-              <h2 className="text-xl font-bold text-gray-900">
+              <Phone className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 Call Now ({callNowLeads.length})
               </h2>
             </div>
-            <p className="text-sm text-gray-600 mt-1">These leads need to be called</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">These leads need to be called</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Contact
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Property
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Action
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Motivation
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Notes
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Actions
                   </th>
                 </tr>
@@ -268,7 +268,7 @@ export default function WholesalerLeads() {
               <tbody>
                 {callNowLeads.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan="7" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                       No leads to call right now
                     </td>
                   </tr>
@@ -281,39 +281,39 @@ export default function WholesalerLeads() {
         </div>
 
         {/* Pending Table */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b bg-yellow-50">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900">
+          <div className="px-6 py-4 border-b dark:border-gray-700 bg-yellow-50 dark:bg-yellow-900/20">
             <div className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-yellow-600" />
-              <h2 className="text-xl font-bold text-gray-900">
+              <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 Pending ({pendingLeads.length})
               </h2>
             </div>
-            <p className="text-sm text-gray-600 mt-1">Follow-ups and other pending leads</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Follow-ups and other pending leads</p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Contact
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Property
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Status
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Action
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Motivation
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Notes
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Actions
                   </th>
                 </tr>
@@ -321,7 +321,7 @@ export default function WholesalerLeads() {
               <tbody>
                 {pendingLeads.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan="7" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                       No pending leads
                     </td>
                   </tr>
