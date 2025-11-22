@@ -12,14 +12,13 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'All fields required' });
     }
 
-    // Use Supabase Auth to create user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // Use Supabase Auth to create user with admin client to auto-confirm
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      options: {
-        data: {
-          name: name,
-        }
+      email_confirm: true, // Auto-confirm email
+      user_metadata: {
+        name: name,
       }
     });
 
@@ -42,8 +41,18 @@ export default async function handler(req, res) {
       .eq('id', authData.user.id)
       .single();
 
+    // Create a session for the user by signing them in
+    const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (sessionError) {
+      console.error('Session creation error:', sessionError);
+    }
+
     res.status(201).json({
-      token: authData.session?.access_token,
+      token: sessionData?.session?.access_token || null,
       user: profile || {
         id: authData.user.id,
         email: authData.user.email,
