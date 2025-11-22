@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 300" width="1024" height="300">
+  <!-- House icon with checkmark -->
+  <g transform="translate(0, 0)">
+    <!-- House base -->
+    <rect x="32" y="120" width="240" height="180" fill="#2B5AA0" rx="8"/>
+    <!-- House roof -->
+    <path d="M 32 120 L 152 20 L 272 120 Z" fill="#2B5AA0"/>
+    <!-- Checkmark circle background -->
+    <circle cx="200" cy="140" r="80" fill="white"/>
+    <!-- Checkmark -->
+    <path d="M 160 140 L 185 165 L 240 110" stroke="#2B5AA0" stroke-width="16" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  
+  <!-- Text: Verified Homeowner -->
+  <text x="310" y="140" font-family="Arial, sans-serif" font-size="90" font-weight="bold" fill="#2B4A6F">Verified</text>
+  <text x="310" y="240" font-family="Arial, sans-serif" font-size="90" font-weight="bold" fill="#2B4A6F">Homeowner</text>
+</svg>

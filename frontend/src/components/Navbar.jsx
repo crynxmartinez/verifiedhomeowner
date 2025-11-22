@@ -6,9 +6,8 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center space-x-2">
-            <Home className="h-8 w-8 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900">Verified Homeowner</span>
+          <Link to="/" className="flex items-center">
+            <img src="/logo.svg" alt="Verified Homeowner" className="h-10" />
           </Link>
           
           <div className="flex items-center space-x-8">
