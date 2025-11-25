@@ -307,8 +307,10 @@ export default function AdminLeads() {
         success: true,
         newCount: data.newCount || 0,
         updatedCount: data.updatedCount || 0,
+        skippedBusinessCount: data.skippedBusinessCount || 0,
         failedCount: data.failedCount || 0,
         totalProcessed: data.totalProcessed || validData.length,
+        totalRows: data.totalRows || validData.length,
         message: data.message
       });
       
@@ -1014,10 +1016,13 @@ export default function AdminLeads() {
                               <ul className="list-disc list-inside space-y-1">
                                 <li><strong>{uploadStatus.newCount}</strong> new leads created</li>
                                 <li><strong>{uploadStatus.updatedCount}</strong> existing leads updated</li>
+                                {uploadStatus.skippedBusinessCount > 0 && (
+                                  <li className="text-yellow-600 dark:text-yellow-400"><strong>{uploadStatus.skippedBusinessCount}</strong> businesses skipped (not uploaded)</li>
+                                )}
                                 {uploadStatus.failedCount > 0 && (
                                   <li className="text-red-600 dark:text-red-400"><strong>{uploadStatus.failedCount}</strong> failed</li>
                                 )}
-                                <li>Total processed: <strong>{uploadStatus.totalProcessed}</strong></li>
+                                <li>Total processed: <strong>{uploadStatus.totalProcessed}</strong> out of <strong>{uploadStatus.totalRows}</strong> rows</li>
                               </ul>
                             </div>
                           )}

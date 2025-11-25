@@ -96,6 +96,14 @@ async function handler(req, res) {
         // For backward compatibility
         const ownerName = fullName || singleLead.owner_name || '';
         
+        // REJECT BUSINESSES - Only accept actual people/names
+        if (isBusinessName(fullName || ownerName)) {
+          return res.status(400).json({ 
+            error: 'Business/Company names are not allowed. Please enter individual person names only.',
+            isBusiness: true
+          });
+        }
+        
         const processedLead = {
           ...singleLead,
           owner_name: ownerName,
@@ -106,8 +114,8 @@ async function handler(req, res) {
         if (lastName) processedLead.last_name = lastName;
         if (fullName) processedLead.full_name = fullName;
         
-        // Detect if this is a business/company
-        processedLead.is_business = isBusinessName(fullName || ownerName);
+        // Mark as NOT a business (we already rejected businesses above)
+        processedLead.is_business = false;
         
         // Check for duplicate by property_address
         const { data: existing } = await supabaseAdmin
@@ -181,6 +189,7 @@ async function handler(req, res) {
         const leadsToInsert = [];
         const leadsToUpdate = [];
         let updatedCount = 0;
+        let skippedBusinessCount = 0; // Track businesses that were skipped
 
         // Process each mapped row
         mappedData.forEach(row => {
@@ -201,6 +210,12 @@ async function handler(req, res) {
           if (!fullName && !ownerName && !row.property_address) {
             return;
           }
+          
+          // SKIP BUSINESSES - Only upload actual people/names
+          if (isBusinessName(fullName || ownerName)) {
+            skippedBusinessCount++; // Count skipped businesses
+            return; // Skip this row entirely
+          }
 
           const leadData = {
             owner_name: ownerName, // Use owner_name for backward compatibility
@@ -220,8 +235,8 @@ async function handler(req, res) {
           if (lastName) leadData.last_name = lastName;
           if (fullName) leadData.full_name = fullName;
           
-          // Detect if this is a business/company
-          leadData.is_business = isBusinessName(fullName || ownerName);
+          // Mark as NOT a business (we already filtered businesses out above)
+          leadData.is_business = false;
 
           // Check for duplicates by property address
           const existing = existingAddresses.get(leadData.property_address?.toLowerCase());
@@ -261,10 +276,12 @@ async function handler(req, res) {
         }
 
         return res.status(201).json({ 
-          message: `${leadsToInsert.length} new leads uploaded, ${updatedCount} existing leads updated`,
+          message: `${leadsToInsert.length} new leads uploaded, ${updatedCount} existing leads updated${skippedBusinessCount > 0 ? `, ${skippedBusinessCount} businesses skipped` : ''}`,
           newCount: leadsToInsert.length,
           updatedCount: updatedCount,
-          totalProcessed: leadsToInsert.length + updatedCount
+          skippedBusinessCount: skippedBusinessCount,
+          totalProcessed: leadsToInsert.length + updatedCount,
+          totalRows: mappedData.length
         });
       }
 
