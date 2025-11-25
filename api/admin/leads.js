@@ -24,11 +24,32 @@ async function handler(req, res) {
       const { csvData, singleLead, mappedData } = req.body;
 
       if (singleLead) {
+        // Process name fields
+        const firstName = singleLead.first_name || '';
+        const lastName = singleLead.last_name || '';
+        let fullName = singleLead.full_name || '';
+        
+        // If full_name is empty but we have first_name and/or last_name, combine them
+        if (!fullName && (firstName || lastName)) {
+          fullName = `${firstName} ${lastName}`.trim();
+        }
+        
+        // For backward compatibility
+        const ownerName = fullName || singleLead.owner_name || '';
+        
+        const processedLead = {
+          ...singleLead,
+          first_name: firstName,
+          last_name: lastName,
+          full_name: fullName,
+          owner_name: ownerName,
+        };
+        
         // Check for duplicate by property_address
         const { data: existing } = await supabaseAdmin
           .from('leads')
           .select('*')
-          .eq('property_address', singleLead.property_address)
+          .eq('property_address', processedLead.property_address)
           .single();
 
         if (existing) {
@@ -36,7 +57,7 @@ async function handler(req, res) {
           const { data, error } = await supabaseAdmin
             .from('leads')
             .update({
-              ...singleLead,
+              ...processedLead,
               updated_at: new Date().toISOString(),
             })
             .eq('id', existing.id)
@@ -61,7 +82,7 @@ async function handler(req, res) {
         const { data, error } = await supabaseAdmin
           .from('leads')
           .insert({
-            ...singleLead,
+            ...processedLead,
             sequence_number: nextSequence,
           })
           .select()
@@ -99,13 +120,29 @@ async function handler(req, res) {
 
         // Process each mapped row
         mappedData.forEach(row => {
+          // Extract name fields
+          const firstName = row.first_name || '';
+          const lastName = row.last_name || '';
+          let fullName = row.full_name || '';
+          
+          // If full_name is empty but we have first_name and/or last_name, combine them
+          if (!fullName && (firstName || lastName)) {
+            fullName = `${firstName} ${lastName}`.trim();
+          }
+          
+          // For backward compatibility, also set owner_name
+          const ownerName = fullName || row.owner_name || '';
+          
           // Skip rows without minimum required data
-          if (!row.owner_name && !row.property_address) {
+          if (!fullName && !ownerName && !row.property_address) {
             return;
           }
 
           const leadData = {
-            owner_name: row.owner_name || '',
+            first_name: firstName,
+            last_name: lastName,
+            full_name: fullName,
+            owner_name: ownerName, // Backward compatibility
             phone: row.phone || '',
             property_address: row.property_address || '',
             city: row.city || '',

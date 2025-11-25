@@ -11,7 +11,8 @@ export default function AdminLeads() {
   const [showModal, setShowModal] = useState(false);
   const [showCSVModal, setShowCSVModal] = useState(false);
   const [formData, setFormData] = useState({
-    owner_name: '',
+    first_name: '',
+    last_name: '',
     phone: '',
     property_address: '',
     city: '',
@@ -74,7 +75,8 @@ export default function AdminLeads() {
       await adminAPI.createLead(formData);
       setShowModal(false);
       setFormData({
-        owner_name: '',
+        first_name: '',
+        last_name: '',
         phone: '',
         property_address: '',
         city: '',
@@ -240,11 +242,11 @@ export default function AdminLeads() {
 
       // Filter out rows that don't have required fields
       const validData = mappedData.filter(row => 
-        row.owner_name || row.property_address
+        row.first_name || row.last_name || row.full_name || row.property_address
       );
 
       if (validData.length === 0) {
-        alert('No valid data found. Please ensure you map at least Owner Name or Property Address.');
+        alert('No valid data found. Please ensure you map at least one name field (First Name, Last Name, or Full Name) or Property Address.');
         setUploading(false);
         return;
       }
@@ -424,7 +426,12 @@ export default function AdminLeads() {
                           <span className="font-mono text-sm font-semibold dark:text-white">#{lead.sequence_number}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="font-medium text-gray-900 dark:text-white">{lead.owner_name}</div>
+                          <div className="font-medium text-gray-900 dark:text-white">{lead.full_name || lead.owner_name}</div>
+                          {lead.first_name && lead.last_name && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              {lead.first_name} {lead.last_name}
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-gray-600 dark:text-gray-400">{lead.phone}</div>
@@ -465,27 +472,39 @@ export default function AdminLeads() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Owner Name *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
                     <input
                       type="text"
-                      name="owner_name"
-                      value={formData.owner_name}
+                      name="first_name"
+                      value={formData.first_name}
                       onChange={handleChange}
                       className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name *</label>
                     <input
                       type="text"
-                      name="phone"
-                      value={formData.phone}
+                      name="last_name"
+                      value={formData.last_name}
                       onChange={handleChange}
                       className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       required
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone *</label>
+                  <input
+                    type="text"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    required
+                  />
                 </div>
 
                 <div>
@@ -707,7 +726,9 @@ export default function AdminLeads() {
                             className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                           >
                             <option value="">-- Skip this field --</option>
-                            <option value="owner_name">Owner Name (First + Last)</option>
+                            <option value="first_name">First Name</option>
+                            <option value="last_name">Last Name</option>
+                            <option value="full_name">Full Name</option>
                             <option value="phone">Phone Number</option>
                             <option value="property_address">Property Address</option>
                             <option value="city">Property City</option>
