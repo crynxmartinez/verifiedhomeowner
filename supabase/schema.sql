@@ -23,6 +23,7 @@ CREATE TABLE leads (
   last_name VARCHAR(255),
   full_name VARCHAR(255),
   owner_name VARCHAR(255), -- Deprecated: kept for backward compatibility
+  is_business BOOLEAN DEFAULT FALSE,
   phone VARCHAR(50),
   property_address VARCHAR(500),
   city VARCHAR(255),

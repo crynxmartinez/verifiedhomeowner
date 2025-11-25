@@ -2,6 +2,65 @@ import { supabaseAdmin } from '../../lib/supabase.js';
 import { requireAdmin } from '../../lib/auth.js';
 import Papa from 'papaparse';
 
+// Detect if a name is a business/company rather than a person
+function isBusinessName(name) {
+  if (!name || typeof name !== 'string') return false;
+  
+  const nameLower = name.toLowerCase().trim();
+  const nameUpper = name.toUpperCase();
+  
+  // Strong business indicators - legal entity suffixes
+  const businessSuffixes = [
+    'llc', 'inc', 'corp', 'corporation', 'ltd', 'limited',
+    'llp', 'lp', 'pc', 'pa', 'pllc', 'co', 'company',
+    'l.l.c', 'l.l.c.', 'inc.', 'corp.', 'ltd.',
+  ];
+  
+  // Check for business suffixes
+  for (const suffix of businessSuffixes) {
+    if (nameLower.endsWith(suffix) || nameLower.endsWith(suffix + '.')) {
+      return true;
+    }
+    // Check with word boundaries
+    const regex = new RegExp(`\\b${suffix}\\b`, 'i');
+    if (regex.test(nameLower)) {
+      return true;
+    }
+  }
+  
+  // Business keywords that appear in company names
+  const businessKeywords = [
+    'enterprises', 'holdings', 'group', 'partners', 'associates',
+    'trust', 'estate', 'properties', 'investments', 'ventures',
+    'solutions', 'services', 'consulting', 'management', 'realty',
+    'construction', 'development', 'builders', 'contractors',
+  ];
+  
+  for (const keyword of businessKeywords) {
+    if (nameLower.includes(keyword)) {
+      return true;
+    }
+  }
+  
+  // Check for ampersand (common in business names like "Smith & Sons")
+  if (name.includes('&') || name.includes(' and ')) {
+    return true;
+  }
+  
+  // Check if name is mostly uppercase (common for businesses)
+  const uppercaseRatio = (name.match(/[A-Z]/g) || []).length / name.replace(/[^a-zA-Z]/g, '').length;
+  if (uppercaseRatio > 0.7 && name.length > 5) {
+    return true;
+  }
+  
+  // Check for numbers at the beginning (like "123 Properties")
+  if (/^\d/.test(name)) {
+    return true;
+  }
+  
+  return false;
+}
+
 async function handler(req, res) {
   if (req.method === 'GET') {
     // Get all leads
@@ -46,6 +105,9 @@ async function handler(req, res) {
         if (firstName) processedLead.first_name = firstName;
         if (lastName) processedLead.last_name = lastName;
         if (fullName) processedLead.full_name = fullName;
+        
+        // Detect if this is a business/company
+        processedLead.is_business = isBusinessName(fullName || ownerName);
         
         // Check for duplicate by property_address
         const { data: existing } = await supabaseAdmin
@@ -157,6 +219,9 @@ async function handler(req, res) {
           if (firstName) leadData.first_name = firstName;
           if (lastName) leadData.last_name = lastName;
           if (fullName) leadData.full_name = fullName;
+          
+          // Detect if this is a business/company
+          leadData.is_business = isBusinessName(fullName || ownerName);
 
           // Check for duplicates by property address
           const existing = existingAddresses.get(leadData.property_address?.toLowerCase());

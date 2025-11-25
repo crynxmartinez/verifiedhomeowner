@@ -604,8 +604,15 @@ export default function AdminLeads() {
                           <span className="font-mono text-sm font-semibold dark:text-white">#{lead.sequence_number}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="font-medium text-gray-900 dark:text-white">{lead.full_name || lead.owner_name}</div>
-                          {lead.first_name && lead.last_name && (
+                          <div className="flex items-center gap-2">
+                            <div className="font-medium text-gray-900 dark:text-white">{lead.full_name || lead.owner_name}</div>
+                            {lead.is_business && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                Business
+                              </span>
+                            )}
+                          </div>
+                          {lead.first_name && lead.last_name && !lead.is_business && (
                             <div className="text-xs text-gray-500 dark:text-gray-400">
                               {lead.first_name} {lead.last_name}
                             </div>
