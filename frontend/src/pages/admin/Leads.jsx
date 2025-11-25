@@ -3,6 +3,7 @@ import Layout from '../../components/Layout';
 import { adminAPI } from '../../lib/api';
 import { Upload, Plus, X, FileText, Search, ArrowRight } from 'lucide-react';
 import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
 
 export default function AdminLeads() {
   const [leads, setLeads] = useState([]);
@@ -110,36 +111,106 @@ export default function AdminLeads() {
 
     setCsvFile(file);
 
-    // Parse the file
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        if (results.data.length === 0) {
-          alert('The file is empty or invalid');
-          return;
-        }
+    // Check if it's an Excel file
+    const isExcel = fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || 
+                    file.type === 'application/vnd.ms-excel' || 
+                    file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-        // Get headers from the CSV
-        const headers = results.meta.fields || [];
-        setCsvHeaders(headers);
-        setCsvRows(results.data);
-        
-        // Initialize header mapping with empty values
-        const initialMapping = {};
-        headers.forEach(header => {
-          initialMapping[header] = '';
-        });
-        setHeaderMapping(initialMapping);
-        
-        // Move to mapping step
-        setShowMappingStep(true);
-      },
-      error: (error) => {
-        console.error('CSV parsing error:', error);
-        alert('Failed to parse CSV file');
-      }
-    });
+    if (isExcel) {
+      // Parse Excel file
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const bstr = evt.target.result;
+          const workbook = XLSX.read(bstr, { type: 'binary' });
+          
+          // Get first sheet
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          
+          // Convert to JSON
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          
+          if (jsonData.length === 0) {
+            alert('The Excel file is empty');
+            return;
+          }
+          
+          // First row is headers
+          const headers = jsonData[0].map(h => String(h || '').trim()).filter(h => h);
+          
+          // Rest are data rows - convert to objects
+          const rows = [];
+          for (let i = 1; i < jsonData.length; i++) {
+            const row = {};
+            let hasData = false;
+            headers.forEach((header, index) => {
+              const value = jsonData[i][index];
+              if (value !== undefined && value !== null && value !== '') {
+                row[header] = String(value).trim();
+                hasData = true;
+              }
+            });
+            if (hasData) {
+              rows.push(row);
+            }
+          }
+          
+          if (rows.length === 0) {
+            alert('No data found in Excel file');
+            return;
+          }
+          
+          setCsvHeaders(headers);
+          setCsvRows(rows);
+          
+          // Initialize header mapping with empty values
+          const initialMapping = {};
+          headers.forEach(header => {
+            initialMapping[header] = '';
+          });
+          setHeaderMapping(initialMapping);
+          
+          // Move to mapping step
+          setShowMappingStep(true);
+        } catch (error) {
+          console.error('Excel parsing error:', error);
+          alert('Failed to parse Excel file: ' + error.message);
+        }
+      };
+      reader.readAsBinaryString(file);
+    } else {
+      // Parse CSV file
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          if (results.data.length === 0) {
+            alert('The file is empty or invalid');
+            return;
+          }
+
+          // Get headers from the CSV
+          const headers = results.meta.fields || [];
+          setCsvHeaders(headers);
+          setCsvRows(results.data);
+          
+          // Initialize header mapping with empty values
+          const initialMapping = {};
+          headers.forEach(header => {
+            initialMapping[header] = '';
+          });
+          setHeaderMapping(initialMapping);
+          
+          // Move to mapping step
+          setShowMappingStep(true);
+        },
+        error: (error) => {
+          console.error('CSV parsing error:', error);
+          alert('Failed to parse CSV file');
+        }
+      });
+    }
   };
 
   const handleMappingChange = (csvHeader, dbField) => {
