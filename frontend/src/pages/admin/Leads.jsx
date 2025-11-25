@@ -227,6 +227,33 @@ export default function AdminLeads() {
     }));
   };
 
+  // Get available database fields for a specific CSV header
+  // Excludes fields that are already mapped to other CSV headers
+  const getAvailableDbFields = (currentCsvHeader) => {
+    const allDbFields = [
+      { value: 'first_name', label: 'First Name' },
+      { value: 'last_name', label: 'Last Name' },
+      { value: 'full_name', label: 'Full Name' },
+      { value: 'phone', label: 'Phone Number' },
+      { value: 'property_address', label: 'Property Address' },
+      { value: 'city', label: 'Property City' },
+      { value: 'state', label: 'Property State' },
+      { value: 'zip_code', label: 'Property Zip' },
+      { value: 'mailing_address', label: 'Mailing Address' },
+      { value: 'mailing_city', label: 'Mailing City' },
+      { value: 'mailing_state', label: 'Mailing State' },
+      { value: 'mailing_zip', label: 'Mailing Zip' },
+    ];
+
+    // Get all currently mapped values except for the current CSV header
+    const mappedValues = Object.entries(headerMapping)
+      .filter(([csvHeader, dbField]) => csvHeader !== currentCsvHeader && dbField !== '')
+      .map(([_, dbField]) => dbField);
+
+    // Return only fields that haven't been mapped yet
+    return allDbFields.filter(field => !mappedValues.includes(field.value));
+  };
+
   const handleCSVUpload = async () => {
     setUploading(true);
     setUploadProgress(0);
@@ -886,18 +913,33 @@ export default function AdminLeads() {
                             className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                           >
                             <option value="">-- Skip this field --</option>
-                            <option value="first_name">First Name</option>
-                            <option value="last_name">Last Name</option>
-                            <option value="full_name">Full Name</option>
-                            <option value="phone">Phone Number</option>
-                            <option value="property_address">Property Address</option>
-                            <option value="city">Property City</option>
-                            <option value="state">Property State</option>
-                            <option value="zip_code">Property Zip</option>
-                            <option value="mailing_address">Mailing Address</option>
-                            <option value="mailing_city">Mailing City</option>
-                            <option value="mailing_state">Mailing State</option>
-                            <option value="mailing_zip">Mailing Zip</option>
+                            {/* Show currently selected value even if it's mapped */}
+                            {headerMapping[header] && (
+                              <option value={headerMapping[header]}>
+                                {getAvailableDbFields(header).find(f => f.value === headerMapping[header])?.label || 
+                                 [
+                                   { value: 'first_name', label: 'First Name' },
+                                   { value: 'last_name', label: 'Last Name' },
+                                   { value: 'full_name', label: 'Full Name' },
+                                   { value: 'phone', label: 'Phone Number' },
+                                   { value: 'property_address', label: 'Property Address' },
+                                   { value: 'city', label: 'Property City' },
+                                   { value: 'state', label: 'Property State' },
+                                   { value: 'zip_code', label: 'Property Zip' },
+                                   { value: 'mailing_address', label: 'Mailing Address' },
+                                   { value: 'mailing_city', label: 'Mailing City' },
+                                   { value: 'mailing_state', label: 'Mailing State' },
+                                   { value: 'mailing_zip', label: 'Mailing Zip' },
+                                 ].find(f => f.value === headerMapping[header])?.label
+                                }
+                              </option>
+                            )}
+                            {/* Show only available (unmapped) fields */}
+                            {getAvailableDbFields(header).map(field => (
+                              <option key={field.value} value={field.value}>
+                                {field.label}
+                              </option>
+                            ))}
                           </select>
                         </div>
                       </div>
