@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { adminAPI } from '../../lib/api';
-import { Upload, Plus, X, FileText, Search, ArrowRight } from 'lucide-react';
+import { Upload, Plus, X, FileText, Search, ArrowRight, Trash2, Loader2 } from 'lucide-react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 
@@ -38,6 +38,11 @@ export default function AdminLeads() {
   const [userSearch, setUserSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(30);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedLeads, setSelectedLeads] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
 
   useEffect(() => {
     fetchLeads();
@@ -224,8 +229,12 @@ export default function AdminLeads() {
 
   const handleCSVUpload = async () => {
     setUploading(true);
+    setUploadProgress(0);
+    setUploadStatus(null);
+    
     try {
       // Transform CSV data based on header mapping
+      setUploadProgress(10);
       const mappedData = csvRows.map(row => {
         const mappedRow = {};
         
@@ -240,6 +249,8 @@ export default function AdminLeads() {
         return mappedRow;
       });
 
+      setUploadProgress(30);
+      
       // Filter out rows that don't have required fields
       const validData = mappedData.filter(row => 
         row.first_name || row.last_name || row.full_name || row.property_address
@@ -248,25 +259,52 @@ export default function AdminLeads() {
       if (validData.length === 0) {
         alert('No valid data found. Please ensure you map at least one name field (First Name, Last Name, or Full Name) or Property Address.');
         setUploading(false);
+        setUploadProgress(0);
         return;
       }
 
+      setUploadProgress(50);
+      
       // Send to backend
       const { data } = await adminAPI.uploadMappedCSV(validData);
       
-      // Reset state
-      setShowCSVModal(false);
-      setShowMappingStep(false);
-      setCsvFile(null);
-      setCsvHeaders([]);
-      setCsvRows([]);
-      setHeaderMapping({});
+      setUploadProgress(90);
       
-      fetchLeads();
-      alert(data.message || `Successfully uploaded ${validData.length} leads!`);
+      // Fetch updated leads
+      await fetchLeads();
+      
+      setUploadProgress(100);
+      
+      // Set upload status with results
+      setUploadStatus({
+        success: true,
+        newCount: data.newCount || 0,
+        updatedCount: data.updatedCount || 0,
+        failedCount: data.failedCount || 0,
+        totalProcessed: data.totalProcessed || validData.length,
+        message: data.message
+      });
+      
+      // Reset form state after 3 seconds
+      setTimeout(() => {
+        setShowCSVModal(false);
+        setShowMappingStep(false);
+        setCsvFile(null);
+        setCsvHeaders([]);
+        setCsvRows([]);
+        setHeaderMapping({});
+        setUploadProgress(0);
+        setUploadStatus(null);
+      }, 3000);
+      
     } catch (error) {
       console.error('Failed to upload CSV:', error);
-      alert('Failed to upload CSV: ' + (error.response?.data?.error || error.message));
+      setUploadProgress(0);
+      setUploadStatus({
+        success: false,
+        message: error.response?.data?.error || error.message,
+        failedCount: csvRows.length
+      });
     } finally {
       setUploading(false);
     }
@@ -301,6 +339,77 @@ export default function AdminLeads() {
       alert('Failed to distribute leads');
     }
   };
+
+  const handleDeleteLead = async (leadId) => {
+    if (!confirm('Are you sure you want to delete this lead?')) return;
+    
+    try {
+      await adminAPI.deleteLead(leadId);
+      fetchLeads();
+      alert('Lead deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete lead:', error);
+      alert('Failed to delete lead');
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedLeads.length === 0) {
+      alert('Please select leads to delete');
+      return;
+    }
+    
+    if (!confirm(`Are you sure you want to delete ${selectedLeads.length} lead(s)?`)) return;
+    
+    try {
+      await adminAPI.bulkDeleteLeads(selectedLeads);
+      setSelectedLeads([]);
+      setSelectAll(false);
+      fetchLeads();
+      alert(`${selectedLeads.length} lead(s) deleted successfully`);
+    } catch (error) {
+      console.error('Failed to delete leads:', error);
+      alert('Failed to delete leads');
+    }
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      const allLeadIds = filteredLeads.map(lead => lead.id);
+      setSelectedLeads(allLeadIds);
+      setSelectAll(true);
+    } else {
+      setSelectedLeads([]);
+      setSelectAll(false);
+    }
+  };
+
+  const handleSelectLead = (leadId) => {
+    if (selectedLeads.includes(leadId)) {
+      setSelectedLeads(selectedLeads.filter(id => id !== leadId));
+      setSelectAll(false);
+    } else {
+      setSelectedLeads([...selectedLeads, leadId]);
+    }
+  };
+
+  // Filter leads based on search query
+  const filteredLeads = leads.filter(lead => {
+    if (!searchQuery) return true;
+    
+    const query = searchQuery.toLowerCase();
+    return (
+      (lead.full_name && lead.full_name.toLowerCase().includes(query)) ||
+      (lead.first_name && lead.first_name.toLowerCase().includes(query)) ||
+      (lead.last_name && lead.last_name.toLowerCase().includes(query)) ||
+      (lead.owner_name && lead.owner_name.toLowerCase().includes(query)) ||
+      (lead.phone && lead.phone.toLowerCase().includes(query)) ||
+      (lead.property_address && lead.property_address.toLowerCase().includes(query)) ||
+      (lead.city && lead.city.toLowerCase().includes(query)) ||
+      (lead.state && lead.state.toLowerCase().includes(query)) ||
+      (lead.zip_code && lead.zip_code.toLowerCase().includes(query))
+    );
+  });
 
   if (loading) {
     return (
@@ -345,6 +454,29 @@ export default function AdminLeads() {
           </div>
         </div>
 
+        {/* Search and Bulk Actions */}
+        <div className="flex justify-between items-center gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search leads by name, phone, address, city, state, or zip..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          {selectedLeads.length > 0 && (
+            <button
+              onClick={handleBulkDelete}
+              className="flex items-center space-x-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>Delete {selectedLeads.length} Selected</span>
+            </button>
+          )}
+        </div>
+
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 overflow-hidden">
           {/* Pagination Controls */}
           <div className="px-6 py-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex justify-between items-center">
@@ -364,8 +496,8 @@ export default function AdminLeads() {
                 <option value={100}>100</option>
               </select>
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                Showing {Math.min((currentPage - 1) * itemsPerPage + 1, leads.length)} to{' '}
-                {Math.min(currentPage * itemsPerPage, leads.length)} of {leads.length} leads
+                Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filteredLeads.length)} to{' '}
+                {Math.min(currentPage * itemsPerPage, filteredLeads.length)} of {filteredLeads.length} leads
               </span>
             </div>
             <div className="flex items-center space-x-2">
@@ -377,11 +509,11 @@ export default function AdminLeads() {
                 Previous
               </button>
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                Page {currentPage} of {Math.ceil(leads.length / itemsPerPage) || 1}
+                Page {currentPage} of {Math.ceil(filteredLeads.length / itemsPerPage) || 1}
               </span>
               <button
-                onClick={() => setCurrentPage((p) => Math.min(Math.ceil(leads.length / itemsPerPage), p + 1))}
-                disabled={currentPage >= Math.ceil(leads.length / itemsPerPage)}
+                onClick={() => setCurrentPage((p) => Math.min(Math.ceil(filteredLeads.length / itemsPerPage), p + 1))}
+                disabled={currentPage >= Math.ceil(filteredLeads.length / itemsPerPage)}
                 className="px-3 py-1 border dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-white"
               >
                 Next
@@ -393,6 +525,14 @@ export default function AdminLeads() {
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
+                  <th className="px-6 py-3 text-left">
+                    <input
+                      type="checkbox"
+                      checked={selectAll}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                    />
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Sequence #
                   </th>
@@ -408,20 +548,31 @@ export default function AdminLeads() {
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Mailing Address
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {leads.length === 0 ? (
+                {filteredLeads.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan="7" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                       No leads found. Upload some leads to get started.
                     </td>
                   </tr>
                 ) : (
-                  leads
+                  filteredLeads
                     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                     .map((lead) => (
                       <tr key={lead.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td className="px-6 py-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedLeads.includes(lead.id)}
+                            onChange={() => handleSelectLead(lead.id)}
+                            className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                          />
+                        </td>
                         <td className="px-6 py-4">
                           <span className="font-mono text-sm font-semibold dark:text-white">#{lead.sequence_number}</span>
                         </td>
@@ -447,6 +598,15 @@ export default function AdminLeads() {
                           <div className="text-sm text-gray-500 dark:text-gray-400">
                             {lead.mailing_city}, {lead.mailing_state} {lead.mailing_zip}
                           </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => handleDeleteLead(lead.id)}
+                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                            title="Delete lead"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
                         </td>
                       </tr>
                     ))
@@ -763,19 +923,80 @@ export default function AdminLeads() {
                     </div>
                   </div>
 
+                  {/* Upload Progress Bar */}
+                  {uploading && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-blue-700 dark:text-blue-400">Uploading...</span>
+                        <span className="text-sm font-semibold text-blue-700 dark:text-blue-400">{uploadProgress}%</span>
+                      </div>
+                      <div className="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-2.5">
+                        <div 
+                          className="bg-blue-600 dark:bg-blue-500 h-2.5 rounded-full transition-all duration-300"
+                          style={{ width: `${uploadProgress}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload Status */}
+                  {uploadStatus && (
+                    <div className={`${uploadStatus.success ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'} border rounded-lg p-4`}>
+                      <div className="flex items-start">
+                        {uploadStatus.success ? (
+                          <div className="flex-shrink-0">
+                            <svg className="h-5 w-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <div className="flex-shrink-0">
+                            <svg className="h-5 w-5 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                        <div className="ml-3 flex-1">
+                          <h3 className={`text-sm font-medium ${uploadStatus.success ? 'text-green-800 dark:text-green-400' : 'text-red-800 dark:text-red-400'}`}>
+                            {uploadStatus.success ? 'Upload Successful!' : 'Upload Failed'}
+                          </h3>
+                          {uploadStatus.success && (
+                            <div className="mt-2 text-sm text-green-700 dark:text-green-400">
+                              <ul className="list-disc list-inside space-y-1">
+                                <li><strong>{uploadStatus.newCount}</strong> new leads created</li>
+                                <li><strong>{uploadStatus.updatedCount}</strong> existing leads updated</li>
+                                {uploadStatus.failedCount > 0 && (
+                                  <li className="text-red-600 dark:text-red-400"><strong>{uploadStatus.failedCount}</strong> failed</li>
+                                )}
+                                <li>Total processed: <strong>{uploadStatus.totalProcessed}</strong></li>
+                              </ul>
+                            </div>
+                          )}
+                          {!uploadStatus.success && (
+                            <p className="mt-2 text-sm text-red-700 dark:text-red-400">
+                              {uploadStatus.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex justify-between pt-4">
                     <button
                       onClick={() => setShowMappingStep(false)}
-                      className="px-4 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+                      disabled={uploading}
+                      className="px-4 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Back
                     </button>
                     <button
                       onClick={handleCSVUpload}
                       disabled={uploading}
-                      className="px-6 py-2 bg-green-600 dark:bg-green-500 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex items-center space-x-2 px-6 py-2 bg-green-600 dark:bg-green-500 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {uploading ? 'Uploading...' : `Upload ${csvRows.length} Leads`}
+                      {uploading && <Loader2 className="h-4 w-4 animate-spin" />}
+                      <span>{uploading ? 'Uploading...' : `Upload ${csvRows.length} Leads`}</span>
                     </button>
                   </div>
                 </div>

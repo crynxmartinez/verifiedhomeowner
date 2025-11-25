@@ -291,10 +291,31 @@ async function handler(req, res) {
         });
       }
 
-      res.status(400).json({ error: 'Either singleLead or csvData required' });
+      res.status(400).json({ error: 'Either singleLead, csvData, or mappedData required' });
     } catch (error) {
       console.error('Create leads error:', error);
       res.status(500).json({ error: 'Failed to create leads' });
+    }
+  } else if (req.method === 'DELETE') {
+    // Delete single lead
+    try {
+      const { leadId } = req.body;
+
+      if (!leadId) {
+        return res.status(400).json({ error: 'Lead ID required' });
+      }
+
+      const { error } = await supabaseAdmin
+        .from('leads')
+        .delete()
+        .eq('id', leadId);
+
+      if (error) throw error;
+
+      res.status(200).json({ message: 'Lead deleted successfully' });
+    } catch (error) {
+      console.error('Delete lead error:', error);
+      res.status(500).json({ error: 'Failed to delete lead' });
     }
   } else {
     res.status(405).json({ error: 'Method not allowed' });

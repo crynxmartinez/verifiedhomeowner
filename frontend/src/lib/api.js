@@ -64,6 +64,8 @@ export const adminAPI = {
   createLead: (singleLead) => api.post('/admin/leads', { singleLead }),
   uploadCSV: (csvData) => api.post('/admin/leads', { csvData }),
   uploadMappedCSV: (mappedData) => api.post('/admin/leads', { mappedData }),
+  deleteLead: (leadId) => api.delete('/admin/leads', { data: { leadId } }),
+  bulkDeleteLeads: (leadIds) => api.delete('/admin/leads/bulk', { data: { leadIds } }),
   distributeLeads: () => api.post('/admin/distribute'),
   // Marketplace admin
   getMarketplaceLeads: () => api.get('/admin/marketplace'),
