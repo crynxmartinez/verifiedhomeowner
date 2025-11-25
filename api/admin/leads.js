@@ -21,7 +21,7 @@ async function handler(req, res) {
   } else if (req.method === 'POST') {
     // Create single lead or upload CSV
     try {
-      const { csvData, singleLead } = req.body;
+      const { csvData, singleLead, mappedData } = req.body;
 
       if (singleLead) {
         // Check for duplicate by property_address
@@ -70,6 +70,96 @@ async function handler(req, res) {
         if (error) throw error;
 
         return res.status(201).json({ lead: data, updated: false });
+      }
+
+      if (mappedData) {
+        // Handle mapped CSV data from frontend
+        // Get existing leads for duplicate check
+        const { data: existingLeads } = await supabaseAdmin
+          .from('leads')
+          .select('id, property_address, sequence_number');
+
+        const existingAddresses = new Map(
+          existingLeads?.map(l => [l.property_address?.toLowerCase(), l]) || []
+        );
+
+        // Get next sequence number
+        const { data: maxLead } = await supabaseAdmin
+          .from('leads')
+          .select('sequence_number')
+          .order('sequence_number', { ascending: false })
+          .limit(1)
+          .single();
+
+        let nextSequence = (maxLead?.sequence_number || 0) + 1;
+
+        const leadsToInsert = [];
+        const leadsToUpdate = [];
+        let updatedCount = 0;
+
+        // Process each mapped row
+        mappedData.forEach(row => {
+          // Skip rows without minimum required data
+          if (!row.owner_name && !row.property_address) {
+            return;
+          }
+
+          const leadData = {
+            owner_name: row.owner_name || '',
+            phone: row.phone || '',
+            property_address: row.property_address || '',
+            city: row.city || '',
+            state: row.state || '',
+            zip_code: row.zip_code || '',
+            mailing_address: row.mailing_address || '',
+            mailing_city: row.mailing_city || '',
+            mailing_state: row.mailing_state || '',
+            mailing_zip: row.mailing_zip || '',
+          };
+
+          // Check for duplicates by property address
+          const existing = existingAddresses.get(leadData.property_address?.toLowerCase());
+          if (existing && leadData.property_address) {
+            // Update existing
+            leadsToUpdate.push({
+              ...leadData,
+              id: existing.id,
+            });
+          } else {
+            // Insert new
+            leadsToInsert.push({
+              ...leadData,
+              sequence_number: nextSequence++,
+            });
+          }
+        });
+
+        // Insert new leads
+        if (leadsToInsert.length > 0) {
+          const { error: insertError } = await supabaseAdmin
+            .from('leads')
+            .insert(leadsToInsert);
+
+          if (insertError) throw insertError;
+        }
+
+        // Update existing leads
+        for (const lead of leadsToUpdate) {
+          const { id, ...updateData } = lead;
+          const { error: updateError } = await supabaseAdmin
+            .from('leads')
+            .update(updateData)
+            .eq('id', id);
+
+          if (!updateError) updatedCount++;
+        }
+
+        return res.status(201).json({ 
+          message: `${leadsToInsert.length} new leads uploaded, ${updatedCount} existing leads updated`,
+          newCount: leadsToInsert.length,
+          updatedCount: updatedCount,
+          totalProcessed: leadsToInsert.length + updatedCount
+        });
       }
 
       if (csvData) {

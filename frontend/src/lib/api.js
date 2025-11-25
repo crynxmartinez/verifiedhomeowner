@@ -63,6 +63,7 @@ export const adminAPI = {
   getLeads: () => api.get('/admin/leads'),
   createLead: (singleLead) => api.post('/admin/leads', { singleLead }),
   uploadCSV: (csvData) => api.post('/admin/leads', { csvData }),
+  uploadMappedCSV: (mappedData) => api.post('/admin/leads', { mappedData }),
   distributeLeads: () => api.post('/admin/distribute'),
   // Marketplace admin
   getMarketplaceLeads: () => api.get('/admin/marketplace'),
