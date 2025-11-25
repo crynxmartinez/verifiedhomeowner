@@ -39,11 +39,13 @@ async function handler(req, res) {
         
         const processedLead = {
           ...singleLead,
-          first_name: firstName,
-          last_name: lastName,
-          full_name: fullName,
           owner_name: ownerName,
         };
+        
+        // Add new name fields only if they have values (for new schema)
+        if (firstName) processedLead.first_name = firstName;
+        if (lastName) processedLead.last_name = lastName;
+        if (fullName) processedLead.full_name = fullName;
         
         // Check for duplicate by property_address
         const { data: existing } = await supabaseAdmin
@@ -139,10 +141,7 @@ async function handler(req, res) {
           }
 
           const leadData = {
-            first_name: firstName,
-            last_name: lastName,
-            full_name: fullName,
-            owner_name: ownerName, // Backward compatibility
+            owner_name: ownerName, // Use owner_name for backward compatibility
             phone: row.phone || '',
             property_address: row.property_address || '',
             city: row.city || '',
@@ -153,6 +152,11 @@ async function handler(req, res) {
             mailing_state: row.mailing_state || '',
             mailing_zip: row.mailing_zip || '',
           };
+          
+          // Add new name fields only if they have values (for new schema)
+          if (firstName) leadData.first_name = firstName;
+          if (lastName) leadData.last_name = lastName;
+          if (fullName) leadData.full_name = fullName;
 
           // Check for duplicates by property address
           const existing = existingAddresses.get(leadData.property_address?.toLowerCase());
