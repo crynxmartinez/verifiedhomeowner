@@ -28,7 +28,16 @@ export default function WholesalerLeads() {
   const handleStatusChange = async (leadId, source, newStatus) => {
     setSavingLeads(prev => new Set(prev).add(leadId));
     try {
-      await leadsAPI.updateLead(leadId, source, { status: newStatus });
+      // Determine action based on status
+      let action = 'call_now';
+      if (newStatus === 'follow_up' || newStatus === 'not_interested' || newStatus === 'pending') {
+        action = 'pending';
+      }
+      
+      await leadsAPI.updateLead(leadId, source, { 
+        status: newStatus,
+        action: action
+      });
       await fetchLeads(); // Refresh to get updated data
     } catch (error) {
       console.error('Failed to update status:', error);
@@ -94,8 +103,16 @@ export default function WholesalerLeads() {
     }
   };
 
-  const callNowLeads = leads.filter((l) => l.action === 'call_now' || l.status === 'new' || l.status === 'pending');
-  const pendingLeads = leads.filter((l) => l.action === 'pending' && l.status !== 'new' && l.status !== 'pending');
+  const callNowLeads = leads.filter((l) => 
+    l.status === 'new' || 
+    l.status === 'called' || 
+    l.action === 'call_now'
+  );
+  const pendingLeads = leads.filter((l) => 
+    l.status === 'follow_up' || 
+    l.status === 'not_interested' || 
+    l.status === 'pending'
+  );
 
   const getSourceIcon = (source) => {
     if (source === 'purchased') {

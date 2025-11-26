@@ -10,6 +10,12 @@ async function handler(req, res) {
     const { id, source } = req.query;
     const { status, action, notes, follow_up_date, countdown_days } = req.body;
 
+    console.log('Update lead request:', { id, source, body: req.body });
+
+    if (!id) {
+      return res.status(400).json({ error: 'Lead ID is required' });
+    }
+
     const updateData = {
       updated_at: new Date().toISOString(),
     };
@@ -18,11 +24,15 @@ async function handler(req, res) {
     if (action) updateData.action = action;
     if (notes !== undefined) updateData.notes = notes;
     if (follow_up_date) updateData.follow_up_date = follow_up_date;
-    if (countdown_days !== undefined) updateData.countdown_days = countdown_days;
+    if (countdown_days !== undefined) {
+      updateData.countdown_days = parseInt(countdown_days) || null;
+    }
     
     if (status === 'called') {
       updateData.last_called_at = new Date().toISOString();
     }
+
+    console.log('Update data:', updateData);
 
     // Determine which table to update
     const table = source === 'purchased' ? 'user_marketplace_leads' : 'user_leads';
@@ -35,12 +45,25 @@ async function handler(req, res) {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
 
+    console.log('Update successful:', data);
     res.status(200).json({ lead: data });
   } catch (error) {
     console.error('Update lead error:', error);
-    res.status(500).json({ error: 'Failed to update lead' });
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint
+    });
+    res.status(500).json({ 
+      error: 'Failed to update lead',
+      details: error.message 
+    });
   }
 }
 
