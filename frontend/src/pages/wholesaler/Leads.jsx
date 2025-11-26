@@ -87,13 +87,17 @@ export default function WholesalerLeads() {
   };
 
   const handleCountdownChange = async (leadId, source, countdownDays) => {
+    console.log('Countdown change:', { leadId, source, countdownDays });
     setSavingLeads(prev => new Set(prev).add(leadId));
     try {
-      await leadsAPI.updateLead(leadId, source, { countdown_days: parseInt(countdownDays) });
+      const updateData = { countdown_days: parseInt(countdownDays) || null };
+      console.log('Sending update:', updateData);
+      await leadsAPI.updateLead(leadId, source, updateData);
       await fetchLeads(); // Refresh to get updated data
     } catch (error) {
       console.error('Failed to update countdown:', error);
-      alert('Failed to update countdown');
+      console.error('Error response:', error.response?.data);
+      alert(`Failed to update countdown: ${error.response?.data?.details || error.message}`);
     } finally {
       setSavingLeads(prev => {
         const next = new Set(prev);
@@ -103,16 +107,22 @@ export default function WholesalerLeads() {
     }
   };
 
-  const callNowLeads = leads.filter((l) => 
-    l.status === 'new' || 
-    l.status === 'called' || 
-    l.action === 'call_now'
-  );
+  // Pending leads: follow-up, not interested, or pending status
   const pendingLeads = leads.filter((l) => 
     l.status === 'follow_up' || 
     l.status === 'not_interested' || 
     l.status === 'pending'
   );
+  
+  // Call Now leads: new, called, or call_now action (but NOT if in pending)
+  const callNowLeads = leads.filter((l) => {
+    // Exclude if already in pending
+    if (l.status === 'follow_up' || l.status === 'not_interested' || l.status === 'pending') {
+      return false;
+    }
+    // Include if new, called, or call_now action
+    return l.status === 'new' || l.status === 'called' || l.action === 'call_now';
+  });
 
   const getSourceIcon = (source) => {
     if (source === 'purchased') {
