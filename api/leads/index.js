@@ -7,39 +7,75 @@ async function handler(req, res) {
   }
 
   try {
-    // Get user's subscription leads
-    const { data: subscriptionLeads, error: subError } = await supabaseAdmin
-      .from('user_leads')
-      .select(`
-        *,
-        lead:leads(*)
-      `)
-      .eq('user_id', req.user.id)
-      .order('assigned_at', { ascending: false });
+    let subscriptionLeads = [];
+    let marketplaceLeads = [];
 
-    if (subError) throw subError;
+    // Get user's subscription leads
+    try {
+      const { data, error: subError } = await supabaseAdmin
+        .from('user_leads')
+        .select(`
+          *,
+          lead:leads(*)
+        `)
+        .eq('user_id', req.user.id)
+        .order('assigned_at', { ascending: false });
+
+      if (subError) {
+        console.error('Subscription leads query error:', subError);
+        throw subError;
+      }
+      subscriptionLeads = data || [];
+    } catch (subErr) {
+      console.error('Failed to fetch subscription leads:', subErr);
+      // Continue with empty subscription leads instead of failing completely
+      subscriptionLeads = [];
+    }
 
     // Get user's purchased marketplace leads
-    const { data: marketplaceLeads, error: mktError } = await supabaseAdmin
-      .from('user_marketplace_leads')
-      .select(`
-        *,
-        lead:marketplace_leads(*)
-      `)
-      .eq('user_id', req.user.id)
-      .order('purchased_at', { ascending: false });
+    try {
+      const { data, error: mktError } = await supabaseAdmin
+        .from('user_marketplace_leads')
+        .select(`
+          *,
+          lead:marketplace_leads(*)
+        `)
+        .eq('user_id', req.user.id)
+        .order('purchased_at', { ascending: false });
 
-    if (mktError) throw mktError;
+      if (mktError) {
+        console.error('Marketplace leads query error:', mktError);
+        throw mktError;
+      }
+      marketplaceLeads = data || [];
+    } catch (mktErr) {
+      console.error('Failed to fetch marketplace leads:', mktErr);
+      // Continue with empty marketplace leads instead of failing completely
+      marketplaceLeads = [];
+    }
 
     // Format subscription leads
-    const formattedSubLeads = (subscriptionLeads || []).map(ul => ({
-      ...ul,
-      source: 'subscription',
-      lead: {
-        ...ul.lead,
-        motivation: ul.motivation || null,
+    const formattedSubLeads = (subscriptionLeads || []).map(ul => {
+      // Handle case where lead might be null or missing
+      if (!ul.lead) {
+        console.warn(`Lead data missing for user_lead ${ul.id}`);
+        return null;
       }
-    }));
+      
+      return {
+        ...ul,
+        source: 'subscription',
+        lead: {
+          ...ul.lead,
+          motivation: ul.motivation || null,
+          // Ensure backward compatibility with old schema
+          full_name: ul.lead.full_name || ul.lead.owner_name || '',
+          first_name: ul.lead.first_name || '',
+          last_name: ul.lead.last_name || '',
+          is_business: ul.lead.is_business || false,
+        }
+      };
+    }).filter(Boolean); // Remove null entries
 
     // Format marketplace leads
     const formattedMktLeads = (marketplaceLeads || []).map(uml => ({
@@ -70,7 +106,16 @@ async function handler(req, res) {
     res.status(200).json({ leads: allLeads });
   } catch (error) {
     console.error('Leads fetch error:', error);
-    res.status(500).json({ error: 'Failed to fetch leads' });
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+    res.status(500).json({ 
+      error: 'Failed to fetch leads',
+      details: error.message 
+    });
   }
 }
 
