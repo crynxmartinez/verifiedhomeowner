@@ -85,7 +85,7 @@ async function handler(req, res) {
 
     console.log(`✅ Plan updated: ${oldPlan} → ${plan_type} for user ${userId}`);
 
-    // Distribute leads based on new plan (if upgrading)
+    // Calculate if this is an upgrade
     const planHierarchy = { free: 0, basic: 1, elite: 2, pro: 3 };
     const oldPlanLevel = planHierarchy[oldPlan] || 0;
     const newPlanLevel = planHierarchy[plan_type] || 0;
@@ -93,29 +93,32 @@ async function handler(req, res) {
 
     console.log('Plan comparison:', { oldPlan, oldPlanLevel, newPlan: plan_type, newPlanLevel, isUpgrade });
 
-    if (isUpgrade) {
-      console.log('Upgrade detected - distributing leads...');
-      try {
-        const result = await distributeLeadsToUser(userId);
-        console.log('✅ Leads distributed:', result);
-      } catch (distributeError) {
-        console.error('Error distributing leads:', distributeError);
-        console.error('Error details:', {
-          message: distributeError.message,
-          stack: distributeError.stack
-        });
-        // Don't fail the plan update if lead distribution fails
-      }
-    } else {
-      console.log('Not an upgrade - skipping lead distribution');
-    }
-
+    // Send response IMMEDIATELY - don't wait for lead distribution
     res.status(200).json({
       success: true,
       user: updatedUser,
       message: `Plan updated to ${plan_type}`,
       leadsDistributed: isUpgrade
     });
+
+    // Distribute leads asynchronously in the background (don't block response)
+    if (isUpgrade) {
+      console.log('Upgrade detected - distributing leads asynchronously...');
+      distributeLeadsToUser(userId)
+        .then(result => {
+          console.log('✅ Leads distributed successfully:', result);
+        })
+        .catch(distributeError => {
+          console.error('❌ Error distributing leads:', distributeError);
+          console.error('Error details:', {
+            message: distributeError.message,
+            stack: distributeError.stack
+          });
+          // Lead distribution failed, but plan update already succeeded
+        });
+    } else {
+      console.log('Not an upgrade - skipping lead distribution');
+    }
 
   } catch (error) {
     console.error('Plan update error:', error);
