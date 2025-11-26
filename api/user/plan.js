@@ -12,18 +12,34 @@ async function handler(req, res) {
   }
 
   try {
+    console.log('=== PLAN UPDATE REQUEST ===');
+    console.log('Request body:', req.body);
+    console.log('User from auth:', req.user);
+
     const { plan_type } = req.body;
-    const userId = req.user.id;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      console.error('No user ID found in request');
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    if (!plan_type) {
+      console.error('No plan_type in request body');
+      return res.status(400).json({ error: 'plan_type is required' });
+    }
 
     console.log('User plan update request:', { userId, plan_type });
 
     // Validate plan type
     const validPlans = ['free', 'basic', 'elite', 'pro'];
     if (!validPlans.includes(plan_type)) {
+      console.error('Invalid plan type:', plan_type);
       return res.status(400).json({ error: 'Invalid plan type' });
     }
 
     // Get current user data
+    console.log('Fetching user from database...');
     const { data: currentUser, error: getUserError } = await supabaseAdmin
       .from('users')
       .select('*')
@@ -32,12 +48,23 @@ async function handler(req, res) {
 
     if (getUserError) {
       console.error('Error fetching user:', getUserError);
-      throw getUserError;
+      return res.status(500).json({ 
+        error: 'Failed to fetch user',
+        details: getUserError.message 
+      });
     }
 
-    const oldPlan = currentUser.plan_type;
+    if (!currentUser) {
+      console.error('User not found:', userId);
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log('Current user:', { id: currentUser.id, plan: currentUser.plan_type });
+
+    const oldPlan = currentUser.plan_type || 'free';
 
     // Update user plan
+    console.log('Updating user plan in database...');
     const { data: updatedUser, error: updateError } = await supabaseAdmin
       .from('users')
       .update({
@@ -50,24 +77,37 @@ async function handler(req, res) {
 
     if (updateError) {
       console.error('Error updating plan:', updateError);
-      throw updateError;
+      return res.status(500).json({ 
+        error: 'Failed to update plan in database',
+        details: updateError.message 
+      });
     }
 
     console.log(`✅ Plan updated: ${oldPlan} → ${plan_type} for user ${userId}`);
 
     // Distribute leads based on new plan (if upgrading)
     const planHierarchy = { free: 0, basic: 1, elite: 2, pro: 3 };
-    const isUpgrade = planHierarchy[plan_type] > planHierarchy[oldPlan];
+    const oldPlanLevel = planHierarchy[oldPlan] || 0;
+    const newPlanLevel = planHierarchy[plan_type] || 0;
+    const isUpgrade = newPlanLevel > oldPlanLevel;
+
+    console.log('Plan comparison:', { oldPlan, oldPlanLevel, newPlan: plan_type, newPlanLevel, isUpgrade });
 
     if (isUpgrade) {
       console.log('Upgrade detected - distributing leads...');
       try {
-        await distributeLeadsToUser(userId);
-        console.log('✅ Leads distributed for upgraded plan');
+        const result = await distributeLeadsToUser(userId);
+        console.log('✅ Leads distributed:', result);
       } catch (distributeError) {
         console.error('Error distributing leads:', distributeError);
+        console.error('Error details:', {
+          message: distributeError.message,
+          stack: distributeError.stack
+        });
         // Don't fail the plan update if lead distribution fails
       }
+    } else {
+      console.log('Not an upgrade - skipping lead distribution');
     }
 
     res.status(200).json({
