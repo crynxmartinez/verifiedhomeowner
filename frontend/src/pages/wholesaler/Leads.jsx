@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
-import { Phone, Clock, Edit2, Save, X, DollarSign, Package } from 'lucide-react';
+import { Phone, Clock, DollarSign, Package } from 'lucide-react';
 
 export default function WholesalerLeads() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({});
+  const [savingLeads, setSavingLeads] = useState(new Set());
+  const [notesDebounce, setNotesDebounce] = useState({});
 
   useEffect(() => {
     fetchLeads();
@@ -24,31 +24,53 @@ export default function WholesalerLeads() {
     }
   };
 
-  const handleEdit = (lead) => {
-    setEditingId(lead.id);
-    setEditData({
-      status: lead.status,
-      action: lead.action,
-      notes: lead.notes || '',
-      follow_up_date: lead.follow_up_date || '',
-      countdown_days: lead.countdown_days || null,
-    });
-  };
-
-  const handleSave = async (leadId, source) => {
+  const handleStatusChange = async (leadId, source, newStatus) => {
+    setSavingLeads(prev => new Set(prev).add(leadId));
     try {
-      await leadsAPI.updateLead(leadId, source, editData);
-      setEditingId(null);
-      fetchLeads();
+      await leadsAPI.updateLead(leadId, source, { status: newStatus });
+      await fetchLeads(); // Refresh to get updated data
     } catch (error) {
-      console.error('Failed to update lead:', error);
-      alert('Failed to update lead');
+      console.error('Failed to update status:', error);
+      alert('Failed to update status');
+    } finally {
+      setSavingLeads(prev => {
+        const next = new Set(prev);
+        next.delete(leadId);
+        return next;
+      });
     }
   };
 
-  const handleCancel = () => {
-    setEditingId(null);
-    setEditData({});
+  const handleNotesChange = (leadId, source, newNotes) => {
+    // Clear existing timeout for this lead
+    if (notesDebounce[leadId]) {
+      clearTimeout(notesDebounce[leadId]);
+    }
+
+    // Set new timeout (auto-save after 1 second of no typing)
+    const timeoutId = setTimeout(async () => {
+      setSavingLeads(prev => new Set(prev).add(leadId));
+      try {
+        await leadsAPI.updateLead(leadId, source, { notes: newNotes });
+        // Update local state immediately for better UX
+        setLeads(prevLeads => 
+          prevLeads.map(lead => 
+            lead.id === leadId ? { ...lead, notes: newNotes } : lead
+          )
+        );
+      } catch (error) {
+        console.error('Failed to update notes:', error);
+        alert('Failed to update notes');
+      } finally {
+        setSavingLeads(prev => {
+          const next = new Set(prev);
+          next.delete(leadId);
+          return next;
+        });
+      }
+    }, 1000);
+
+    setNotesDebounce(prev => ({ ...prev, [leadId]: timeoutId }));
   };
 
   const callNowLeads = leads.filter((l) => l.action === 'call_now' || l.status === 'new' || l.status === 'pending');
@@ -69,8 +91,8 @@ export default function WholesalerLeads() {
 
   const renderLeadRow = (userLead) => {
     const lead = userLead.lead;
-    const isEditing = editingId === userLead.id;
     const countdownDisplay = getCountdownDisplay(userLead);
+    const isSaving = savingLeads.has(userLead.id);
 
     return (
       <tr key={userLead.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -90,80 +112,39 @@ export default function WholesalerLeads() {
           </div>
         </td>
         <td className="px-4 py-3">
-          {isEditing ? (
-            <select
-              value={editData.status}
-              onChange={(e) => setEditData({ ...editData, status: e.target.value })}
-              className="border dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            >
-              <option value="new">New</option>
-              <option value="called">Called</option>
-              <option value="follow_up">Follow-up</option>
-              <option value="not_interested">Not Interested</option>
-              <option value="pending">Pending</option>
-            </select>
-          ) : (
-            <span
-              className={`px-2 py-1 rounded text-xs font-semibold ${
-                userLead.status === 'new'
-                  ? 'bg-blue-100 text-blue-800'
-                  : userLead.status === 'called'
-                  ? 'bg-green-100 text-green-800'
-                  : userLead.status === 'follow_up'
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : userLead.status === 'pending'
-                  ? 'bg-purple-100 text-purple-800'
-                  : 'bg-red-100 text-red-800'
-              }`}
-            >
-              {userLead.status.replace('_', ' ')}
-            </span>
+          <select
+            value={userLead.status}
+            onChange={(e) => handleStatusChange(userLead.id, userLead.source, e.target.value)}
+            disabled={isSaving}
+            className="border dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 cursor-pointer hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="new">New</option>
+            <option value="called">Called</option>
+            <option value="follow_up">Follow-up</option>
+            <option value="not_interested">Not Interested</option>
+            <option value="pending">Pending</option>
+          </select>
+          {isSaving && (
+            <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Saving...</div>
           )}
         </td>
         <td className="px-4 py-3">
-          {isEditing ? (
-            <div className="space-y-2">
-              <select
-                value={editData.action}
-                onChange={(e) => setEditData({ ...editData, action: e.target.value })}
-                className="border dark:border-gray-600 rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="call_now">Call Now</option>
-                <option value="pending">Pending</option>
-              </select>
-              {(editData.status === 'follow_up' || editData.status === 'not_interested') && (
-                <select
-                  value={editData.countdown_days || ''}
-                  onChange={(e) => setEditData({ ...editData, countdown_days: parseInt(e.target.value) })}
-                  className="border dark:border-gray-600 rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  <option value="">Set countdown...</option>
-                  <option value="1">1 day</option>
-                  <option value="3">3 days</option>
-                  <option value="7">7 days</option>
-                  <option value="14">14 days</option>
-                  <option value="30">30 days</option>
-                </select>
-              )}
-            </div>
-          ) : (
-            <div>
-              <span
-                className={`px-2 py-1 rounded text-xs font-semibold ${
-                  userLead.action === 'call_now'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-gray-100 text-gray-800'
-                }`}
-              >
-                {userLead.action.replace('_', ' ')}
-              </span>
-              {countdownDisplay && (
-                <div className="text-xs text-orange-600 mt-1 font-medium">
-                  {countdownDisplay}
-                </div>
-              )}
-            </div>
-          )}
+          <div>
+            <span
+              className={`px-2 py-1 rounded text-xs font-semibold ${
+                userLead.action === 'call_now'
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+              }`}
+            >
+              {userLead.action.replace('_', ' ')}
+            </span>
+            {countdownDisplay && (
+              <div className="text-xs text-orange-600 dark:text-orange-400 mt-1 font-medium">
+                {countdownDisplay}
+              </div>
+            )}
+          </div>
         </td>
         <td className="px-4 py-3">
           <div className="text-sm dark:text-white">
@@ -171,38 +152,16 @@ export default function WholesalerLeads() {
           </div>
         </td>
         <td className="px-4 py-3">
-          {isEditing ? (
-            <textarea
-              value={editData.notes}
-              onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
-              className="border dark:border-gray-600 rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              rows="2"
-              placeholder="Add notes..."
-            />
-          ) : (
-            <span className="text-sm text-gray-600 dark:text-gray-400">{userLead.notes || '-'}</span>
-          )}
-        </td>
-        <td className="px-4 py-3">
-          {isEditing ? (
-            <div className="flex space-x-2">
-              <button
-                onClick={() => handleSave(userLead.id, userLead.source)}
-                className="text-green-600 hover:text-green-800"
-              >
-                <Save className="h-4 w-4" />
-              </button>
-              <button onClick={handleCancel} className="text-red-600 hover:text-red-800">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => handleEdit(userLead)}
-              className="text-blue-600 hover:text-blue-800"
-            >
-              <Edit2 className="h-4 w-4" />
-            </button>
+          <textarea
+            value={userLead.notes || ''}
+            onChange={(e) => handleNotesChange(userLead.id, userLead.source, e.target.value)}
+            disabled={isSaving}
+            className="border dark:border-gray-600 rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 resize-none hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            rows="2"
+            placeholder="Add notes..."
+          />
+          {isSaving && (
+            <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Saving...</div>
           )}
         </td>
       </tr>
@@ -260,15 +219,12 @@ export default function WholesalerLeads() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Notes
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Actions
-                  </th>
                 </tr>
               </thead>
               <tbody>
                 {callNowLeads.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan="6" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                       No leads to call right now
                     </td>
                   </tr>
@@ -313,15 +269,12 @@ export default function WholesalerLeads() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Notes
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Actions
-                  </th>
                 </tr>
               </thead>
               <tbody>
                 {pendingLeads.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan="6" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                       No pending leads
                     </td>
                   </tr>
