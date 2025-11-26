@@ -56,8 +56,8 @@ export default function UpgradePlan() {
       
       console.log(`[PLAN CHANGE] ✅ Plan updated: ${oldPlan} → ${newPlan}`);
       
-      // STEP 2: Update local state immediately
-      setUser({ ...user, plan_type: newPlan });
+      // STEP 2: Update local state immediately with fresh user data from server
+      setUser(planResponse.data.user);
       
       // STEP 3: Check if this is an upgrade
       const planHierarchy = { free: 0, basic: 1, elite: 2, pro: 3 };
