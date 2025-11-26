@@ -22,85 +22,144 @@ export default async function handler(req, res) {
       return res.status(200).json({ message: 'No active wholesalers found' });
     }
 
-    // Get all leads ordered by sequence
-    const { data: allLeads, error: leadsError } = await supabaseAdmin
+    // Get total leads count for validation
+    const { count: totalLeadsCount } = await supabaseAdmin
       .from('leads')
-      .select('*')
-      .order('sequence_number', { ascending: true });
+      .select('*', { count: 'exact', head: true });
 
-    if (leadsError) throw leadsError;
-
-    if (!allLeads || allLeads.length === 0) {
+    if (!totalLeadsCount || totalLeadsCount === 0) {
       return res.status(200).json({ message: 'No leads available' });
     }
 
     let totalAssigned = 0;
+    const results = [];
+    const today = new Date().getDay(); // 0 = Sunday, 1 = Monday
+
+    console.log(`[CRON Distribution] Starting daily distribution:`);
+    console.log(`  - Day of week: ${today} (1 = Monday)`);
+    console.log(`  - Users to process: ${users.length}`);
+    console.log(`  - Total leads in DB: ${totalLeadsCount}`);
 
     // Process each user
     for (const user of users) {
       const planConfig = PLAN_CONFIGS[user.plan_type] || PLAN_CONFIGS.free;
       let leadsToAssign = 0;
 
-      // Determine how many leads to assign
+      // Determine how many leads to assign based on plan
       if (planConfig.leadsPerDay) {
         leadsToAssign = planConfig.leadsPerDay;
       } else if (planConfig.leadsPerWeek) {
-        // Check if today is Monday (0 = Sunday, 1 = Monday)
-        const today = new Date().getDay();
+        // Free plan: only on Mondays
         if (today === 1) {
           leadsToAssign = planConfig.leadsPerWeek;
         }
       }
 
-      if (leadsToAssign === 0) continue;
-
-      // Get user's current position
-      let currentPosition = user.lead_sequence_position || 0;
-
-      // Assign leads based on their sequence position
-      for (let i = 0; i < leadsToAssign; i++) {
-        const leadIndex = currentPosition % allLeads.length;
-        const lead = allLeads[leadIndex];
-
-        // Check if user already has this lead
-        const { data: existing } = await supabaseAdmin
-          .from('user_leads')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('lead_id', lead.id)
-          .single();
-
-        if (!existing) {
-          // Assign lead
-          const { error: assignError } = await supabaseAdmin
-            .from('user_leads')
-            .insert({
-              user_id: user.id,
-              lead_id: lead.id,
-              status: 'new',
-              action: 'call_now',
-            });
-
-          if (!assignError) {
-            totalAssigned++;
-          }
-        }
-
-        currentPosition++;
+      if (leadsToAssign === 0) {
+        console.log(`[User: ${user.name}] Skipping - no leads for plan ${user.plan_type} today`);
+        continue;
       }
 
-      // Update user's sequence position
+      let currentPosition = user.lead_sequence_position || 0;
+
+      console.log(`\n[User: ${user.name} (${user.email})]`);
+      console.log(`  - Plan: ${user.plan_type}`);
+      console.log(`  - Current position: ${currentPosition}`);
+      console.log(`  - Daily allocation: ${leadsToAssign}`);
+
+      // Get unassigned leads for this user
+      const { data: unassignedLeads, error: leadsError } = await supabaseAdmin
+        .rpc('get_unassigned_leads', {
+          p_user_id: user.id,
+          p_start_position: currentPosition,
+          p_limit: leadsToAssign
+        });
+
+      if (leadsError) {
+        console.error(`  - Error getting leads:`, leadsError);
+        results.push({
+          userId: user.id,
+          userName: user.name,
+          assigned: 0,
+          error: leadsError.message
+        });
+        continue;
+      }
+
+      if (!unassignedLeads || unassignedLeads.length === 0) {
+        console.log(`  - User has all available leads`);
+        results.push({
+          userId: user.id,
+          userName: user.name,
+          assigned: 0,
+          message: 'User has all available leads'
+        });
+        continue;
+      }
+
+      console.log(`  - Available unassigned: ${unassignedLeads.length}`);
+
+      if (unassignedLeads.length < leadsToAssign) {
+        console.warn(`  - Warning: Only ${unassignedLeads.length} of ${leadsToAssign} available`);
+      }
+
+      // Bulk insert assignments
+      const assignments = unassignedLeads.map(lead => ({
+        user_id: user.id,
+        lead_id: lead.id,
+        status: 'new',
+        action: 'call_now',
+      }));
+
+      const { data: inserted, error: insertError } = await supabaseAdmin
+        .from('user_leads')
+        .insert(assignments)
+        .select();
+
+      if (insertError) {
+        console.error(`  - Error inserting leads:`, insertError);
+        results.push({
+          userId: user.id,
+          userName: user.name,
+          assigned: 0,
+          error: insertError.message
+        });
+        continue;
+      }
+
+      const assigned = inserted?.length || 0;
+      totalAssigned += assigned;
+
+      // Update position: move forward by number assigned, wrap around
+      const newPosition = (currentPosition + assigned) % totalLeadsCount;
+
+      console.log(`  - Assigned: ${assigned} leads`);
+      console.log(`  - New position: ${newPosition}`);
+
       await supabaseAdmin
         .from('users')
-        .update({ lead_sequence_position: currentPosition })
+        .update({ lead_sequence_position: newPosition })
         .eq('id', user.id);
+
+      results.push({
+        userId: user.id,
+        userName: user.name,
+        plan: user.plan_type,
+        assigned,
+        newPosition
+      });
     }
+
+    console.log(`\n[CRON Distribution Complete]`);
+    console.log(`  - Total assigned: ${totalAssigned}`);
+    console.log(`  - Users processed: ${users.length}`);
 
     res.status(200).json({
       message: `Daily distribution: ${totalAssigned} leads to ${users.length} wholesalers`,
       totalAssigned,
       wholesalersProcessed: users.length,
       timestamp: new Date().toISOString(),
+      details: results
     });
   } catch (error) {
     console.error('Cron distribution error:', error);
