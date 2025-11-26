@@ -8,7 +8,13 @@ async function handler(req, res) {
   }
 
   try {
-    const { userId } = req.body; // Optional: distribute to specific user
+    const { userId, leadsCount } = req.body; // Optional: distribute to specific user, leadsCount
+
+    // Validate leadsCount
+    const requestedLeadsCount = parseInt(leadsCount) || 1;
+    if (requestedLeadsCount < 1) {
+      return res.status(400).json({ error: 'Invalid leads count' });
+    }
 
     // Get wholesalers - either specific user or all active
     let query = supabaseAdmin
@@ -43,7 +49,7 @@ async function handler(req, res) {
     if (leadsError) throw leadsError;
 
     if (!allLeads || allLeads.length === 0) {
-      return res.status(200).json({ message: 'No leads available' });
+      return res.status(400).json({ error: 'No leads available to distribute' });
     }
 
     let totalAssigned = 0;
@@ -51,10 +57,8 @@ async function handler(req, res) {
 
     // Process each user
     for (const user of users) {
-      const planConfig = PLAN_CONFIGS[user.plan_type] || PLAN_CONFIGS.free;
-      const leadsToAssign = planConfig.leadsPerDay || 0;
-
-      if (leadsToAssign === 0) continue; // Skip free users in manual distribution
+      // Use requested leads count instead of plan config
+      const leadsToAssign = requestedLeadsCount;
 
       // Get user's current position
       let currentPosition = user.lead_sequence_position || 0;

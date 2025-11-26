@@ -358,18 +358,21 @@ export default function AdminLeads() {
       return;
     }
     try {
-      // Call distribute API with selected user or all users
-      const params = allUsers ? {} : { userId: selectedUser };
+      // Call distribute API with selected user or all users and lead count
+      const params = {
+        leadsCount: distributeCount,
+        ...(allUsers ? {} : { userId: selectedUser })
+      };
       
-      for (let i = 0; i < distributeCount; i++) {
-        await adminAPI.distributeLeads(params);
-      }
+      const response = await adminAPI.distributeLeads(params);
       
       setShowDistributeModal(false);
       setSelectedUser('');
       setUserSearch('');
       setShowUserDropdown(false);
-      alert(`Successfully distributed ${distributeCount} lead(s)`);
+      setDistributeCount(1); // Reset count
+      
+      alert(response.data.message || `Successfully distributed ${distributeCount} lead(s)`);
       fetchLeads(); // Refresh leads list
     } catch (error) {
       console.error('Failed to distribute:', error);
