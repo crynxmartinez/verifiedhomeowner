@@ -47,13 +47,50 @@ export default function UpgradePlan() {
     }
     
     setLoading(true);
+    
     try {
-      const response = await userAPI.updatePlan(planId);
-      // Update user in store
-      setUser({ ...user, plan_type: planId });
-      alert(`Plan changed to ${planId.toUpperCase()} successfully!${response.data.leadsDistributed ? ' New leads have been distributed to your account.' : ''}`);
+      // STEP 1: Update plan (fast, <1 second)
+      console.log(`[PLAN CHANGE] Step 1: Updating plan to ${planId}...`);
+      const planResponse = await userAPI.updatePlan(planId);
+      const { oldPlan, newPlan } = planResponse.data;
+      
+      console.log(`[PLAN CHANGE] ✅ Plan updated: ${oldPlan} → ${newPlan}`);
+      
+      // STEP 2: Update local state immediately
+      setUser({ ...user, plan_type: newPlan });
+      
+      // STEP 3: Check if this is an upgrade
+      const planHierarchy = { free: 0, basic: 1, elite: 2, pro: 3 };
+      const isUpgrade = planHierarchy[newPlan] > planHierarchy[oldPlan];
+      
+      console.log(`[PLAN CHANGE] Is upgrade: ${isUpgrade}`);
+      
+      if (isUpgrade) {
+        // STEP 4: Show intermediate success + distributing message
+        alert(`Plan upgraded to ${newPlan.toUpperCase()}! Now distributing your new leads...`);
+        
+        // STEP 5: Distribute leads (separate call, 2-5 seconds)
+        try {
+          console.log(`[PLAN CHANGE] Step 2: Distributing leads...`);
+          const leadsResponse = await userAPI.distributeLeads();
+          const leadsAssigned = leadsResponse.data.leadsAssigned || 0;
+          
+          console.log(`[PLAN CHANGE] ✅ ${leadsAssigned} leads distributed`);
+          
+          // Show final success with lead count
+          alert(`Success! ${leadsAssigned} new leads have been added to your account. Check your Leads page!`);
+        } catch (leadError) {
+          console.error('[PLAN CHANGE] Lead distribution failed:', leadError);
+          // Lead distribution failed, but plan already changed
+          alert(`Plan upgraded to ${newPlan.toUpperCase()} successfully! Leads will be distributed shortly. Please refresh your Leads page in a moment.`);
+        }
+      } else {
+        // Not an upgrade (same plan or downgrade)
+        alert(`Plan changed to ${newPlan.toUpperCase()} successfully!`);
+      }
+      
     } catch (error) {
-      console.error('Failed to change plan:', error);
+      console.error('[PLAN CHANGE] Failed to change plan:', error);
       alert('Failed to change plan. Please try again.');
     } finally {
       setLoading(false);

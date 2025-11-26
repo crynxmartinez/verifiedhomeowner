@@ -52,6 +52,7 @@ export const leadsAPI = {
 // User API
 export const userAPI = {
   updatePlan: (plan_type) => api.patch('/user/plan', { plan_type }),
+  distributeLeads: () => api.post('/user/leads/distribute'),
 };
 
 // Marketplace API
