@@ -60,6 +60,7 @@ export const adminAPI = {
   getAnalytics: () => api.get('/admin/analytics'),
   getUsers: () => api.get('/admin/users'),
   updateUserPlan: (userId, plan_type) => api.patch('/admin/users', { userId, plan_type }),
+  updateUser: (userId, updateData) => api.patch('/admin/users', { userId, ...updateData }),
   getLeads: () => api.get('/admin/leads'),
   createLead: (singleLead) => api.post('/admin/leads', { singleLead }),
   uploadCSV: (csvData) => api.post('/admin/leads', { csvData }),
