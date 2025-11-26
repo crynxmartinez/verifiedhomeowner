@@ -79,14 +79,20 @@ export default function UpgradePlan() {
           
           // Show final success with lead count
           alert(`Success! ${leadsAssigned} new leads have been added to your account. Check your Leads page!`);
+          // Reload page to refresh UI
+          window.location.reload();
         } catch (leadError) {
           console.error('[PLAN CHANGE] Lead distribution failed:', leadError);
           // Lead distribution failed, but plan already changed
           alert(`Plan upgraded to ${newPlan.toUpperCase()} successfully! Leads will be distributed shortly. Please refresh your Leads page in a moment.`);
+          // Reload page to refresh UI
+          window.location.reload();
         }
       } else {
         // Not an upgrade (same plan or downgrade)
         alert(`Plan changed to ${newPlan.toUpperCase()} successfully!`);
+        // Reload page to refresh UI
+        window.location.reload();
       }
       
     } catch (error) {
