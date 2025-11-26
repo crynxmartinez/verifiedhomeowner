@@ -49,6 +49,11 @@ export const leadsAPI = {
   updateLead: (id, source, data) => api.patch(`/leads/update?id=${id}&source=${source}`, data),
 };
 
+// User API
+export const userAPI = {
+  updatePlan: (plan_type) => api.patch('/user/plan', { plan_type }),
+};
+
 // Marketplace API
 export const marketplaceAPI = {
   getLeads: (filters) => api.get('/marketplace', { params: filters }),

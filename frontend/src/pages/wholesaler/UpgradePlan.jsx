@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Layout from '../../components/Layout';
 import useAuthStore from '../../store/authStore';
-import { adminAPI } from '../../lib/api';
+import { userAPI } from '../../lib/api';
 import { CheckCircle, TrendingUp } from 'lucide-react';
 
 export default function UpgradePlan() {
@@ -48,10 +48,10 @@ export default function UpgradePlan() {
     
     setLoading(true);
     try {
-      await adminAPI.updateUserPlan(user.id, planId);
+      const response = await userAPI.updatePlan(planId);
       // Update user in store
       setUser({ ...user, plan_type: planId });
-      alert(`Plan changed to ${planId.toUpperCase()} successfully!`);
+      alert(`Plan changed to ${planId.toUpperCase()} successfully!${response.data.leadsDistributed ? ' New leads have been distributed to your account.' : ''}`);
     } catch (error) {
       console.error('Failed to change plan:', error);
       alert('Failed to change plan. Please try again.');
