@@ -36,6 +36,7 @@ export default function AdminLeads() {
   const [allUsers, setAllUsers] = useState(false);
   const [users, setUsers] = useState([]);
   const [userSearch, setUserSearch] = useState('');
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(30);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -357,15 +358,22 @@ export default function AdminLeads() {
       return;
     }
     try {
-      // Call distribute API multiple times based on count
+      // Call distribute API with selected user or all users
+      const params = allUsers ? {} : { userId: selectedUser };
+      
       for (let i = 0; i < distributeCount; i++) {
-        await adminAPI.distributeLeads();
+        await adminAPI.distributeLeads(params);
       }
+      
       setShowDistributeModal(false);
+      setSelectedUser('');
+      setUserSearch('');
+      setShowUserDropdown(false);
       alert(`Successfully distributed ${distributeCount} lead(s)`);
+      fetchLeads(); // Refresh leads list
     } catch (error) {
       console.error('Failed to distribute:', error);
-      alert('Failed to distribute leads');
+      alert(error.response?.data?.error || 'Failed to distribute leads');
     }
   };
 
@@ -1104,40 +1112,68 @@ export default function AdminLeads() {
                   {!allUsers && (
                     <div className="relative">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Select User
+                        Select Wholesaler *
                       </label>
                       <div className="relative">
                         <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                         <input
                           type="text"
                           value={userSearch}
-                          onChange={(e) => setUserSearch(e.target.value)}
-                          placeholder="Search users..."
-                          className="w-full pl-10 pr-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                          onChange={(e) => {
+                            setUserSearch(e.target.value);
+                            setShowUserDropdown(true);
+                          }}
+                          onFocus={() => setShowUserDropdown(true)}
+                          onClick={() => setShowUserDropdown(true)}
+                          placeholder="Click to select or search wholesalers..."
+                          className="w-full pl-10 pr-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white cursor-pointer"
                         />
                       </div>
-                      {userSearch && (
-                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                          {users
-                            .filter((u) =>
+                      {showUserDropdown && (
+                        <>
+                          {/* Backdrop to close dropdown */}
+                          <div 
+                            className="fixed inset-0 z-10" 
+                            onClick={() => setShowUserDropdown(false)}
+                          />
+                          <div className="absolute z-20 w-full mt-1 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            {users
+                              .filter((u) =>
+                                !userSearch || 
+                                u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+                                u.email.toLowerCase().includes(userSearch.toLowerCase())
+                              )
+                              .map((user) => (
+                                <button
+                                  key={user.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedUser(user.id);
+                                    setUserSearch(user.name);
+                                    setShowUserDropdown(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 flex flex-col ${
+                                    selectedUser === user.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                                  }`}
+                                >
+                                  <span className="font-medium text-gray-900 dark:text-white">{user.name}</span>
+                                  <span className="text-sm text-gray-500 dark:text-gray-400">{user.email}</span>
+                                  <span className="text-xs text-gray-400 dark:text-gray-500">
+                                    {user.plan_type.toUpperCase()} - {user.lead_count || 0} leads
+                                  </span>
+                                </button>
+                              ))}
+                            {users.filter((u) =>
+                              !userSearch || 
                               u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
                               u.email.toLowerCase().includes(userSearch.toLowerCase())
-                            )
-                            .map((user) => (
-                              <button
-                                key={user.id}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedUser(user.id);
-                                  setUserSearch(user.name);
-                                }}
-                                className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 flex flex-col"
-                              >
-                                <span className="font-medium text-gray-900 dark:text-white">{user.name}</span>
-                                <span className="text-sm text-gray-500 dark:text-gray-400">{user.email}</span>
-                              </button>
-                            ))}
-                        </div>
+                            ).length === 0 && (
+                              <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">
+                                No wholesalers found
+                              </div>
+                            )}
+                          </div>
+                        </>
                       )}
                     </div>
                   )}

@@ -8,17 +8,30 @@ async function handler(req, res) {
   }
 
   try {
-    // Get all active wholesalers
-    const { data: users, error: usersError } = await supabaseAdmin
+    const { userId } = req.body; // Optional: distribute to specific user
+
+    // Get wholesalers - either specific user or all active
+    let query = supabaseAdmin
       .from('users')
       .select('*')
-      .eq('role', 'wholesaler')
-      .eq('subscription_status', 'active');
+      .eq('role', 'wholesaler');
+
+    if (userId) {
+      // Distribute to specific user
+      query = query.eq('id', userId);
+    } else {
+      // Distribute to all active wholesalers
+      query = query.eq('subscription_status', 'active');
+    }
+
+    const { data: users, error: usersError } = await query;
 
     if (usersError) throw usersError;
 
     if (!users || users.length === 0) {
-      return res.status(200).json({ message: 'No active wholesalers found' });
+      return res.status(400).json({ 
+        error: userId ? 'User not found' : 'No active wholesalers found' 
+      });
     }
 
     // Get all leads ordered by sequence
