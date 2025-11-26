@@ -178,12 +178,12 @@ export default function WholesalerLeads() {
         </td>
         <td className="px-4 py-3">
           {(userLead.status === 'follow_up' || userLead.status === 'not_interested' || userLead.status === 'pending') ? (
-            <div className="space-y-2">
+            <div className="flex items-center gap-2">
               <select
                 value={userLead.countdown_days || ''}
                 onChange={(e) => handleCountdownChange(userLead.id, userLead.source, e.target.value)}
                 disabled={isSaving}
-                className="border dark:border-gray-600 rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 cursor-pointer hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="border dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 cursor-pointer hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               >
                 <option value="">Set countdown...</option>
                 <option value="7">7 days</option>
@@ -192,13 +192,8 @@ export default function WholesalerLeads() {
                 <option value="60">60 days</option>
                 <option value="90">90 days</option>
               </select>
-              {countdownDisplay && (
-                <div className="text-xs text-orange-600 dark:text-orange-400 font-medium">
-                  {countdownDisplay}
-                </div>
-              )}
               {isSaving && (
-                <div className="text-xs text-blue-600 dark:text-blue-400">Saving...</div>
+                <span className="text-xs text-blue-600 dark:text-blue-400">Saving...</span>
               )}
             </div>
           ) : (
