@@ -8,6 +8,7 @@ export default function WholesalerLeads() {
   const [loading, setLoading] = useState(true);
   const [savingLeads, setSavingLeads] = useState(new Set());
   const [notesDebounce, setNotesDebounce] = useState({});
+  const [localNotes, setLocalNotes] = useState({});
 
   useEffect(() => {
     fetchLeads();
@@ -42,6 +43,9 @@ export default function WholesalerLeads() {
   };
 
   const handleNotesChange = (leadId, source, newNotes) => {
+    // Update local state immediately for instant feedback
+    setLocalNotes(prev => ({ ...prev, [leadId]: newNotes }));
+
     // Clear existing timeout for this lead
     if (notesDebounce[leadId]) {
       clearTimeout(notesDebounce[leadId]);
@@ -52,7 +56,7 @@ export default function WholesalerLeads() {
       setSavingLeads(prev => new Set(prev).add(leadId));
       try {
         await leadsAPI.updateLead(leadId, source, { notes: newNotes });
-        // Update local state immediately for better UX
+        // Update leads state after successful save
         setLeads(prevLeads => 
           prevLeads.map(lead => 
             lead.id === leadId ? { ...lead, notes: newNotes } : lead
@@ -71,6 +75,23 @@ export default function WholesalerLeads() {
     }, 1000);
 
     setNotesDebounce(prev => ({ ...prev, [leadId]: timeoutId }));
+  };
+
+  const handleCountdownChange = async (leadId, source, countdownDays) => {
+    setSavingLeads(prev => new Set(prev).add(leadId));
+    try {
+      await leadsAPI.updateLead(leadId, source, { countdown_days: parseInt(countdownDays) });
+      await fetchLeads(); // Refresh to get updated data
+    } catch (error) {
+      console.error('Failed to update countdown:', error);
+      alert('Failed to update countdown');
+    } finally {
+      setSavingLeads(prev => {
+        const next = new Set(prev);
+        next.delete(leadId);
+        return next;
+      });
+    }
   };
 
   const callNowLeads = leads.filter((l) => l.action === 'call_now' || l.status === 'new' || l.status === 'pending');
@@ -129,22 +150,43 @@ export default function WholesalerLeads() {
           )}
         </td>
         <td className="px-4 py-3">
-          <div>
-            <span
-              className={`px-2 py-1 rounded text-xs font-semibold ${
-                userLead.action === 'call_now'
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                  : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-              }`}
-            >
-              {userLead.action.replace('_', ' ')}
-            </span>
-            {countdownDisplay && (
-              <div className="text-xs text-orange-600 dark:text-orange-400 mt-1 font-medium">
-                {countdownDisplay}
-              </div>
-            )}
-          </div>
+          {(userLead.status === 'follow_up' || userLead.status === 'not_interested' || userLead.status === 'pending') ? (
+            <div className="space-y-2">
+              <select
+                value={userLead.countdown_days || ''}
+                onChange={(e) => handleCountdownChange(userLead.id, userLead.source, e.target.value)}
+                disabled={isSaving}
+                className="border dark:border-gray-600 rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 cursor-pointer hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="">Set countdown...</option>
+                <option value="1">1 day</option>
+                <option value="3">3 days</option>
+                <option value="7">7 days</option>
+                <option value="14">14 days</option>
+                <option value="30">30 days</option>
+              </select>
+              {countdownDisplay && (
+                <div className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                  {countdownDisplay}
+                </div>
+              )}
+              {isSaving && (
+                <div className="text-xs text-blue-600 dark:text-blue-400">Saving...</div>
+              )}
+            </div>
+          ) : (
+            <div>
+              <span
+                className={`px-2 py-1 rounded text-xs font-semibold ${
+                  userLead.action === 'call_now'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                }`}
+              >
+                {userLead.action.replace('_', ' ')}
+              </span>
+            </div>
+          )}
         </td>
         <td className="px-4 py-3">
           <div className="text-sm dark:text-white">
@@ -153,7 +195,7 @@ export default function WholesalerLeads() {
         </td>
         <td className="px-4 py-3">
           <textarea
-            value={userLead.notes || ''}
+            value={localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')}
             onChange={(e) => handleNotesChange(userLead.id, userLead.source, e.target.value)}
             disabled={isSaving}
             className="border dark:border-gray-600 rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 resize-none hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
