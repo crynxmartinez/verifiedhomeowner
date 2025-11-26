@@ -186,11 +186,11 @@ export default function WholesalerLeads() {
                 className="border dark:border-gray-600 rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 cursor-pointer hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               >
                 <option value="">Set countdown...</option>
-                <option value="1">1 day</option>
-                <option value="3">3 days</option>
                 <option value="7">7 days</option>
-                <option value="14">14 days</option>
+                <option value="15">15 days</option>
                 <option value="30">30 days</option>
+                <option value="60">60 days</option>
+                <option value="90">90 days</option>
               </select>
               {countdownDisplay && (
                 <div className="text-xs text-orange-600 dark:text-orange-400 font-medium">
