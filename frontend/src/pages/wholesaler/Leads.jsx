@@ -87,12 +87,9 @@ export default function WholesalerLeads() {
   };
 
   const handleCountdownChange = async (leadId, source, countdownDays) => {
-    console.log('Countdown change:', { leadId, source, countdownDays });
     setSavingLeads(prev => new Set(prev).add(leadId));
     try {
-      const updateData = { countdown_days: parseInt(countdownDays) || null };
-      console.log('Sending update:', updateData);
-      await leadsAPI.updateLead(leadId, source, updateData);
+      await leadsAPI.updateLead(leadId, source, { countdown_days: parseInt(countdownDays) || null });
       await fetchLeads(); // Refresh to get updated data
     } catch (error) {
       console.error('Failed to update countdown:', error);
@@ -114,7 +111,7 @@ export default function WholesalerLeads() {
     l.status === 'pending'
   );
   
-  // Call Now leads: new, called, or call_now action (but NOT if in pending)
+  // Call Now leads: new or call_now action (but NOT if in pending)
   const callNowLeads = leads.filter((l) => {
     // Exclude if already in pending
     if (l.status === 'follow_up' || l.status === 'not_interested' || l.status === 'pending') {
@@ -131,15 +128,8 @@ export default function WholesalerLeads() {
     return <Package size={16} className="text-blue-600" title="Subscription Lead" />;
   };
 
-  const getCountdownDisplay = (lead) => {
-    if (!lead.countdown_days || lead.countdown_days <= 0) return null;
-    const action = lead.status === 'follow_up' ? 'Follow up' : 'Archive';
-    return `${action} in ${lead.countdown_days} day${lead.countdown_days > 1 ? 's' : ''}`;
-  };
-
   const renderLeadRow = (userLead) => {
     const lead = userLead.lead;
-    const countdownDisplay = getCountdownDisplay(userLead);
     const isSaving = savingLeads.has(userLead.id);
 
     return (

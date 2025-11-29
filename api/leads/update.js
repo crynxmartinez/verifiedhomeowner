@@ -10,8 +10,6 @@ async function handler(req, res) {
     const { id, source } = req.query;
     const { status, action, notes, follow_up_date, countdown_days } = req.body;
 
-    console.log('Update lead request:', { id, source, body: req.body });
-
     if (!id) {
       return res.status(400).json({ error: 'Lead ID is required' });
     }
@@ -27,8 +25,6 @@ async function handler(req, res) {
     if (countdown_days !== undefined) {
       updateData.countdown_days = parseInt(countdown_days) || null;
     }
-
-    console.log('Update data:', updateData);
 
     // Determine which table to update
     const table = source === 'purchased' ? 'user_marketplace_leads' : 'user_leads';
@@ -46,7 +42,6 @@ async function handler(req, res) {
       throw error;
     }
 
-    console.log('Update successful:', data);
     res.status(200).json({ lead: data });
   } catch (error) {
     console.error('Update lead error:', error);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
-import { FileText, Phone, Clock, XCircle, TrendingUp } from 'lucide-react';
+import { FileText, Phone, Clock, XCircle } from 'lucide-react';
 import NewLeadsPopup from '../../components/NewLeadsPopup';
 
 export default function WholesalerDashboard() {

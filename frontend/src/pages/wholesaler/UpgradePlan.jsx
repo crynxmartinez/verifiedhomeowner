@@ -51,30 +51,21 @@ export default function UpgradePlan() {
     setLoading(true);
     
     try {
-      // STEP 1: Update plan (fast, <1 second)
-      console.log(`[PLAN CHANGE] Step 1: Updating plan to ${planId}...`);
       const planResponse = await userAPI.updatePlan(planId);
       const { oldPlan, newPlan } = planResponse.data;
       
-      console.log(`[PLAN CHANGE] ✅ Plan updated: ${oldPlan} → ${newPlan}`);
-      
-      // STEP 2: Update local state immediately with fresh user data from server
+      // Update local state immediately with fresh user data from server
       setUser(planResponse.data.user);
       
-      // STEP 3: Check if this is an upgrade
+      // Check if this is an upgrade
       const planHierarchy = { free: 0, basic: 1, elite: 2, pro: 3 };
       const isUpgrade = planHierarchy[newPlan] > planHierarchy[oldPlan];
       
-      console.log(`[PLAN CHANGE] Is upgrade: ${isUpgrade}`);
-      
       if (isUpgrade) {
-        // STEP 4: Distribute leads (separate call, 2-5 seconds)
+        // Distribute leads
         try {
-          console.log(`[PLAN CHANGE] Step 2: Distributing leads...`);
           const leadsResponse = await userAPI.distributeLeads();
           const leadsAssigned = leadsResponse.data.leadsAssigned || 0;
-          
-          console.log(`[PLAN CHANGE] ✅ ${leadsAssigned} leads distributed`);
           
           // Show success modal with lead count
           setSuccessModal({
