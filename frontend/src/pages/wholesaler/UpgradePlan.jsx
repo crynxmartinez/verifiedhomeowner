@@ -3,11 +3,13 @@ import Layout from '../../components/Layout';
 import useAuthStore from '../../store/authStore';
 import { userAPI } from '../../lib/api';
 import { CheckCircle, TrendingUp } from 'lucide-react';
+import SuccessModal from '../../components/SuccessModal';
 
 export default function UpgradePlan() {
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const [loading, setLoading] = useState(false);
+  const [successModal, setSuccessModal] = useState(null);
 
   const plans = [
     {
@@ -66,10 +68,7 @@ export default function UpgradePlan() {
       console.log(`[PLAN CHANGE] Is upgrade: ${isUpgrade}`);
       
       if (isUpgrade) {
-        // STEP 4: Show intermediate success + distributing message
-        alert(`Plan upgraded to ${newPlan.toUpperCase()}! Now distributing your new leads...`);
-        
-        // STEP 5: Distribute leads (separate call, 2-5 seconds)
+        // STEP 4: Distribute leads (separate call, 2-5 seconds)
         try {
           console.log(`[PLAN CHANGE] Step 2: Distributing leads...`);
           const leadsResponse = await userAPI.distributeLeads();
@@ -77,27 +76,42 @@ export default function UpgradePlan() {
           
           console.log(`[PLAN CHANGE] ✅ ${leadsAssigned} leads distributed`);
           
-          // Show final success with lead count
-          alert(`Success! ${leadsAssigned} new leads have been added to your account. Check your Leads page!`);
-          // Reload page to refresh UI
-          window.location.reload();
+          // Show success modal with lead count
+          setSuccessModal({
+            title: 'Plan Upgraded!',
+            message: `${leadsAssigned} new leads have been added to your account.`,
+            actionText: 'View My Leads',
+            actionLink: '/leads',
+            secondaryText: 'Stay here'
+          });
         } catch (leadError) {
           console.error('[PLAN CHANGE] Lead distribution failed:', leadError);
           // Lead distribution failed, but plan already changed
-          alert(`Plan upgraded to ${newPlan.toUpperCase()} successfully! Leads will be distributed shortly. Please refresh your Leads page in a moment.`);
-          // Reload page to refresh UI
-          window.location.reload();
+          setSuccessModal({
+            title: 'Plan Upgraded!',
+            message: `Your plan is now ${newPlan.toUpperCase()}. Leads will be distributed shortly.`,
+            actionText: 'Got it!',
+            secondaryText: null
+          });
         }
       } else {
         // Not an upgrade (same plan or downgrade)
-        alert(`Plan changed to ${newPlan.toUpperCase()} successfully!`);
-        // Reload page to refresh UI
-        window.location.reload();
+        setSuccessModal({
+          title: 'Plan Changed',
+          message: `Your plan is now ${newPlan.toUpperCase()}.`,
+          actionText: 'Got it!',
+          secondaryText: null
+        });
       }
       
     } catch (error) {
       console.error('[PLAN CHANGE] Failed to change plan:', error);
-      alert('Failed to change plan. Please try again.');
+      setSuccessModal({
+        title: 'Error',
+        message: 'Failed to change plan. Please try again.',
+        actionText: 'Close',
+        secondaryText: null
+      });
     } finally {
       setLoading(false);
     }
@@ -228,6 +242,18 @@ export default function UpgradePlan() {
           </div>
         </div>
       </div>
+
+      {/* Success Modal */}
+      {successModal && (
+        <SuccessModal
+          title={successModal.title}
+          message={successModal.message}
+          actionText={successModal.actionText}
+          actionLink={successModal.actionLink}
+          secondaryText={successModal.secondaryText}
+          onClose={() => setSuccessModal(null)}
+        />
+      )}
     </Layout>
   );
 }

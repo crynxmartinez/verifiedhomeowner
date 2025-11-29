@@ -135,8 +135,6 @@ export default function AdminAnalytics() {
                         className={`h-3 rounded-full ${
                           status === 'new'
                             ? 'bg-blue-500'
-                            : status === 'called'
-                            ? 'bg-green-500'
                             : status === 'follow_up'
                             ? 'bg-yellow-500'
                             : 'bg-red-500'
@@ -154,12 +152,6 @@ export default function AdminAnalytics() {
                   {analytics?.statusDistribution?.new || 0}
                 </div>
                 <div className="text-blue-900 dark:text-blue-300 font-medium">New Leads</div>
-              </div>
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-                <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
-                  {analytics?.statusDistribution?.called || 0}
-                </div>
-                <div className="text-green-900 dark:text-green-300 font-medium">Called</div>
               </div>
               <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
                 <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">

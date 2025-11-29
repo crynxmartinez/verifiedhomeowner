@@ -41,7 +41,6 @@ async function handler(req, res) {
 
     const statusDistribution = {
       new: statusData?.filter(l => l.status === 'new').length || 0,
-      called: statusData?.filter(l => l.status === 'called').length || 0,
       follow_up: statusData?.filter(l => l.status === 'follow_up').length || 0,
       not_interested: statusData?.filter(l => l.status === 'not_interested').length || 0,
     };

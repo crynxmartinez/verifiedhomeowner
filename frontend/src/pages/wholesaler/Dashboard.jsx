@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
 import { FileText, Phone, Clock, XCircle, TrendingUp } from 'lucide-react';
+import NewLeadsPopup from '../../components/NewLeadsPopup';
 
 export default function WholesalerDashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showNewLeadsPopup, setShowNewLeadsPopup] = useState(true);
 
   useEffect(() => {
     fetchStats();
@@ -106,19 +108,6 @@ export default function WholesalerDashboard() {
 
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-gray-700 dark:text-gray-300">Called</span>
-                <span className="font-semibold dark:text-white">{stats?.called || 0}</span>
-              </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div
-                  className="bg-green-500 h-2 rounded-full"
-                  style={{ width: `${((stats?.called || 0) / (stats?.total || 1)) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between mb-2">
                 <span className="text-gray-700 dark:text-gray-300">Follow-up</span>
                 <span className="font-semibold dark:text-white">{stats?.followUp || 0}</span>
               </div>
@@ -161,6 +150,14 @@ export default function WholesalerDashboard() {
           </div>
         </div>
       </div>
+
+      {/* New Leads Popup */}
+      {showNewLeadsPopup && stats?.newToday > 0 && (
+        <NewLeadsPopup 
+          newLeadsCount={stats.newToday} 
+          onClose={() => setShowNewLeadsPopup(false)} 
+        />
+      )}
     </Layout>
   );
 }

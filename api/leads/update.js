@@ -27,10 +27,6 @@ async function handler(req, res) {
     if (countdown_days !== undefined) {
       updateData.countdown_days = parseInt(countdown_days) || null;
     }
-    
-    if (status === 'called') {
-      updateData.last_called_at = new Date().toISOString();
-    }
 
     console.log('Update data:', updateData);
 

@@ -127,8 +127,6 @@ export default function AdminDashboard() {
                       className={`h-2 rounded-full ${
                         status === 'new'
                           ? 'bg-blue-500'
-                          : status === 'called'
-                          ? 'bg-green-500'
                           : status === 'follow_up'
                           ? 'bg-yellow-500'
                           : 'bg-red-500'

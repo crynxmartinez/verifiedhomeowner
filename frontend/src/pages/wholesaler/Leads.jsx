@@ -120,8 +120,8 @@ export default function WholesalerLeads() {
     if (l.status === 'follow_up' || l.status === 'not_interested' || l.status === 'pending') {
       return false;
     }
-    // Include if new, called, or call_now action
-    return l.status === 'new' || l.status === 'called' || l.action === 'call_now';
+    // Include if new or call_now action
+    return l.status === 'new' || l.action === 'call_now';
   });
 
   const getSourceIcon = (source) => {
@@ -167,7 +167,6 @@ export default function WholesalerLeads() {
             className="border dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 cursor-pointer hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           >
             <option value="new">New</option>
-            <option value="called">Called</option>
             <option value="follow_up">Follow-up</option>
             <option value="not_interested">Not Interested</option>
             <option value="pending">Pending</option>

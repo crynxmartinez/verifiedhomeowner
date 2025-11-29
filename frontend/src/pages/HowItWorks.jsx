@@ -51,7 +51,7 @@ export default function HowItWorks() {
               <div>
                 <h3 className="text-2xl font-bold mb-3">3. Contact & Track</h3>
                 <p className="text-gray-600 text-lg">
-                  Call your leads and update their status (New, Called, Follow-up, Not Interested). Set reminders for follow-ups and add notes.
+                  Call your leads and update their status (New, Follow-up, Not Interested, Pending). Set countdown timers for follow-ups and add notes.
                 </p>
               </div>
             </div>
