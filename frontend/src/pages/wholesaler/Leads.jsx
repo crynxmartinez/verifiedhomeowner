@@ -178,19 +178,40 @@ export default function WholesalerLeads() {
         <td className="px-4 py-3">
           {(userLead.status === 'follow_up' || userLead.status === 'not_interested' || userLead.status === 'pending') ? (
             <div className="flex items-center gap-2">
-              <select
-                value={userLead.countdown_days || ''}
-                onChange={(e) => handleCountdownChange(userLead.id, userLead.source, e.target.value)}
-                disabled={isSaving}
-                className="border dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 cursor-pointer hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              >
-                <option value="">Set countdown...</option>
-                <option value="7">7 days</option>
-                <option value="15">15 days</option>
-                <option value="30">30 days</option>
-                <option value="60">60 days</option>
-                <option value="90">90 days</option>
-              </select>
+              {userLead.countdown_days > 0 ? (
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-sm font-medium">
+                    {userLead.countdown_days} day{userLead.countdown_days !== 1 ? 's' : ''}
+                  </span>
+                  <select
+                    value=""
+                    onChange={(e) => handleCountdownChange(userLead.id, userLead.source, e.target.value)}
+                    disabled={isSaving}
+                    className="border dark:border-gray-600 rounded px-2 py-1 text-xs bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 disabled:opacity-50 cursor-pointer hover:border-blue-500"
+                  >
+                    <option value="">Change...</option>
+                    <option value="7">7 days</option>
+                    <option value="15">15 days</option>
+                    <option value="30">30 days</option>
+                    <option value="60">60 days</option>
+                    <option value="90">90 days</option>
+                  </select>
+                </div>
+              ) : (
+                <select
+                  value=""
+                  onChange={(e) => handleCountdownChange(userLead.id, userLead.source, e.target.value)}
+                  disabled={isSaving}
+                  className="border dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 cursor-pointer hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">Set countdown...</option>
+                  <option value="7">7 days</option>
+                  <option value="15">15 days</option>
+                  <option value="30">30 days</option>
+                  <option value="60">60 days</option>
+                  <option value="90">90 days</option>
+                </select>
+              )}
               {isSaving && (
                 <span className="text-xs text-blue-600 dark:text-blue-400">Saving...</span>
               )}
