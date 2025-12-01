@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
-import { Phone, Clock, DollarSign, Package, Copy, Check } from 'lucide-react';
+import { Phone, Clock, DollarSign, Package, Copy, Check, Expand, X } from 'lucide-react';
 
 export default function WholesalerLeads() {
   const [leads, setLeads] = useState([]);
@@ -10,6 +10,7 @@ export default function WholesalerLeads() {
   const [notesDebounce, setNotesDebounce] = useState({});
   const [localNotes, setLocalNotes] = useState({});
   const [copiedPhone, setCopiedPhone] = useState(null);
+  const [expandedNotes, setExpandedNotes] = useState(null); // { id, name, notes }
 
   useEffect(() => {
     fetchLeads();
@@ -257,14 +258,29 @@ export default function WholesalerLeads() {
           </div>
         </td>
         <td className="px-4 py-3">
-          <textarea
-            value={localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')}
-            onChange={(e) => handleNotesChange(userLead.id, userLead.source, e.target.value)}
-            disabled={isSaving}
-            className="border dark:border-gray-600 rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 resize-none hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            rows="2"
-            placeholder="Add notes..."
-          />
+          <div className="relative">
+            <textarea
+              value={localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')}
+              onChange={(e) => handleNotesChange(userLead.id, userLead.source, e.target.value)}
+              disabled={isSaving}
+              className="border dark:border-gray-600 rounded px-2 py-1 pr-8 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 resize-none hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              rows="2"
+              placeholder="Add notes..."
+            />
+            {(localNotes[userLead.id] || userLead.notes) && (
+              <button
+                onClick={() => setExpandedNotes({
+                  id: userLead.id,
+                  name: lead.owner_name,
+                  notes: localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')
+                })}
+                className="absolute top-1 right-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                title="Expand notes"
+              >
+                <Expand size={12} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+              </button>
+            )}
+          </div>
           {isSaving && (
             <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Saving...</div>
           )}
@@ -391,6 +407,38 @@ export default function WholesalerLeads() {
           </div>
         </div>
       </div>
+
+      {/* Expanded Notes Modal (Read-only) */}
+      {expandedNotes && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Notes for {expandedNotes.name}
+              </h3>
+              <button
+                onClick={() => setExpandedNotes(null)}
+                className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <X size={20} className="text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto flex-1">
+              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                {expandedNotes.notes || 'No notes'}
+              </p>
+            </div>
+            <div className="p-4 border-t dark:border-gray-700">
+              <button
+                onClick={() => setExpandedNotes(null)}
+                className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
