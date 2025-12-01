@@ -258,15 +258,7 @@ export default function WholesalerLeads() {
           </div>
         </td>
         <td className="px-4 py-3">
-          <div className="relative">
-            <textarea
-              value={localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')}
-              onChange={(e) => handleNotesChange(userLead.id, userLead.source, e.target.value)}
-              disabled={isSaving}
-              className="border dark:border-gray-600 rounded px-2 py-1 pr-8 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 resize-none hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              rows="2"
-              placeholder="Add notes..."
-            />
+          <div className="flex items-start gap-1">
             {(localNotes[userLead.id] || userLead.notes) && (
               <button
                 onClick={() => setExpandedNotes({
@@ -274,12 +266,20 @@ export default function WholesalerLeads() {
                   name: lead.owner_name,
                   notes: localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')
                 })}
-                className="absolute top-1 right-1 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors mt-1"
                 title="Expand notes"
               >
-                <Expand size={12} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                <Expand size={14} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
               </button>
             )}
+            <textarea
+              value={localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')}
+              onChange={(e) => handleNotesChange(userLead.id, userLead.source, e.target.value)}
+              disabled={isSaving}
+              className="border dark:border-gray-600 rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 resize-none hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              rows="2"
+              placeholder="Add notes..."
+            />
           </div>
           {isSaving && (
             <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Saving...</div>
