@@ -258,20 +258,7 @@ export default function WholesalerLeads() {
           </div>
         </td>
         <td className="px-4 py-3">
-          <div className="flex items-start gap-1">
-            {(localNotes[userLead.id] || userLead.notes) && (
-              <button
-                onClick={() => setExpandedNotes({
-                  id: userLead.id,
-                  name: lead.owner_name,
-                  notes: localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')
-                })}
-                className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors mt-1"
-                title="Expand notes"
-              >
-                <Expand size={14} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
-              </button>
-            )}
+          <div className="relative group">
             <textarea
               value={localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')}
               onChange={(e) => handleNotesChange(userLead.id, userLead.source, e.target.value)}
@@ -280,6 +267,19 @@ export default function WholesalerLeads() {
               rows="2"
               placeholder="Add notes..."
             />
+            {(localNotes[userLead.id] || userLead.notes) && (
+              <button
+                onClick={() => setExpandedNotes({
+                  id: userLead.id,
+                  name: lead.owner_name,
+                  notes: localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')
+                })}
+                className="absolute top-1 left-1 p-1 rounded bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all opacity-0 group-hover:opacity-100"
+                title="Expand notes"
+              >
+                <Expand size={12} className="text-gray-500 dark:text-gray-400" />
+              </button>
+            )}
           </div>
           {isSaving && (
             <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Saving...</div>
