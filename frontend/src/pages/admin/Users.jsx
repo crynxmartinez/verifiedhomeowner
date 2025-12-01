@@ -244,13 +244,13 @@ export default function AdminUsers() {
                     New
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Called
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Follow-up
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Not Int.
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                    Pending
                   </th>
                   <th 
                     onClick={() => handleSort('created_at')}
@@ -306,13 +306,13 @@ export default function AdminUsers() {
                           <span className="text-blue-600 dark:text-blue-400 font-medium">{user.stats.new}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-green-600 dark:text-green-400 font-medium">{user.stats.called}</span>
-                        </td>
-                        <td className="px-6 py-4">
                           <span className="text-yellow-600 dark:text-yellow-400 font-medium">{user.stats.follow_up}</span>
                         </td>
                         <td className="px-6 py-4">
                           <span className="text-red-600 dark:text-red-400 font-medium">{user.stats.not_interested}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-gray-600 dark:text-gray-400 font-medium">{user.stats.pending}</span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -507,16 +507,16 @@ export default function AdminUsers() {
                       <span className="ml-2 font-semibold">{editingUser.stats.new}</span>
                     </div>
                     <div>
-                      <span className="text-green-600 dark:text-green-400">Called:</span>
-                      <span className="ml-2 font-semibold">{editingUser.stats.called}</span>
-                    </div>
-                    <div>
                       <span className="text-yellow-600 dark:text-yellow-400">Follow-up:</span>
                       <span className="ml-2 font-semibold">{editingUser.stats.follow_up}</span>
                     </div>
                     <div>
                       <span className="text-red-600 dark:text-red-400">Not Interested:</span>
                       <span className="ml-2 font-semibold">{editingUser.stats.not_interested}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">Pending:</span>
+                      <span className="ml-2 font-semibold">{editingUser.stats.pending}</span>
                     </div>
                   </div>
                 </div>

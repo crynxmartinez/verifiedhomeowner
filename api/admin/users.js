@@ -28,13 +28,15 @@ async function handler(req, res) {
           statsByUser[lead.user_id] = {
             total: 0,
             new: 0,
-            called: 0,
             follow_up: 0,
             not_interested: 0,
+            pending: 0,
           };
         }
         statsByUser[lead.user_id].total++;
-        statsByUser[lead.user_id][lead.status]++;
+        if (statsByUser[lead.user_id][lead.status] !== undefined) {
+          statsByUser[lead.user_id][lead.status]++;
+        }
       });
 
       // Combine users with their stats
@@ -43,9 +45,9 @@ async function handler(req, res) {
         lead_count: statsByUser[user.id]?.total || 0,
         stats: {
           new: statsByUser[user.id]?.new || 0,
-          called: statsByUser[user.id]?.called || 0,
           follow_up: statsByUser[user.id]?.follow_up || 0,
           not_interested: statsByUser[user.id]?.not_interested || 0,
+          pending: statsByUser[user.id]?.pending || 0,
         },
       }));
 
