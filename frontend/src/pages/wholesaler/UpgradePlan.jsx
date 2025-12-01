@@ -1,15 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import useAuthStore from '../../store/authStore';
-import { userAPI } from '../../lib/api';
-import { CheckCircle, TrendingUp } from 'lucide-react';
+import { userAPI, stripeAPI } from '../../lib/api';
+import { CheckCircle, TrendingUp, CreditCard } from 'lucide-react';
 import SuccessModal from '../../components/SuccessModal';
 
 export default function UpgradePlan() {
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
+  const refreshUser = useAuthStore((state) => state.refreshUser);
   const [loading, setLoading] = useState(false);
   const [successModal, setSuccessModal] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Handle Stripe redirect
+  useEffect(() => {
+    const success = searchParams.get('success');
+    const canceled = searchParams.get('canceled');
+    const plan = searchParams.get('plan');
+
+    if (success === 'true' && plan) {
+      // Refresh user data to get updated plan
+      refreshUser?.();
+      setSuccessModal({
+        title: 'Payment Successful!',
+        message: `Your plan has been upgraded to ${plan.toUpperCase()}. New leads will be distributed shortly.`,
+        actionText: 'View My Leads',
+        actionLink: '/leads',
+        secondaryText: 'Stay here'
+      });
+      // Clear URL params
+      setSearchParams({});
+    } else if (canceled === 'true') {
+      setSuccessModal({
+        title: 'Payment Canceled',
+        message: 'Your payment was canceled. You can try again anytime.',
+        actionText: 'Close',
+        secondaryText: null
+      });
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams, refreshUser]);
 
   const plans = [
     {
@@ -44,7 +76,28 @@ export default function UpgradePlan() {
   ];
 
   const handleUpgrade = async (planId) => {
-    if (!confirm(`Change your plan to ${planId.toUpperCase()}? (MVP - no payment required)`)) {
+    // For paid plans, redirect to Stripe checkout
+    if (planId !== 'free') {
+      setLoading(true);
+      try {
+        const response = await stripeAPI.createCheckout(planId);
+        // Redirect to Stripe checkout
+        window.location.href = response.data.url;
+      } catch (error) {
+        console.error('[STRIPE] Checkout error:', error);
+        setSuccessModal({
+          title: 'Error',
+          message: error.response?.data?.error || 'Failed to start checkout. Please try again.',
+          actionText: 'Close',
+          secondaryText: null
+        });
+        setLoading(false);
+      }
+      return;
+    }
+
+    // For free plan, use direct update (downgrade)
+    if (!confirm('Downgrade to Free plan? You will lose your current subscription benefits.')) {
       return;
     }
     
@@ -52,48 +105,14 @@ export default function UpgradePlan() {
     
     try {
       const planResponse = await userAPI.updatePlan(planId);
-      const { oldPlan, newPlan } = planResponse.data;
-      
-      // Update local state immediately with fresh user data from server
       setUser(planResponse.data.user);
       
-      // Check if this is an upgrade
-      const planHierarchy = { free: 0, basic: 1, elite: 2, pro: 3 };
-      const isUpgrade = planHierarchy[newPlan] > planHierarchy[oldPlan];
-      
-      if (isUpgrade) {
-        // Distribute leads
-        try {
-          const leadsResponse = await userAPI.distributeLeads();
-          const leadsAssigned = leadsResponse.data.leadsAssigned || 0;
-          
-          // Show success modal with lead count
-          setSuccessModal({
-            title: 'Plan Upgraded!',
-            message: `${leadsAssigned} new leads have been added to your account.`,
-            actionText: 'View My Leads',
-            actionLink: '/leads',
-            secondaryText: 'Stay here'
-          });
-        } catch (leadError) {
-          console.error('[PLAN CHANGE] Lead distribution failed:', leadError);
-          // Lead distribution failed, but plan already changed
-          setSuccessModal({
-            title: 'Plan Upgraded!',
-            message: `Your plan is now ${newPlan.toUpperCase()}. Leads will be distributed shortly.`,
-            actionText: 'Got it!',
-            secondaryText: null
-          });
-        }
-      } else {
-        // Not an upgrade (same plan or downgrade)
-        setSuccessModal({
-          title: 'Plan Changed',
-          message: `Your plan is now ${newPlan.toUpperCase()}.`,
-          actionText: 'Got it!',
-          secondaryText: null
-        });
-      }
+      setSuccessModal({
+        title: 'Plan Changed',
+        message: 'Your plan is now FREE. You will receive 1 lead per week on Mondays.',
+        actionText: 'Got it!',
+        secondaryText: null
+      });
       
     } catch (error) {
       console.error('[PLAN CHANGE] Failed to change plan:', error);
@@ -118,13 +137,13 @@ export default function UpgradePlan() {
           </p>
         </div>
 
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
           <div className="flex items-start space-x-3">
-            <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <CreditCard className="h-6 w-6 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-semibold text-blue-900 dark:text-blue-300">MVP Notice</h3>
-              <p className="text-sm text-blue-700 dark:text-blue-400 mt-1">
-                This is MVP mode - you can change plans instantly without payment. Payment integration coming soon!
+              <h3 className="font-semibold text-green-900 dark:text-green-300">Secure Payment</h3>
+              <p className="text-sm text-green-700 dark:text-green-400 mt-1">
+                Payments are processed securely through Stripe. Your subscription will be billed monthly.
               </p>
             </div>
           </div>

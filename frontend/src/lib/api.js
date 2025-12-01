@@ -55,6 +55,11 @@ export const userAPI = {
   distributeLeads: () => api.post('/user/leads/distribute'),
 };
 
+// Stripe API
+export const stripeAPI = {
+  createCheckout: (planId) => api.post('/stripe/checkout', { planId }),
+};
+
 // Marketplace API
 export const marketplaceAPI = {
   getLeads: (filters) => api.get('/marketplace', { params: filters }),
