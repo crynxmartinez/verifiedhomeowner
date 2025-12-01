@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
-import { Phone, Clock, DollarSign, Package } from 'lucide-react';
+import { Phone, Clock, DollarSign, Package, Copy, Check } from 'lucide-react';
 
 export default function WholesalerLeads() {
   const [leads, setLeads] = useState([]);
@@ -9,6 +9,7 @@ export default function WholesalerLeads() {
   const [savingLeads, setSavingLeads] = useState(new Set());
   const [notesDebounce, setNotesDebounce] = useState({});
   const [localNotes, setLocalNotes] = useState({});
+  const [copiedPhone, setCopiedPhone] = useState(null);
 
   useEffect(() => {
     fetchLeads();
@@ -128,6 +129,16 @@ export default function WholesalerLeads() {
     return <Package size={16} className="text-blue-600" title="Subscription Lead" />;
   };
 
+  const handleCopyPhone = async (phone, leadId) => {
+    try {
+      await navigator.clipboard.writeText(phone);
+      setCopiedPhone(leadId);
+      setTimeout(() => setCopiedPhone(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
   const renderLeadRow = (userLead) => {
     const lead = userLead.lead;
     const isSaving = savingLeads.has(userLead.id);
@@ -139,7 +150,27 @@ export default function WholesalerLeads() {
             {getSourceIcon(userLead.source)}
             <div>
               <div className="font-medium dark:text-white">{lead.owner_name}</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">{lead.phone}</div>
+              <div className="flex items-center gap-1 mt-1">
+                <a
+                  href={`tel:${lead.phone}`}
+                  className="p-1 rounded hover:bg-green-100 dark:hover:bg-green-900 transition-colors"
+                  title="Call this number"
+                >
+                  <Phone size={14} className="text-green-600 dark:text-green-400" />
+                </a>
+                <button
+                  onClick={() => handleCopyPhone(lead.phone, userLead.id)}
+                  className="p-1 rounded hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+                  title="Copy phone number"
+                >
+                  {copiedPhone === userLead.id ? (
+                    <Check size={14} className="text-green-600" />
+                  ) : (
+                    <Copy size={14} className="text-blue-600 dark:text-blue-400" />
+                  )}
+                </button>
+                <span className="text-sm text-gray-500 dark:text-gray-400">{lead.phone}</span>
+              </div>
             </div>
           </div>
         </td>
