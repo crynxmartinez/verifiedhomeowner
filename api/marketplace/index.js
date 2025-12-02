@@ -38,16 +38,19 @@ async function handler(req, res) {
         query = query.eq('state', state);
       }
 
-      // Filter out leads that reached max_buyers
-      query = query.or('max_buyers.eq.0,times_sold.lt.max_buyers');
-
       query = query.order('created_at', { ascending: false });
 
       const { data: leads, error } = await query;
 
       if (error) throw error;
 
-      res.status(200).json({ leads: leads || [] });
+      // Filter out leads that reached max_buyers (do it in JS to avoid complex query issues)
+      const availableLeads = (leads || []).filter(lead => {
+        if (lead.max_buyers === 0) return true; // unlimited
+        return lead.times_sold < lead.max_buyers;
+      });
+
+      res.status(200).json({ leads: availableLeads });
     } catch (error) {
       console.error('Fetch marketplace leads error:', error);
       console.error('Error details:', {
