@@ -18,9 +18,6 @@ export default function Navbar() {
             <Link to="/" className="text-gray-700 hover:text-blue-600 transition font-medium">
               Home
             </Link>
-            <Link to="/how-it-works" className="text-gray-700 hover:text-blue-600 transition font-medium">
-              How It Works
-            </Link>
             <Link to="/pricing" className="text-gray-700 hover:text-blue-600 transition font-medium">
               Pricing
             </Link>
@@ -60,13 +57,6 @@ export default function Navbar() {
               className="block py-2 text-gray-700 hover:text-blue-600 transition font-medium"
             >
               Home
-            </Link>
-            <Link 
-              to="/how-it-works" 
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-gray-700 hover:text-blue-600 transition font-medium"
-            >
-              How It Works
             </Link>
             <Link 
               to="/pricing" 

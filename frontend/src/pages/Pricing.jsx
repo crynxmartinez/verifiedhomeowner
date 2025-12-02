@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle, CreditCard } from 'lucide-react';
 import useAuthStore from '../store/authStore';
@@ -5,6 +6,11 @@ import Navbar from '../components/Navbar';
 
 export default function Pricing() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const plans = [
     {

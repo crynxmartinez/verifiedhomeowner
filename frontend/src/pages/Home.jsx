@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { CheckCircle, TrendingUp, Users, Zap } from 'lucide-react';
+import { TrendingUp, Users, Zap } from 'lucide-react';
 
 export default function Home() {
   return (
@@ -83,9 +83,9 @@ export default function Home() {
             </div>
             <div className="bg-white/20 backdrop-blur-sm p-8 rounded-xl border-2 border-white/30">
               <div className="text-5xl mb-4">📊</div>
-              <h3 className="text-2xl font-bold mb-4">Pre-Qualified Leads</h3>
+              <h3 className="text-2xl font-bold mb-4">Pre-Verified Leads</h3>
               <p className="text-blue-50 text-lg">
-                We do the research and skip tracing for you. Get leads with motivation and timeline already identified.
+                We do the research, skip tracing, and calling for you. Get leads that we already verified as correct numbers.
               </p>
             </div>
             <div className="bg-white/20 backdrop-blur-sm p-8 rounded-xl border-2 border-white/30">
@@ -143,50 +143,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features - Full Screen */}
-      <section className="min-h-screen w-full flex items-center justify-center bg-white py-20">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-5xl font-bold text-center mb-8 text-gray-900">Everything You Need</h2>
-          <p className="text-xl text-center mb-16 text-gray-600">Built specifically for real estate wholesalers</p>
-          <div className="grid md:grid-cols-2 gap-8">
-            {[
-              'Verified homeowner contact information',
-              'Property address and details',
-              'Seller motivation identified',
-              'Timeline for selling',
-              'Sequential lead distribution',
-              'Real-time dashboard tracking',
-              'Lead status management',
-              'Follow-up reminders',
-              'Daily automatic delivery',
-              'Multiple pricing plans',
-              'Advanced analytics',
-              'Priority support',
-            ].map((feature, index) => (
-              <div key={index} className="flex items-start space-x-4 bg-white p-6 rounded-lg shadow-sm">
-                <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0 mt-1" />
-                <span className="text-lg text-gray-700">{feature}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA - Full Screen */}
-      <section className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-600 to-blue-800 text-white">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-5xl font-bold mb-6">Ready to Get Started?</h2>
-          <p className="text-2xl mb-8 text-blue-100">
-            Join hundreds of wholesalers already growing their business with verified leads.
-          </p>
-          <Link
-            to="/register"
-            className="inline-block bg-white text-blue-600 px-12 py-4 rounded-lg text-xl font-semibold hover:bg-blue-50 transition"
-          >
-            Start Your Free Plan
-          </Link>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-16">
