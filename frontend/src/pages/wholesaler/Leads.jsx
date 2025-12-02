@@ -30,7 +30,8 @@ export default function WholesalerLeads() {
     city: 'all',          // all, or specific city
     tag: 'all',           // all, or specific tag
     pendingStatus: 'all', // all, follow_up, not_interested, pending
-    countdownDays: 'all'  // all, or number (filter leads with countdown >= this)
+    countdownDays: 'all', // all, or number
+    countdownCompare: 'gte' // eq (equals), gte (more than or equal), lte (less than or equal)
   });
   const [tempFilters, setTempFilters] = useState({ ...filters }); // For Apply button
 
@@ -191,8 +192,16 @@ export default function WholesalerLeads() {
 
     // Countdown days filter
     if (filters.countdownDays !== 'all') {
-      const minDays = parseInt(filters.countdownDays);
-      filtered = filtered.filter((l) => (l.countdown_days || 0) >= minDays);
+      const targetDays = parseInt(filters.countdownDays);
+      filtered = filtered.filter((l) => {
+        const days = l.countdown_days || 0;
+        switch (filters.countdownCompare) {
+          case 'eq': return days === targetDays;
+          case 'lte': return days <= targetDays;
+          case 'gte': 
+          default: return days >= targetDays;
+        }
+      });
     }
 
     return filtered;
@@ -608,7 +617,8 @@ export default function WholesalerLeads() {
       city: 'all',
       tag: 'all',
       pendingStatus: 'all',
-      countdownDays: 'all'
+      countdownDays: 'all',
+      countdownCompare: 'gte'
     };
     setTempFilters(clearedFilters);
     setFilters(clearedFilters);
@@ -722,7 +732,7 @@ export default function WholesalerLeads() {
             
             {filters.countdownDays !== 'all' && (
               <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 rounded-full text-xs">
-                {filters.countdownDays}+ days
+                {filters.countdownCompare === 'eq' ? '=' : filters.countdownCompare === 'lte' ? '≤' : '≥'} {filters.countdownDays} days
                 <button onClick={() => removeFilter('countdownDays')} className="hover:text-red-500">
                   <X size={12} />
                 </button>
