@@ -149,26 +149,26 @@ export default function UpgradePlan() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
           {plans.map((plan) => {
             const isCurrentPlan = user?.plan_type === plan.id;
             return (
               <div
                 key={plan.id}
-                className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900 p-6 ${
-                  plan.popular ? 'ring-4 ring-blue-600 relative' : ''
+                className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900 p-6 relative ${
+                  plan.popular && !isCurrentPlan ? 'ring-4 ring-blue-600' : ''
                 } ${isCurrentPlan ? 'ring-4 ring-green-600' : ''}`}
               >
                 {plan.popular && !isCurrentPlan && (
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <span className="bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold whitespace-nowrap">
                       Most Popular
                     </span>
                   </div>
                 )}
                 {isCurrentPlan && (
-                  <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <span className="bg-green-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-green-600 text-white px-4 py-1 rounded-full text-sm font-semibold whitespace-nowrap">
                       Current Plan
                     </span>
                   </div>
