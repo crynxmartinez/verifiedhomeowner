@@ -3,34 +3,6 @@ import Navbar from '../components/Navbar';
 import { CheckCircle, TrendingUp, Users, Zap } from 'lucide-react';
 
 export default function Home() {
-  const plans = [
-    {
-      name: 'Free',
-      price: '$0',
-      leads: '1 lead/week',
-      features: ['1 lead every Monday', 'Basic support', 'Lead tracking'],
-    },
-    {
-      name: 'Basic',
-      price: '$29',
-      leads: '1 lead/day',
-      features: ['Daily lead delivery', 'Priority support', 'Advanced tracking', 'Email notifications'],
-      popular: true,
-    },
-    {
-      name: 'Elite',
-      price: '$99',
-      leads: '5 leads/day',
-      features: ['5 daily leads', 'Premium support', 'Advanced analytics', 'Priority distribution'],
-    },
-    {
-      name: 'Pro',
-      price: '$149',
-      leads: '10 leads/day',
-      features: ['10 daily leads', 'VIP support', 'Custom analytics', 'First in line'],
-    },
-  ];
-
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -194,52 +166,6 @@ export default function Home() {
               <div key={index} className="flex items-start space-x-4 bg-white p-6 rounded-lg shadow-sm">
                 <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0 mt-1" />
                 <span className="text-lg text-gray-700">{feature}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing - Full Screen */}
-      <section className="min-h-screen w-full flex items-center justify-center bg-white py-20">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-5xl font-bold text-center mb-20 text-gray-900">Simple Pricing</h2>
-          <div className="grid md:grid-cols-4 gap-8 mt-8">
-            {plans.map((plan, index) => (
-              <div
-                key={index}
-                className={`bg-white rounded-xl shadow-lg p-8 ${
-                  plan.popular ? 'ring-4 ring-blue-600 relative mt-0' : 'mt-6'
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <span className="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg whitespace-nowrap">
-                      Most Popular
-                    </span>
-                  </div>
-                )}
-                <h3 className="text-2xl font-bold mb-2 mt-2">{plan.name}</h3>
-                <div className="text-4xl font-bold mb-2">{plan.price}</div>
-                <div className="text-gray-600 mb-6">{plan.leads}</div>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-start space-x-2">
-                      <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-gray-600">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  to="/register"
-                  className={`block text-center py-3 rounded-lg font-semibold transition ${
-                    plan.popular
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                  }`}
-                >
-                  Get Started
-                </Link>
               </div>
             ))}
           </div>

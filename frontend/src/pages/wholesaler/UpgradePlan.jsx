@@ -49,14 +49,14 @@ export default function UpgradePlan() {
       name: 'Free',
       price: '$0',
       leads: '1 lead/week',
-      features: ['1 lead every Monday', 'Basic support', 'Lead tracking'],
+      features: ['1 lead every Monday', 'Custom analytics', 'Notes', 'Follow up countdown'],
     },
     {
       id: 'basic',
       name: 'Basic',
       price: '$29',
       leads: '1 lead/day',
-      features: ['Daily lead delivery', 'Priority support', 'Advanced tracking', 'Email notifications'],
+      features: ['1 lead delivered daily', 'Priority lead distribution', 'Custom analytics', 'Notes', 'Follow up countdown', 'Access to hot lead marketplace', 'Support tab'],
       popular: true,
     },
     {
@@ -64,14 +64,14 @@ export default function UpgradePlan() {
       name: 'Elite',
       price: '$99',
       leads: '5 leads/day',
-      features: ['5 daily leads', 'Premium support', 'Advanced analytics', 'Priority distribution'],
+      features: ['5 leads delivered daily', 'Priority lead distribution', 'Custom analytics', 'Notes', 'Follow up countdown', 'Access to hot lead marketplace', 'Support tab'],
     },
     {
       id: 'pro',
       name: 'Pro',
       price: '$149',
       leads: '10 leads/day',
-      features: ['10 daily leads', 'VIP support', 'Custom analytics', 'First in line'],
+      features: ['10 leads delivered daily', 'Priority lead distribution', 'Custom analytics', 'Notes', 'Follow up countdown', 'Access to hot lead marketplace', 'Support tab'],
     },
   ];
 
@@ -155,7 +155,7 @@ export default function UpgradePlan() {
             return (
               <div
                 key={plan.id}
-                className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900 p-6 relative ${
+                className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-gray-900 p-6 relative flex flex-col ${
                   plan.popular && !isCurrentPlan ? 'ring-4 ring-blue-600' : ''
                 } ${isCurrentPlan ? 'ring-4 ring-green-600' : ''}`}
               >
@@ -178,11 +178,11 @@ export default function UpgradePlan() {
                 <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">{plan.price}</div>
                 <div className="text-gray-600 dark:text-gray-400 mb-6">{plan.leads}</div>
 
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-3 mb-8 flex-grow">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start space-x-2">
                       <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 dark:text-gray-300">{feature}</span>
+                      <span className="text-gray-700 dark:text-gray-300 text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -190,7 +190,7 @@ export default function UpgradePlan() {
                 <button
                   onClick={() => handleUpgrade(plan.id)}
                   disabled={isCurrentPlan || loading}
-                  className={`w-full py-3 rounded-lg font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 ${
+                  className={`w-full py-3 rounded-lg font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 mt-auto ${
                     isCurrentPlan
                       ? 'bg-green-600 text-white'
                       : plan.popular
