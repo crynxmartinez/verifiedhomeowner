@@ -86,8 +86,56 @@ export default function TagInput({ tags = [], onTagsChange, disabled = false }) 
   return (
     <div className="relative" ref={dropdownRef}>
       <div className="flex flex-col items-start gap-1">
-        {/* Visible Tags */}
-        {visibleTags.map((tag) => (
+        {/* First Tag Row - with +N more and + button */}
+        <div className="flex items-center gap-1">
+          {visibleTags[0] && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full text-xs font-medium">
+              {visibleTags[0]}
+              {!disabled && (
+                <button
+                  onClick={() => handleRemoveTag(visibleTags[0])}
+                  className="hover:text-red-500 transition-colors"
+                >
+                  <X size={12} />
+                </button>
+              )}
+            </span>
+          )}
+
+          {/* Hidden Tags Count - on first row */}
+          {!isExpanded && hiddenCount > 0 && (
+            <button
+              onClick={() => setIsExpanded(true)}
+              className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+            >
+              +{hiddenCount}
+            </button>
+          )}
+
+          {/* Collapse Button - on first row when expanded */}
+          {isExpanded && tags.length > MAX_VISIBLE_TAGS && (
+            <button
+              onClick={() => setIsExpanded(false)}
+              className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full text-xs font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            >
+              Less
+            </button>
+          )}
+
+          {/* Add Tag Button - on first row */}
+          {!disabled && (
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="p-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              title="Add tag"
+            >
+              <Plus size={14} />
+            </button>
+          )}
+        </div>
+
+        {/* Remaining Visible Tags */}
+        {visibleTags.slice(1).map((tag) => (
           <span
             key={tag}
             className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full text-xs font-medium"
@@ -103,37 +151,6 @@ export default function TagInput({ tags = [], onTagsChange, disabled = false }) 
             )}
           </span>
         ))}
-
-        {/* Hidden Tags Count */}
-        {!isExpanded && hiddenCount > 0 && (
-          <button
-            onClick={() => setIsExpanded(true)}
-            className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
-          >
-            +{hiddenCount} more
-          </button>
-        )}
-
-        {/* Collapse Button (when expanded) */}
-        {isExpanded && tags.length > MAX_VISIBLE_TAGS && (
-          <button
-            onClick={() => setIsExpanded(false)}
-            className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full text-xs font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-          >
-            Show less
-          </button>
-        )}
-
-        {/* Add Tag Button */}
-        {!disabled && (
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="p-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-            title="Add tag"
-          >
-            <Plus size={14} />
-          </button>
-        )}
       </div>
 
       {/* Dropdown */}
