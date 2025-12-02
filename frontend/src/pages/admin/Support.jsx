@@ -28,7 +28,7 @@ export default function Support() {
 
   const updateTicketStatus = async (ticketId, status) => {
     try {
-      await api.patch(`/support/${ticketId}`, { status });
+      await api.patch(`/support/update?id=${ticketId}`, { status });
       setTickets(prev => 
         prev.map(t => t.id === ticketId ? { ...t, status } : t)
       );
@@ -41,7 +41,7 @@ export default function Support() {
     if (!confirm('Are you sure you want to delete this ticket?')) return;
     
     try {
-      await api.delete(`/support/${ticketId}`);
+      await api.delete(`/support/update?id=${ticketId}`);
       setTickets(prev => prev.filter(t => t.id !== ticketId));
       if (expandedTicket === ticketId) setExpandedTicket(null);
     } catch (err) {
