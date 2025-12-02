@@ -143,7 +143,7 @@ export default function Refund() {
 
           <section>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              7. Free Trial
+              7. Free Plan
             </h2>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
               We offer a Free plan that allows you to try our service before committing to a paid 

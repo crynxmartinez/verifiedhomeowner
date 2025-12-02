@@ -53,7 +53,7 @@ export default function Home() {
               to="/register"
               className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-50 transition"
             >
-              Start Free Trial
+              Start Free Plan
             </Link>
             <Link
               to="/how-it-works"
@@ -257,7 +257,7 @@ export default function Home() {
             to="/register"
             className="inline-block bg-white text-blue-600 px-12 py-4 rounded-lg text-xl font-semibold hover:bg-blue-50 transition"
           >
-            Start Your Free Trial
+            Start Your Free Plan
           </Link>
         </div>
       </section>
