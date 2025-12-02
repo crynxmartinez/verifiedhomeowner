@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle, CheckCircle, Clock, Trash2, X, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '../../lib/api';
+import Layout from '../../components/Layout';
 
 export default function Support() {
   const [tickets, setTickets] = useState([]);
@@ -82,14 +83,17 @@ export default function Support() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </Layout>
     );
   }
 
   return (
-    <div>
+    <Layout>
+      <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Support Tickets</h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
@@ -262,6 +266,7 @@ export default function Support() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </Layout>
   );
 }

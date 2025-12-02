@@ -2,6 +2,7 @@ import { useState } from 'react';
 import useAuthStore from '../../store/authStore';
 import { Send, CheckCircle, AlertCircle } from 'lucide-react';
 import api from '../../lib/api';
+import Layout from '../../components/Layout';
 
 export default function Support() {
   const user = useAuthStore((state) => state.user);
@@ -60,30 +61,33 @@ export default function Support() {
 
   if (success) {
     return (
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+      <Layout>
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
+            <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Message Sent!
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Thank you for contacting us. We'll get back to you as soon as possible.
+            </p>
+            <button
+              onClick={() => setSuccess(false)}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+            >
+              Send Another Message
+            </button>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Message Sent!
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Thank you for contacting us. We'll get back to you as soon as possible.
-          </p>
-          <button
-            onClick={() => setSuccess(false)}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-          >
-            Send Another Message
-          </button>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <Layout>
+      <div className="max-w-2xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Contact Support</h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
@@ -178,6 +182,7 @@ export default function Support() {
           </button>
         </form>
       </div>
-    </div>
+      </div>
+    </Layout>
   );
 }
