@@ -50,7 +50,16 @@ async function handler(req, res) {
       res.status(200).json({ leads: leads || [] });
     } catch (error) {
       console.error('Fetch marketplace leads error:', error);
-      res.status(500).json({ error: 'Failed to fetch marketplace leads' });
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
+      res.status(500).json({ 
+        error: 'Failed to fetch marketplace leads',
+        details: error.message 
+      });
     }
   } else {
     res.status(405).json({ error: 'Method not allowed' });
