@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
-import { Phone, Clock, DollarSign, Package, Copy, Check, Expand, X } from 'lucide-react';
+import { Phone, Clock, DollarSign, Package, Copy, Check, Expand, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function WholesalerLeads() {
   const [leads, setLeads] = useState([]);
@@ -11,6 +11,14 @@ export default function WholesalerLeads() {
   const [localNotes, setLocalNotes] = useState({});
   const [copiedPhone, setCopiedPhone] = useState(null);
   const [expandedNotes, setExpandedNotes] = useState(null); // { id, name, notes }
+
+  // Pagination state for Call Now board
+  const [callNowPage, setCallNowPage] = useState(1);
+  const [callNowPageSize, setCallNowPageSize] = useState(10);
+
+  // Pagination state for Pending board
+  const [pendingPage, setPendingPage] = useState(1);
+  const [pendingPageSize, setPendingPageSize] = useState(10);
 
   useEffect(() => {
     fetchLeads();
@@ -123,6 +131,27 @@ export default function WholesalerLeads() {
     return l.status === 'new' || l.action === 'call_now';
   });
 
+  // Pagination calculations for Call Now
+  const callNowTotalPages = Math.ceil(callNowLeads.length / callNowPageSize);
+  const callNowStartIndex = (callNowPage - 1) * callNowPageSize;
+  const callNowPaginatedLeads = callNowLeads.slice(callNowStartIndex, callNowStartIndex + callNowPageSize);
+
+  // Pagination calculations for Pending
+  const pendingTotalPages = Math.ceil(pendingLeads.length / pendingPageSize);
+  const pendingStartIndex = (pendingPage - 1) * pendingPageSize;
+  const pendingPaginatedLeads = pendingLeads.slice(pendingStartIndex, pendingStartIndex + pendingPageSize);
+
+  // Reset to page 1 when page size changes
+  const handleCallNowPageSizeChange = (newSize) => {
+    setCallNowPageSize(newSize);
+    setCallNowPage(1);
+  };
+
+  const handlePendingPageSizeChange = (newSize) => {
+    setPendingPageSize(newSize);
+    setPendingPage(1);
+  };
+
   const getSourceIcon = (source) => {
     if (source === 'purchased') {
       return <DollarSign size={16} className="text-green-600" title="Purchased Lead" />;
@@ -138,6 +167,58 @@ export default function WholesalerLeads() {
     } catch (err) {
       console.error('Failed to copy:', err);
     }
+  };
+
+  // Pagination Component
+  const PaginationControls = ({ currentPage, totalPages, totalItems, pageSize, onPageChange, onPageSizeChange, startIndex }) => {
+    if (totalItems === 0) return null;
+    
+    const endIndex = Math.min(startIndex + pageSize, totalItems);
+    
+    return (
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-gray-50 dark:bg-gray-700 border-t dark:border-gray-600">
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          Showing {startIndex + 1}-{endIndex} of {totalItems}
+        </div>
+        <div className="flex items-center gap-3">
+          {/* Page Size Selector */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600 dark:text-gray-400">Per page:</span>
+            <select
+              value={pageSize}
+              onChange={(e) => onPageSizeChange(Number(e.target.value))}
+              className="border dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+          
+          {/* Page Navigation */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded border dark:border-gray-600 bg-white dark:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <ChevronLeft size={16} className="text-gray-600 dark:text-gray-400" />
+            </button>
+            <span className="px-3 py-1 text-sm text-gray-700 dark:text-gray-300">
+              {currentPage} / {totalPages || 1}
+            </span>
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+              className="p-1.5 rounded border dark:border-gray-600 bg-white dark:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <ChevronRight size={16} className="text-gray-600 dark:text-gray-400" />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // Mobile Card View
@@ -194,11 +275,16 @@ export default function WholesalerLeads() {
           <div className="text-gray-500 dark:text-gray-400">{lead.city}, {lead.state} {lead.zip_code}</div>
         </div>
 
-        {/* Motivation & Countdown */}
+        {/* Tags & Countdown */}
         <div className="flex flex-wrap gap-2">
           {lead.motivation && (
-            <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded text-xs">
+            <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
               {lead.motivation}
+            </span>
+          )}
+          {lead.timeline && (
+            <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
+              {lead.timeline}
             </span>
           )}
           {(userLead.status === 'follow_up' || userLead.status === 'not_interested' || userLead.status === 'pending') && (
@@ -354,8 +440,20 @@ export default function WholesalerLeads() {
           )}
         </td>
         <td className="px-4 py-3">
-          <div className="text-sm dark:text-white">
-            {lead.motivation || '-'}
+          <div className="flex flex-wrap gap-1">
+            {lead.motivation && (
+              <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
+                {lead.motivation}
+              </span>
+            )}
+            {lead.timeline && (
+              <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
+                {lead.timeline}
+              </span>
+            )}
+            {!lead.motivation && !lead.timeline && (
+              <span className="text-gray-400 dark:text-gray-500 text-sm">-</span>
+            )}
           </div>
         </td>
         <td className="px-4 py-3">
@@ -421,12 +519,26 @@ export default function WholesalerLeads() {
 
           {/* Mobile Cards */}
           <div className="md:hidden space-y-3 mt-3">
-            {callNowLeads.length === 0 ? (
+            {callNowPaginatedLeads.length === 0 ? (
               <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center text-gray-500 dark:text-gray-400">
                 No leads to call right now
               </div>
             ) : (
-              callNowLeads.map(renderLeadCard)
+              <>
+                {callNowPaginatedLeads.map(renderLeadCard)}
+                {/* Mobile Pagination */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <PaginationControls
+                    currentPage={callNowPage}
+                    totalPages={callNowTotalPages}
+                    totalItems={callNowLeads.length}
+                    pageSize={callNowPageSize}
+                    onPageChange={setCallNowPage}
+                    onPageSizeChange={handleCallNowPageSizeChange}
+                    startIndex={callNowStartIndex}
+                  />
+                </div>
+              </>
             )}
           </div>
 
@@ -449,7 +561,7 @@ export default function WholesalerLeads() {
                       Action
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                      Motivation
+                      Tags
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                       Notes
@@ -457,18 +569,28 @@ export default function WholesalerLeads() {
                   </tr>
                 </thead>
                 <tbody>
-                  {callNowLeads.length === 0 ? (
+                  {callNowPaginatedLeads.length === 0 ? (
                     <tr>
                       <td colSpan="6" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                         No leads to call right now
                       </td>
                     </tr>
                   ) : (
-                    callNowLeads.map(renderLeadRow)
+                    callNowPaginatedLeads.map(renderLeadRow)
                   )}
                 </tbody>
               </table>
             </div>
+            {/* Call Now Pagination */}
+            <PaginationControls
+              currentPage={callNowPage}
+              totalPages={callNowTotalPages}
+              totalItems={callNowLeads.length}
+              pageSize={callNowPageSize}
+              onPageChange={setCallNowPage}
+              onPageSizeChange={handleCallNowPageSizeChange}
+              startIndex={callNowStartIndex}
+            />
           </div>
         </div>
 
@@ -486,12 +608,26 @@ export default function WholesalerLeads() {
 
           {/* Mobile Cards */}
           <div className="md:hidden space-y-3 mt-3">
-            {pendingLeads.length === 0 ? (
+            {pendingPaginatedLeads.length === 0 ? (
               <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center text-gray-500 dark:text-gray-400">
                 No pending leads
               </div>
             ) : (
-              pendingLeads.map(renderLeadCard)
+              <>
+                {pendingPaginatedLeads.map(renderLeadCard)}
+                {/* Mobile Pagination */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                  <PaginationControls
+                    currentPage={pendingPage}
+                    totalPages={pendingTotalPages}
+                    totalItems={pendingLeads.length}
+                    pageSize={pendingPageSize}
+                    onPageChange={setPendingPage}
+                    onPageSizeChange={handlePendingPageSizeChange}
+                    startIndex={pendingStartIndex}
+                  />
+                </div>
+              </>
             )}
           </div>
 
@@ -514,7 +650,7 @@ export default function WholesalerLeads() {
                       Action
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                      Motivation
+                      Tags
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                       Notes
@@ -522,18 +658,28 @@ export default function WholesalerLeads() {
                   </tr>
                 </thead>
                 <tbody>
-                  {pendingLeads.length === 0 ? (
+                  {pendingPaginatedLeads.length === 0 ? (
                     <tr>
                       <td colSpan="6" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                         No pending leads
                       </td>
                     </tr>
                   ) : (
-                    pendingLeads.map(renderLeadRow)
+                    pendingPaginatedLeads.map(renderLeadRow)
                   )}
                 </tbody>
               </table>
             </div>
+            {/* Pending Pagination */}
+            <PaginationControls
+              currentPage={pendingPage}
+              totalPages={pendingTotalPages}
+              totalItems={pendingLeads.length}
+              pageSize={pendingPageSize}
+              onPageChange={setPendingPage}
+              onPageSizeChange={handlePendingPageSizeChange}
+              startIndex={pendingStartIndex}
+            />
           </div>
         </div>
       </div>
