@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
 import { Phone, Clock, DollarSign, Package, Copy, Check, Expand, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import TagInput from '../../components/TagInput';
 
 export default function WholesalerLeads() {
   const [leads, setLeads] = useState([]);
@@ -105,6 +106,31 @@ export default function WholesalerLeads() {
       console.error('Failed to update countdown:', error);
       console.error('Error response:', error.response?.data);
       alert(`Failed to update countdown: ${error.response?.data?.details || error.message}`);
+    } finally {
+      setSavingLeads(prev => {
+        const next = new Set(prev);
+        next.delete(leadId);
+        return next;
+      });
+    }
+  };
+
+  const handleTagsChange = async (leadId, source, newTags) => {
+    // Update local state immediately for instant feedback
+    setLeads(prevLeads =>
+      prevLeads.map(lead =>
+        lead.id === leadId ? { ...lead, tags: newTags } : lead
+      )
+    );
+
+    // Save to server
+    setSavingLeads(prev => new Set(prev).add(leadId));
+    try {
+      await leadsAPI.updateLead(leadId, source, { tags: newTags });
+    } catch (error) {
+      console.error('Failed to update tags:', error);
+      // Revert on error
+      await fetchLeads();
     } finally {
       setSavingLeads(prev => {
         const next = new Set(prev);
@@ -275,18 +301,8 @@ export default function WholesalerLeads() {
           <div className="text-gray-500 dark:text-gray-400">{lead.city}, {lead.state} {lead.zip_code}</div>
         </div>
 
-        {/* Tags & Countdown */}
+        {/* Countdown (for pending leads) */}
         <div className="flex flex-wrap gap-2">
-          {lead.motivation && (
-            <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
-              {lead.motivation}
-            </span>
-          )}
-          {lead.timeline && (
-            <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
-              {lead.timeline}
-            </span>
-          )}
           {(userLead.status === 'follow_up' || userLead.status === 'not_interested' || userLead.status === 'pending') && (
             userLead.countdown_days > 0 ? (
               <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs font-medium">
@@ -308,6 +324,16 @@ export default function WholesalerLeads() {
               </select>
             )
           )}
+        </div>
+
+        {/* Tags */}
+        <div>
+          <div className="text-gray-500 dark:text-gray-400 text-xs mb-1">Tags</div>
+          <TagInput
+            tags={userLead.tags || []}
+            onTagsChange={(newTags) => handleTagsChange(userLead.id, userLead.source, newTags)}
+            disabled={isSaving}
+          />
         </div>
 
         {/* Notes */}
@@ -440,21 +466,11 @@ export default function WholesalerLeads() {
           )}
         </td>
         <td className="px-4 py-3">
-          <div className="flex flex-wrap gap-1">
-            {lead.motivation && (
-              <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
-                {lead.motivation}
-              </span>
-            )}
-            {lead.timeline && (
-              <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
-                {lead.timeline}
-              </span>
-            )}
-            {!lead.motivation && !lead.timeline && (
-              <span className="text-gray-400 dark:text-gray-500 text-sm">-</span>
-            )}
-          </div>
+          <TagInput
+            tags={userLead.tags || []}
+            onTagsChange={(newTags) => handleTagsChange(userLead.id, userLead.source, newTags)}
+            disabled={isSaving}
+          />
         </td>
         <td className="px-4 py-3">
           <div className="relative group">

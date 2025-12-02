@@ -8,7 +8,7 @@ async function handler(req, res) {
 
   try {
     const { id, source } = req.query;
-    const { status, action, notes, follow_up_date, countdown_days } = req.body;
+    const { status, action, notes, follow_up_date, countdown_days, tags } = req.body;
 
     if (!id) {
       return res.status(400).json({ error: 'Lead ID is required' });
@@ -24,6 +24,9 @@ async function handler(req, res) {
     if (follow_up_date) updateData.follow_up_date = follow_up_date;
     if (countdown_days !== undefined) {
       updateData.countdown_days = parseInt(countdown_days) || null;
+    }
+    if (tags !== undefined) {
+      updateData.tags = Array.isArray(tags) ? tags : [];
     }
 
     // Determine which table to update
