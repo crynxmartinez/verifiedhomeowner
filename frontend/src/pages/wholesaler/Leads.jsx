@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
-import { Phone, Clock, DollarSign, Package, Copy, Check, Expand, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Phone, Clock, DollarSign, Package, Copy, Check, Expand, X, ChevronLeft, ChevronRight, Search, SlidersHorizontal } from 'lucide-react';
 import TagInput from '../../components/TagInput';
+import FilterPanel from '../../components/FilterPanel';
 
 export default function WholesalerLeads() {
   const [leads, setLeads] = useState([]);
@@ -20,6 +21,17 @@ export default function WholesalerLeads() {
   // Pagination state for Pending board
   const [pendingPage, setPendingPage] = useState(1);
   const [pendingPageSize, setPendingPageSize] = useState(10);
+
+  // Filter state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    source: 'all',        // all, subscription, purchased
+    city: 'all',          // all, or specific city
+    tag: 'all',           // all, or specific tag
+    pendingStatus: 'all'  // all, follow_up, not_interested, pending
+  });
+  const [tempFilters, setTempFilters] = useState({ ...filters }); // For Apply button
 
   useEffect(() => {
     fetchLeads();
@@ -140,15 +152,62 @@ export default function WholesalerLeads() {
     }
   };
 
+  // Filter function - applies search and filters
+  const applyFilters = (leadsToFilter) => {
+    let filtered = [...leadsToFilter];
+
+    // Search filter
+    if (searchTerm.trim()) {
+      const search = searchTerm.toLowerCase();
+      filtered = filtered.filter((l) => {
+        const lead = l.lead || {};
+        return (
+          (lead.owner_name || '').toLowerCase().includes(search) ||
+          (lead.full_name || '').toLowerCase().includes(search) ||
+          (lead.phone || '').toLowerCase().includes(search) ||
+          (lead.property_address || '').toLowerCase().includes(search) ||
+          (lead.city || '').toLowerCase().includes(search) ||
+          (lead.state || '').toLowerCase().includes(search) ||
+          (lead.zip_code || '').toLowerCase().includes(search)
+        );
+      });
+    }
+
+    // Source filter
+    if (filters.source !== 'all') {
+      filtered = filtered.filter((l) => l.source === filters.source);
+    }
+
+    // City filter
+    if (filters.city !== 'all') {
+      filtered = filtered.filter((l) => l.lead?.city === filters.city);
+    }
+
+    // Tag filter
+    if (filters.tag !== 'all') {
+      filtered = filtered.filter((l) => (l.tags || []).includes(filters.tag));
+    }
+
+    return filtered;
+  };
+
+  // Apply global filters first
+  const filteredLeads = applyFilters(leads);
+
   // Pending leads: follow-up, not interested, or pending status
-  const pendingLeads = leads.filter((l) => 
+  let pendingLeads = filteredLeads.filter((l) => 
     l.status === 'follow_up' || 
     l.status === 'not_interested' || 
     l.status === 'pending'
   );
+
+  // Apply pending status filter (only for pending board)
+  if (filters.pendingStatus !== 'all') {
+    pendingLeads = pendingLeads.filter((l) => l.status === filters.pendingStatus);
+  }
   
   // Call Now leads: new or call_now action (but NOT if in pending)
-  const callNowLeads = leads.filter((l) => {
+  const callNowLeads = filteredLeads.filter((l) => {
     // Exclude if already in pending
     if (l.status === 'follow_up' || l.status === 'not_interested' || l.status === 'pending') {
       return false;
@@ -513,13 +572,153 @@ export default function WholesalerLeads() {
     );
   }
 
+  // Get unique cities from leads
+  const uniqueCities = [...new Set(leads.map(l => l.lead?.city).filter(Boolean))].sort();
+
+  // Get unique tags from leads
+  const uniqueTags = [...new Set(leads.flatMap(l => l.tags || []))].sort();
+
+  // Count active filters
+  const activeFilterCount = [
+    filters.source !== 'all',
+    filters.city !== 'all',
+    filters.tag !== 'all',
+    filters.pendingStatus !== 'all'
+  ].filter(Boolean).length;
+
+  // Handle filter apply
+  const handleApplyFilters = () => {
+    setFilters({ ...tempFilters });
+    setCallNowPage(1);
+    setPendingPage(1);
+  };
+
+  // Handle clear all filters
+  const handleClearAllFilters = () => {
+    const clearedFilters = {
+      source: 'all',
+      city: 'all',
+      tag: 'all',
+      pendingStatus: 'all'
+    };
+    setTempFilters(clearedFilters);
+    setFilters(clearedFilters);
+    setSearchTerm('');
+    setCallNowPage(1);
+    setPendingPage(1);
+  };
+
+  // Remove single filter
+  const removeFilter = (filterKey) => {
+    const newFilters = { ...filters, [filterKey]: 'all' };
+    setFilters(newFilters);
+    setTempFilters(newFilters);
+    setCallNowPage(1);
+    setPendingPage(1);
+  };
+
   return (
     <Layout>
-      <div className="space-y-8">
+      <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Leads</h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">Manage and track your leads</p>
         </div>
+
+        {/* Search Bar and Filter Button */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCallNowPage(1);
+                setPendingPage(1);
+              }}
+              placeholder="Search by name, phone, address..."
+              className="w-full pl-10 pr-4 py-2.5 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          {/* Filter Button */}
+          <button
+            onClick={() => {
+              setTempFilters({ ...filters });
+              setFilterPanelOpen(true);
+            }}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            <SlidersHorizontal size={18} />
+            <span>Filters</span>
+            {activeFilterCount > 0 && (
+              <span className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded-full">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Active Filter Chips */}
+        {(activeFilterCount > 0 || searchTerm) && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm text-gray-500 dark:text-gray-400">Active:</span>
+            
+            {searchTerm && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs">
+                Search: "{searchTerm}"
+                <button onClick={() => { setSearchTerm(''); setCallNowPage(1); setPendingPage(1); }} className="hover:text-red-500">
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+            
+            {filters.source !== 'all' && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full text-xs">
+                {filters.source === 'subscription' ? 'Subscription' : 'Purchased'}
+                <button onClick={() => removeFilter('source')} className="hover:text-red-500">
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+            
+            {filters.city !== 'all' && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-full text-xs">
+                {filters.city}
+                <button onClick={() => removeFilter('city')} className="hover:text-red-500">
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+            
+            {filters.tag !== 'all' && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full text-xs">
+                {filters.tag}
+                <button onClick={() => removeFilter('tag')} className="hover:text-red-500">
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+            
+            {filters.pendingStatus !== 'all' && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded-full text-xs">
+                {filters.pendingStatus.replace('_', ' ')}
+                <button onClick={() => removeFilter('pendingStatus')} className="hover:text-red-500">
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+            
+            <button
+              onClick={handleClearAllFilters}
+              className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-500 underline"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
 
         {/* Call Now Section */}
         <div>
@@ -742,6 +941,18 @@ export default function WholesalerLeads() {
           </div>
         </div>
       )}
+
+      {/* Filter Panel */}
+      <FilterPanel
+        isOpen={filterPanelOpen}
+        onClose={() => setFilterPanelOpen(false)}
+        filters={tempFilters}
+        onFiltersChange={setTempFilters}
+        onApply={handleApplyFilters}
+        onClearAll={handleClearAllFilters}
+        cities={uniqueCities}
+        tags={uniqueTags}
+      />
     </Layout>
   );
 }
