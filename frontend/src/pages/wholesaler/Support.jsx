@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import useAuthStore from '../../store/authStore';
 import { Send, CheckCircle, AlertCircle } from 'lucide-react';
-import api from '../../api/axios';
+import api from '../../lib/api';
 
 export default function Support() {
   const user = useAuthStore((state) => state.user);

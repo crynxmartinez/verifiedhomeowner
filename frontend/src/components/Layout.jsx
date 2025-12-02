@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { useTheme } from '../context/ThemeContext';
-import api from '../api/axios';
+import api from '../lib/api';
 import { 
   LayoutDashboard, 
   Users, 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle, CheckCircle, Clock, Trash2, X, ChevronDown, ChevronUp } from 'lucide-react';
-import api from '../../api/axios';
+import api from '../../lib/api';
 
 export default function Support() {
   const [tickets, setTickets] = useState([]);
