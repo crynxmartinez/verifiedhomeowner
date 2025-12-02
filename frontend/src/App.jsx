@@ -6,6 +6,10 @@ import { ThemeProvider } from './context/ThemeContext';
 import Home from './pages/Home';
 import About from './pages/About';
 import HowItWorks from './pages/HowItWorks';
+import Pricing from './pages/Pricing';
+import Terms from './pages/Terms';
+import Privacy from './pages/Privacy';
+import Refund from './pages/Refund';
 
 // Auth pages
 import Login from './pages/Login';
@@ -48,6 +52,10 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/refund" element={<Refund />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 

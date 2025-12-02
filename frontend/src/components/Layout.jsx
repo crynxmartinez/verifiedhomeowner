@@ -106,10 +106,23 @@ export default function Layout({ children }) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="p-8">
+      <div className="flex-1 overflow-auto flex flex-col">
+        <div className="flex-1 p-8">
           {children}
         </div>
+        
+        {/* Footer */}
+        <footer className="px-8 py-4 border-t dark:border-gray-700 bg-white dark:bg-gray-800">
+          <div className="flex flex-wrap justify-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+            <Link to="/pricing" className="hover:text-blue-600 dark:hover:text-blue-400">Pricing</Link>
+            <Link to="/terms" className="hover:text-blue-600 dark:hover:text-blue-400">Terms of Service</Link>
+            <Link to="/privacy" className="hover:text-blue-600 dark:hover:text-blue-400">Privacy Policy</Link>
+            <Link to="/refund" className="hover:text-blue-600 dark:hover:text-blue-400">Refund Policy</Link>
+          </div>
+          <div className="text-center mt-2 text-xs text-gray-400 dark:text-gray-500">
+            © {new Date().getFullYear()} Verified Homeowner
+          </div>
+        </footer>
       </div>
     </div>
   );
