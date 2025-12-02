@@ -20,6 +20,7 @@ import WholesalerDashboard from './pages/wholesaler/Dashboard';
 import WholesalerLeads from './pages/wholesaler/Leads';
 import WholesalerMarketplace from './pages/wholesaler/Marketplace';
 import UpgradePlan from './pages/wholesaler/UpgradePlan';
+import WholesalerSupport from './pages/wholesaler/Support';
 
 // Admin pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -27,6 +28,7 @@ import AdminUsers from './pages/admin/Users';
 import AdminLeads from './pages/admin/Leads';
 import AdminMarketplace from './pages/admin/Marketplace';
 import AdminAnalytics from './pages/admin/Analytics';
+import AdminSupport from './pages/admin/Support';
 
 function PrivateRoute({ children }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -92,6 +94,14 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/support"
+          element={
+            <PrivateRoute>
+              <WholesalerSupport />
+            </PrivateRoute>
+          }
+        />
 
         {/* Admin routes */}
         <Route
@@ -131,6 +141,14 @@ function App() {
           element={
             <AdminRoute>
               <AdminAnalytics />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/support"
+          element={
+            <AdminRoute>
+              <AdminSupport />
             </AdminRoute>
           }
         />

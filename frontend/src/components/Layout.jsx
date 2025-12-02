@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { useTheme } from '../context/ThemeContext';
+import api from '../api/axios';
 import { 
   LayoutDashboard, 
   Users, 
@@ -11,7 +13,8 @@ import {
   Home,
   ShoppingCart,
   Moon,
-  Sun
+  Sun,
+  MessageCircle
 } from 'lucide-react';
 
 export default function Layout({ children }) {
@@ -20,6 +23,25 @@ export default function Layout({ children }) {
   const { user, logout } = useAuthStore();
   const { darkMode, toggleDarkMode } = useTheme();
   const isAdmin = user?.role === 'admin';
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Fetch unread support ticket count for admin
+  useEffect(() => {
+    if (isAdmin) {
+      const fetchUnreadCount = async () => {
+        try {
+          const response = await api.get('/support/unread-count');
+          setUnreadCount(response.data.count);
+        } catch (err) {
+          console.error('Failed to fetch unread count:', err);
+        }
+      };
+      fetchUnreadCount();
+      // Refresh every 30 seconds
+      const interval = setInterval(fetchUnreadCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isAdmin]);
 
   const handleLogout = () => {
     logout();
@@ -32,6 +54,7 @@ export default function Layout({ children }) {
     { path: '/admin/leads', icon: FileText, label: 'Leads' },
     { path: '/admin/marketplace', icon: ShoppingCart, label: 'Lead Marketplace' },
     { path: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
+    { path: '/admin/support', icon: MessageCircle, label: 'Support', badge: unreadCount },
   ];
 
   const wholesalerMenuItems = [
@@ -39,6 +62,7 @@ export default function Layout({ children }) {
     { path: '/leads', icon: FileText, label: 'My Leads' },
     { path: '/marketplace', icon: ShoppingCart, label: 'Lead Marketplace' },
     { path: '/upgrade', icon: TrendingUp, label: 'Upgrade Plan' },
+    { path: '/support', icon: MessageCircle, label: 'Contact Support' },
   ];
 
   const menuItems = isAdmin ? adminMenuItems : wholesalerMenuItems;
@@ -65,14 +89,21 @@ export default function Layout({ children }) {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition ${
+                className={`flex items-center justify-between px-4 py-3 rounded-lg transition ${
                   isActive
                     ? 'bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
-                <Icon className="h-5 w-5" />
-                <span className="font-medium">{item.label}</span>
+                <div className="flex items-center space-x-3">
+                  <Icon className="h-5 w-5" />
+                  <span className="font-medium">{item.label}</span>
+                </div>
+                {item.badge > 0 && (
+                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                    {item.badge > 99 ? '99+' : item.badge}
+                  </span>
+                )}
               </Link>
             );
           })}
