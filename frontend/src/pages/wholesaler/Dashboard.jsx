@@ -136,14 +136,14 @@ export default function WholesalerDashboard() {
 
         {/* Quick Actions */}
         <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg shadow p-6 text-white">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Ready to make calls?</h2>
+              <h2 className="text-xl sm:text-2xl font-bold mb-2">Ready to make calls?</h2>
               <p className="text-blue-100">You have {stats?.callNow || 0} leads waiting</p>
             </div>
             <a
               href="/leads"
-              className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition"
+              className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition w-full sm:w-auto text-center"
             >
               View Leads
             </a>

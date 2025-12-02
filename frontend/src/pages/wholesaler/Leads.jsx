@@ -140,6 +140,107 @@ export default function WholesalerLeads() {
     }
   };
 
+  // Mobile Card View
+  const renderLeadCard = (userLead) => {
+    const lead = userLead.lead;
+    const isSaving = savingLeads.has(userLead.id);
+
+    return (
+      <div key={userLead.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2">
+            {getSourceIcon(userLead.source)}
+            <div>
+              <div className="font-medium dark:text-white">{lead.owner_name}</div>
+              <div className="flex items-center gap-2 mt-1">
+                <a
+                  href={`tel:${lead.phone}`}
+                  className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900 rounded text-green-700 dark:text-green-300 text-sm"
+                >
+                  <Phone size={14} />
+                  <span>Call</span>
+                </a>
+                <button
+                  onClick={() => handleCopyPhone(lead.phone, userLead.id)}
+                  className="p-1.5 rounded bg-gray-100 dark:bg-gray-700"
+                >
+                  {copiedPhone === userLead.id ? (
+                    <Check size={14} className="text-green-600" />
+                  ) : (
+                    <Copy size={14} className="text-gray-600 dark:text-gray-400" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+          <select
+            value={userLead.status}
+            onChange={(e) => handleStatusChange(userLead.id, userLead.source, e.target.value)}
+            disabled={isSaving}
+            className="border dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          >
+            <option value="new">New</option>
+            <option value="follow_up">Follow-up</option>
+            <option value="not_interested">Not Interested</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+
+        {/* Property */}
+        <div className="text-sm">
+          <div className="text-gray-500 dark:text-gray-400">Property</div>
+          <div className="dark:text-white">{lead.property_address}</div>
+          <div className="text-gray-500 dark:text-gray-400">{lead.city}, {lead.state} {lead.zip_code}</div>
+        </div>
+
+        {/* Motivation & Countdown */}
+        <div className="flex flex-wrap gap-2">
+          {lead.motivation && (
+            <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded text-xs">
+              {lead.motivation}
+            </span>
+          )}
+          {(userLead.status === 'follow_up' || userLead.status === 'not_interested' || userLead.status === 'pending') && (
+            userLead.countdown_days > 0 ? (
+              <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs font-medium">
+                {userLead.countdown_days} day{userLead.countdown_days !== 1 ? 's' : ''}
+              </span>
+            ) : (
+              <select
+                value=""
+                onChange={(e) => handleCountdownChange(userLead.id, userLead.source, e.target.value)}
+                disabled={isSaving}
+                className="border dark:border-gray-600 rounded px-2 py-1 text-xs bg-white dark:bg-gray-700"
+              >
+                <option value="">Set countdown...</option>
+                <option value="7">7 days</option>
+                <option value="15">15 days</option>
+                <option value="30">30 days</option>
+                <option value="60">60 days</option>
+                <option value="90">90 days</option>
+              </select>
+            )
+          )}
+        </div>
+
+        {/* Notes */}
+        <div>
+          <textarea
+            value={localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')}
+            onChange={(e) => handleNotesChange(userLead.id, userLead.source, e.target.value)}
+            disabled={isSaving}
+            className="border dark:border-gray-600 rounded px-2 py-2 text-sm w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
+            rows="2"
+            placeholder="Add notes..."
+          />
+          {isSaving && <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Saving...</div>}
+        </div>
+      </div>
+    );
+  };
+
+  // Desktop Table Row
   const renderLeadRow = (userLead) => {
     const lead = userLead.lead;
     const isSaving = savingLeads.has(userLead.id);
@@ -306,9 +407,9 @@ export default function WholesalerLeads() {
           <p className="text-gray-600 dark:text-gray-400 mt-2">Manage and track your leads</p>
         </div>
 
-        {/* Call Now Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900">
-          <div className="px-6 py-4 border-b dark:border-gray-700 bg-green-50 dark:bg-green-900/20">
+        {/* Call Now Section */}
+        <div>
+          <div className="px-4 py-4 bg-green-50 dark:bg-green-900/20 rounded-t-lg md:rounded-lg md:mb-0">
             <div className="flex items-center space-x-2">
               <Phone className="h-5 w-5 text-green-600 dark:text-green-400" />
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -317,48 +418,63 @@ export default function WholesalerLeads() {
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">These leads need to be called</p>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Contact
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Property
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Action
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Motivation
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Notes
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {callNowLeads.length === 0 ? (
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3 mt-3">
+            {callNowLeads.length === 0 ? (
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center text-gray-500 dark:text-gray-400">
+                No leads to call right now
+              </div>
+            ) : (
+              callNowLeads.map(renderLeadCard)
+            )}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <td colSpan="6" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                      No leads to call right now
-                    </td>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Contact
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Property
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Action
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Motivation
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Notes
+                    </th>
                   </tr>
-                ) : (
-                  callNowLeads.map(renderLeadRow)
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {callNowLeads.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                        No leads to call right now
+                      </td>
+                    </tr>
+                  ) : (
+                    callNowLeads.map(renderLeadRow)
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
-        {/* Pending Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900">
-          <div className="px-6 py-4 border-b dark:border-gray-700 bg-yellow-50 dark:bg-yellow-900/20">
+        {/* Pending Section */}
+        <div>
+          <div className="px-4 py-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-t-lg md:rounded-lg md:mb-0">
             <div className="flex items-center space-x-2">
               <Clock className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -367,42 +483,57 @@ export default function WholesalerLeads() {
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Follow-ups and other pending leads</p>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Contact
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Property
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Action
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Motivation
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                    Notes
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {pendingLeads.length === 0 ? (
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3 mt-3">
+            {pendingLeads.length === 0 ? (
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center text-gray-500 dark:text-gray-400">
+                No pending leads
+              </div>
+            ) : (
+              pendingLeads.map(renderLeadCard)
+            )}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <td colSpan="6" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                      No pending leads
-                    </td>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Contact
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Property
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Action
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Motivation
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Notes
+                    </th>
                   </tr>
-                ) : (
-                  pendingLeads.map(renderLeadRow)
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {pendingLeads.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                        No pending leads
+                      </td>
+                    </tr>
+                  ) : (
+                    pendingLeads.map(renderLeadRow)
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
