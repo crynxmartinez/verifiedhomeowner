@@ -29,7 +29,8 @@ export default function WholesalerLeads() {
     source: 'all',        // all, subscription, purchased
     city: 'all',          // all, or specific city
     tag: 'all',           // all, or specific tag
-    pendingStatus: 'all'  // all, follow_up, not_interested, pending
+    pendingStatus: 'all', // all, follow_up, not_interested, pending
+    countdownDays: 'all'  // all, or number (filter leads with countdown >= this)
   });
   const [tempFilters, setTempFilters] = useState({ ...filters }); // For Apply button
 
@@ -186,6 +187,12 @@ export default function WholesalerLeads() {
     // Tag filter
     if (filters.tag !== 'all') {
       filtered = filtered.filter((l) => (l.tags || []).includes(filters.tag));
+    }
+
+    // Countdown days filter
+    if (filters.countdownDays !== 'all') {
+      const minDays = parseInt(filters.countdownDays);
+      filtered = filtered.filter((l) => (l.countdown_days || 0) >= minDays);
     }
 
     return filtered;
@@ -583,7 +590,8 @@ export default function WholesalerLeads() {
     filters.source !== 'all',
     filters.city !== 'all',
     filters.tag !== 'all',
-    filters.pendingStatus !== 'all'
+    filters.pendingStatus !== 'all',
+    filters.countdownDays !== 'all'
   ].filter(Boolean).length;
 
   // Handle filter apply
@@ -599,7 +607,8 @@ export default function WholesalerLeads() {
       source: 'all',
       city: 'all',
       tag: 'all',
-      pendingStatus: 'all'
+      pendingStatus: 'all',
+      countdownDays: 'all'
     };
     setTempFilters(clearedFilters);
     setFilters(clearedFilters);
@@ -706,6 +715,15 @@ export default function WholesalerLeads() {
               <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 rounded-full text-xs">
                 {filters.pendingStatus.replace('_', ' ')}
                 <button onClick={() => removeFilter('pendingStatus')} className="hover:text-red-500">
+                  <X size={12} />
+                </button>
+              </span>
+            )}
+            
+            {filters.countdownDays !== 'all' && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 rounded-full text-xs">
+                {filters.countdownDays}+ days
+                <button onClick={() => removeFilter('countdownDays')} className="hover:text-red-500">
                   <X size={12} />
                 </button>
               </span>

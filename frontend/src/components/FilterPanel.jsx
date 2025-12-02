@@ -120,6 +120,29 @@ export default function FilterPanel({
             </select>
           </div>
 
+          {/* Countdown Days Filter */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
+              Countdown Days
+            </label>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">
+              Filter leads with countdown ≥ selected days
+            </p>
+            <select
+              value={filters.countdownDays}
+              onChange={(e) => onFiltersChange({ ...filters, countdownDays: e.target.value })}
+              className="w-full border dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="all">All</option>
+              <option value="1">1+ days</option>
+              <option value="7">7+ days</option>
+              <option value="15">15+ days</option>
+              <option value="30">30+ days</option>
+              <option value="60">60+ days</option>
+              <option value="90">90+ days</option>
+            </select>
+          </div>
+
           {/* Pending Status Filter */}
           <div>
             <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
