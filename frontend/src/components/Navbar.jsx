@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Home, Info, HelpCircle, LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus } from 'lucide-react';
 
 export default function Navbar() {
   return (
@@ -11,11 +11,14 @@ export default function Navbar() {
           </Link>
           
           <div className="flex items-center space-x-8">
-            <Link to="/" className="text-gray-700 hover:text-blue-600 transition">
+            <Link to="/" className="text-gray-700 hover:text-blue-600 transition font-medium">
               Home
             </Link>
-            <Link to="/how-it-works" className="text-gray-700 hover:text-blue-600 transition">
+            <Link to="/how-it-works" className="text-gray-700 hover:text-blue-600 transition font-medium">
               How It Works
+            </Link>
+            <Link to="/pricing" className="text-gray-700 hover:text-blue-600 transition font-medium">
+              Pricing
             </Link>
             <Link
               to="/login"
