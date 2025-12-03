@@ -1,251 +1,414 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { TrendingUp, Users, Zap } from 'lucide-react';
+import { 
+  TrendingUp, Users, Zap, CheckCircle, Phone, Target, 
+  Clock, Shield, ChevronDown, ChevronUp, MapPin, Home as HomeIcon,
+  DollarSign, BarChart3, Headphones, Star, ArrowRight
+} from 'lucide-react';
 
 const PEXELS_API_KEY = import.meta.env.VITE_PEXELS_API_KEY;
 
 export default function Home() {
-  const [heroImage, setHeroImage] = useState('');
-  const [solutionImage, setSolutionImage] = useState('');
-  const [problemImages, setProblemImages] = useState(['', '', '']);
+  const [images, setImages] = useState({
+    hero: '',
+    solution: '',
+    problems: ['', '', ''],
+    roles: ['', '', ''],
+    cta: ''
+  });
+  const [openFaq, setOpenFaq] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // Fetch hero image - modern house
-    fetch('https://api.pexels.com/v1/search?query=modern+house+exterior&per_page=1&orientation=landscape', {
-      headers: { Authorization: PEXELS_API_KEY }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.photos?.[0]) setHeroImage(data.photos[0].src.large2x);
-      })
-      .catch(() => {});
+    const fetchImage = async (query, key, isArray = false, index = 0) => {
+      if (!PEXELS_API_KEY) return;
+      try {
+        const res = await fetch(
+          `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`,
+          { headers: { Authorization: PEXELS_API_KEY } }
+        );
+        const data = await res.json();
+        if (data.photos?.[0]) {
+          const url = data.photos[0].src.large2x;
+          setImages(prev => {
+            if (isArray) {
+              const newArr = [...prev[key]];
+              newArr[index] = url;
+              return { ...prev, [key]: newArr };
+            }
+            return { ...prev, [key]: url };
+          });
+        }
+      } catch (e) {}
+    };
 
-    // Fetch solution section image - real estate success
-    fetch('https://api.pexels.com/v1/search?query=real+estate+agent+handshake&per_page=1&orientation=landscape', {
-      headers: { Authorization: PEXELS_API_KEY }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.photos?.[0]) setSolutionImage(data.photos[0].src.large2x);
-      })
-      .catch(() => {});
-
-    // Fetch problem section images
-    const problemQueries = ['frustrated+phone+call', 'confused+person+computer', 'stressed+office+work'];
-    problemQueries.forEach((query, index) => {
-      fetch(`https://api.pexels.com/v1/search?query=${query}&per_page=1&orientation=square`, {
-        headers: { Authorization: PEXELS_API_KEY }
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.photos?.[0]) {
-            setProblemImages(prev => {
-              const newImages = [...prev];
-              newImages[index] = data.photos[0].src.medium;
-              return newImages;
-            });
-          }
-        })
-        .catch(() => {});
-    });
+    // Fetch all images
+    fetchImage('aerial view suburban houses neighborhood', 'hero');
+    fetchImage('real estate deal handshake success', 'solution');
+    fetchImage('luxury modern house exterior', 'cta');
+    
+    // Problem images
+    ['frustrated man phone call office', 'confused person looking at papers', 'stressed businessman desk'].forEach((q, i) => 
+      fetchImage(q, 'problems', true, i)
+    );
+    
+    // Role images
+    ['real estate investor meeting', 'business professional office', 'real estate agent showing house'].forEach((q, i) => 
+      fetchImage(q, 'roles', true, i)
+    );
   }, []);
 
+  const faqs = [
+    { q: 'How do I receive my leads?', a: 'Leads are delivered directly to your dashboard daily (or weekly for free plans). You\'ll see them in your "Call Now" queue ready to contact.' },
+    { q: 'Are the phone numbers verified?', a: 'Yes! Every lead goes through our verification process. We call and confirm the number connects to the actual property owner before delivering it to you.' },
+    { q: 'Can I cancel anytime?', a: 'Absolutely. No contracts, no commitments. Cancel your subscription anytime from your account settings.' },
+    { q: 'What areas do you cover?', a: 'We currently provide leads nationwide across all 50 US states. You can filter by state, city, or zip code.' },
+    { q: 'How is this different from skip tracing?', a: 'Skip tracing gives you raw data that may be outdated. We deliver pre-verified, ready-to-call leads. No more wrong numbers or disconnected lines.' },
+  ];
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
       <Navbar />
 
-      {/* Hero Section - Full Screen with Background Image */}
-      <section className="min-h-screen w-full flex items-center justify-center relative pt-16">
-        {/* Background Image */}
+      {/* Hero Section */}
+      <section className="min-h-screen w-full flex items-center justify-center relative pt-16 overflow-hidden">
+        {/* Background */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ 
-            backgroundImage: heroImage ? `url(${heroImage})` : 'none',
-            backgroundColor: '#e0f2fe'
-          }}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: images.hero ? `url(${images.hero})` : 'none' }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-400/90 to-blue-500/90"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/95 via-blue-900/95 to-indigo-900/95"></div>
         </div>
         
-        <div className="max-w-5xl mx-auto px-4 text-center relative z-10">
-          <img src="/logo.png" alt="Verified Homeowner" className="h-24 mx-auto mb-8 drop-shadow-lg" />
-          <h1 className="text-6xl font-bold mb-6 text-white drop-shadow-lg">
-            Stop Wasting Time on Bad Leads
+        {/* Decorative Elements */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
+        
+        <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
+          {/* Trust Badge */}
+          <div className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-8">
+            <Star className="h-4 w-4 text-yellow-400 mr-2" />
+            <span className="text-white/90 text-sm">Trusted by 500+ Real Estate Professionals</span>
+          </div>
+          
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white leading-tight">
+            Get <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-400">Verified Leads</span>
+            <br />Delivered Daily
           </h1>
-          <p className="text-3xl mb-4 text-white font-semibold drop-shadow-md">
-            No More Wrong Numbers. No More Skip Tracing. No More Dead Ends.
+          
+          <p className="text-xl md:text-2xl mb-4 text-blue-100 max-w-3xl mx-auto">
+            Stop wasting time on wrong numbers and dead ends.
           </p>
-          <p className="text-xl mb-8 text-sky-100 max-w-3xl mx-auto drop-shadow">
-            Get verified, ready-to-call homeowner leads delivered daily. We handle the research, you close the deals.
+          <p className="text-lg mb-10 text-blue-200/80 max-w-2xl mx-auto">
+            We verify every homeowner contact before delivering it to you. No skip tracing needed.
           </p>
-          <div className="flex justify-center space-x-4">
+          
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
             <Link
               to="/register"
-              className="bg-white text-sky-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-sky-50 transition shadow-lg hover:shadow-xl"
+              className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition shadow-lg shadow-orange-500/30 flex items-center justify-center"
             >
-              Start Free Plan
+              Start Free Trial
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
             <Link
-              to="/how-it-works"
-              className="border-2 border-white text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-white hover:text-sky-600 transition shadow-lg"
+              to="/pricing"
+              className="bg-white/10 backdrop-blur-sm border border-white/30 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-white/20 transition"
             >
-              Learn More
+              View Pricing
             </Link>
+          </div>
+          
+          {/* Quick Stats */}
+          <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+            <div>
+              <div className="text-3xl md:text-4xl font-bold text-white">10K+</div>
+              <div className="text-blue-200/70 text-sm">Leads Delivered</div>
+            </div>
+            <div>
+              <div className="text-3xl md:text-4xl font-bold text-white">98%</div>
+              <div className="text-blue-200/70 text-sm">Accuracy Rate</div>
+            </div>
+            <div>
+              <div className="text-3xl md:text-4xl font-bold text-white">24hr</div>
+              <div className="text-blue-200/70 text-sm">Delivery Time</div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Problem Section */}
-      <section className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-white to-sky-50 py-20">
+      {/* How It Works - 4 Steps */}
+      <section className="py-24 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-5xl font-bold text-center mb-12 text-gray-900">We Know Your Pain</h2>
-          <p className="text-2xl text-center mb-16 text-gray-600">Every wholesaler faces the same frustrating problems...</p>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">How It Works</h2>
+            <p className="text-xl text-gray-600">Get started in minutes, receive leads daily</p>
+          </div>
+          
+          <div className="grid md:grid-cols-4 gap-8">
+            {[
+              { icon: Users, title: 'Sign Up', desc: 'Create your free account in under 2 minutes', color: 'bg-purple-500' },
+              { icon: Target, title: 'Choose Plan', desc: 'Select a plan based on how many leads you need', color: 'bg-blue-500' },
+              { icon: Phone, title: 'Receive Leads', desc: 'Get verified homeowner leads delivered daily', color: 'bg-indigo-500' },
+              { icon: DollarSign, title: 'Close Deals', desc: 'Call verified numbers and close more deals', color: 'bg-orange-500' },
+            ].map((step, i) => (
+              <div key={i} className="relative">
+                {i < 3 && (
+                  <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-gray-300 to-transparent"></div>
+                )}
+                <div className="text-center">
+                  <div className={`${step.color} w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg`}>
+                    <step.icon className="h-10 w-10 text-white" />
+                  </div>
+                  <div className="text-sm font-semibold text-gray-400 mb-2">STEP {i + 1}</div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{step.title}</h3>
+                  <p className="text-gray-600">{step.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pain Points Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">We Know Your Pain</h2>
+            <p className="text-xl text-gray-600">Every wholesaler faces these frustrating problems</p>
+          </div>
+          
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white border border-sky-200 p-8 rounded-xl shadow-lg hover:shadow-xl transition overflow-hidden">
-              {problemImages[0] && (
-                <div className="h-40 -mx-8 -mt-8 mb-6 overflow-hidden">
-                  <img src={problemImages[0]} alt="Calling frustration" className="w-full h-full object-cover" />
+            {[
+              { 
+                img: images.problems[0], 
+                icon: '📞', 
+                title: 'Endless Cold Calling', 
+                desc: 'Spending hours dialing numbers only to reach voicemails and disconnected lines.',
+                stat: '80%',
+                statLabel: 'of cold calls fail'
+              },
+              { 
+                img: images.problems[1], 
+                icon: '❌', 
+                title: 'Wrong Numbers', 
+                desc: 'Outdated skip tracing data means wasted time and money on leads that go nowhere.',
+                stat: '$500+',
+                statLabel: 'wasted monthly'
+              },
+              { 
+                img: images.problems[2], 
+                icon: '⏰', 
+                title: 'Time Drain', 
+                desc: 'Hours spent researching, skip tracing, and verifying data instead of closing deals.',
+                stat: '20hrs',
+                statLabel: 'lost per week'
+              },
+            ].map((item, i) => (
+              <div key={i} className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100">
+                <div className="h-48 overflow-hidden relative">
+                  {item.img ? (
+                    <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-red-100 to-orange-100 flex items-center justify-center">
+                      <span className="text-6xl">{item.icon}</span>
+                    </div>
+                  )}
+                  <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                    {item.stat}
+                  </div>
                 </div>
-              )}
-              {!problemImages[0] && <div className="text-6xl mb-4">📞</div>}
-              <h3 className="text-2xl font-bold mb-4 text-sky-700">Calling Thousands</h3>
-              <p className="text-gray-600">
-                Spending hours dialing number after number, only to reach voicemails and disconnected lines.
-              </p>
-            </div>
-            <div className="bg-white border border-sky-200 p-8 rounded-xl shadow-lg hover:shadow-xl transition overflow-hidden">
-              {problemImages[1] && (
-                <div className="h-40 -mx-8 -mt-8 mb-6 overflow-hidden">
-                  <img src={problemImages[1]} alt="Wrong numbers" className="w-full h-full object-cover" />
+                <div className="p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
+                  <p className="text-gray-600 mb-3">{item.desc}</p>
+                  <p className="text-sm text-red-500 font-medium">{item.statLabel}</p>
                 </div>
-              )}
-              {!problemImages[1] && <div className="text-6xl mb-4">❌</div>}
-              <h3 className="text-2xl font-bold mb-4 text-sky-700">Wrong Numbers</h3>
-              <p className="text-gray-600">
-                Outdated data means wasted time and money on leads that go nowhere.
-              </p>
-            </div>
-            <div className="bg-white border border-sky-200 p-8 rounded-xl shadow-lg hover:shadow-xl transition overflow-hidden">
-              {problemImages[2] && (
-                <div className="h-40 -mx-8 -mt-8 mb-6 overflow-hidden">
-                  <img src={problemImages[2]} alt="Skip tracing" className="w-full h-full object-cover" />
-                </div>
-              )}
-              {!problemImages[2] && <div className="text-6xl mb-4">🔍</div>}
-              <h3 className="text-2xl font-bold mb-4 text-sky-700">Skip Tracing Hell</h3>
-              <p className="text-gray-600">
-                Paying for expensive skip tracing services just to find current contact information.
-              </p>
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Solution Section */}
-      <section className="min-h-screen w-full flex items-center justify-center relative py-20">
-        {/* Background Image */}
+      <section className="py-24 relative overflow-hidden">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ 
-            backgroundImage: solutionImage ? `url(${solutionImage})` : 'none',
-            backgroundColor: '#0ea5e9'
-          }}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: images.solution ? `url(${images.solution})` : 'none' }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-sky-500/95 to-blue-600/95"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/95 to-purple-700/95"></div>
         </div>
         
-        <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
-          <h2 className="text-5xl font-bold mb-8 text-white drop-shadow-lg">We Remove All That</h2>
-          <p className="text-3xl mb-12 font-semibold text-white drop-shadow-md">And Give You More Time to Close Deals</p>
-          <div className="grid md:grid-cols-2 gap-8 text-left">
-            <div className="bg-white/20 backdrop-blur-sm p-8 rounded-xl border border-white/30 hover:bg-white/30 transition">
-              <div className="text-5xl mb-4">✅</div>
-              <h3 className="text-2xl font-bold mb-4 text-white">Verified Contact Info</h3>
-              <p className="text-sky-100 text-lg">
-                Every lead comes with verified phone numbers and property owner information. No more wrong numbers.
-              </p>
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm p-8 rounded-xl border border-white/30 hover:bg-white/30 transition">
-              <div className="text-5xl mb-4">📊</div>
-              <h3 className="text-2xl font-bold mb-4 text-white">Pre-Verified Leads</h3>
-              <p className="text-sky-100 text-lg">
-                We do the research, skip tracing, and calling for you. Get leads that we already verified as correct numbers.
-              </p>
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm p-8 rounded-xl border border-white/30 hover:bg-white/30 transition">
-              <div className="text-5xl mb-4">⚡</div>
-              <h3 className="text-2xl font-bold mb-4 text-white">Daily Delivery</h3>
-              <p className="text-sky-100 text-lg">
-                Fresh leads delivered to your dashboard every day. No pulling lists, no data cleanup.
-              </p>
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm p-8 rounded-xl border border-white/30 hover:bg-white/30 transition">
-              <div className="text-5xl mb-4">💰</div>
-              <h3 className="text-2xl font-bold mb-4 text-white">More Time = More Deals</h3>
-              <p className="text-sky-100 text-lg">
-                Spend your time talking to motivated sellers, not chasing bad data. Close more deals, faster.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works - Full Screen */}
-      <section className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-sky-50 to-white py-20">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-5xl font-bold text-center mb-8 text-gray-900">How It Works</h2>
-          <p className="text-xl text-center mb-16 text-gray-600">Simple, efficient, and designed for wholesalers</p>
-          <div className="grid md:grid-cols-3 gap-12">
-            <div className="text-center">
-              <div className="bg-sky-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Users className="h-10 w-10 text-sky-600" />
-              </div>
-              <h3 className="text-2xl font-bold mb-4 text-gray-900">1. Sign Up</h3>
-              <p className="text-gray-600 text-lg">
-                Create your account and choose a plan that fits your needs. Start with our free plan.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-sky-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <TrendingUp className="h-10 w-10 text-sky-600" />
-              </div>
-              <h3 className="text-2xl font-bold mb-4 text-gray-900">2. Receive Leads</h3>
-              <p className="text-gray-600 text-lg">
-                Get verified homeowner leads delivered to your dashboard daily based on your plan.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="bg-sky-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Zap className="h-10 w-10 text-sky-600" />
-              </div>
-              <h3 className="text-2xl font-bold mb-4 text-gray-900">3. Close Deals</h3>
-              <p className="text-gray-600 text-lg">
-                Contact leads, track your progress, and close more deals with our easy-to-use system.
-              </p>
-            </div>
+        <div className="max-w-6xl mx-auto px-4 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">We Solve All That</h2>
+            <p className="text-xl text-blue-100">So you can focus on what matters - closing deals</p>
           </div>
           
-          {/* CTA Button */}
-          <div className="text-center mt-16">
-            <Link
-              to="/register"
-              className="inline-block bg-sky-500 text-white px-10 py-4 rounded-lg text-xl font-semibold hover:bg-sky-600 transition shadow-lg hover:shadow-xl"
-            >
-              Get Started Free
-            </Link>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { icon: CheckCircle, title: 'Verified Numbers', desc: 'Every phone number is called and verified before delivery' },
+              { icon: Clock, title: 'Daily Delivery', desc: 'Fresh leads delivered to your dashboard every single day' },
+              { icon: Shield, title: 'Accurate Data', desc: '98% accuracy rate on all contact information' },
+              { icon: Zap, title: 'Instant Access', desc: 'No waiting - leads appear in your dashboard immediately' },
+            ].map((item, i) => (
+              <div key={i} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition">
+                <item.icon className="h-12 w-12 text-orange-400 mb-4" />
+                <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
+                <p className="text-blue-100">{item.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
+      {/* Who It's For */}
+      <section className="py-24 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Built For Real Estate Pros</h2>
+            <p className="text-xl text-gray-600">Whether you're just starting or scaling your business</p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { 
+                img: images.roles[0], 
+                title: 'Wholesalers', 
+                desc: 'Find motivated sellers faster and close more deals with verified homeowner contacts.',
+                features: ['Daily lead delivery', 'Verified phone numbers', 'Property details included']
+              },
+              { 
+                img: images.roles[1], 
+                title: 'Investors', 
+                desc: 'Build your portfolio with quality leads. No more chasing bad data.',
+                features: ['Nationwide coverage', 'Owner information', 'Mailing addresses']
+              },
+              { 
+                img: images.roles[2], 
+                title: 'Agents', 
+                desc: 'Connect with homeowners ready to sell. Grow your listings effortlessly.',
+                features: ['Fresh leads daily', 'Contact tracking', 'Notes & follow-ups']
+              },
+            ].map((role, i) => (
+              <div key={i} className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-2xl transition-all duration-300">
+                <div className="h-56 overflow-hidden">
+                  {role.img ? (
+                    <img src={role.img} alt={role.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-purple-100 to-blue-100"></div>
+                  )}
+                </div>
+                <div className="p-6">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">{role.title}</h3>
+                  <p className="text-gray-600 mb-4">{role.desc}</p>
+                  <ul className="space-y-2">
+                    {role.features.map((f, j) => (
+                      <li key={j} className="flex items-center text-sm text-gray-600">
+                        <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Banner */}
+      <section className="py-16 bg-gradient-to-r from-purple-600 to-blue-600">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            {[
+              { value: '10,000+', label: 'Leads Delivered' },
+              { value: '500+', label: 'Active Users' },
+              { value: '98%', label: 'Accuracy Rate' },
+              { value: '50', label: 'States Covered' },
+            ].map((stat, i) => (
+              <div key={i}>
+                <div className="text-4xl md:text-5xl font-bold text-white mb-2">{stat.value}</div>
+                <div className="text-blue-200">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+            <p className="text-xl text-gray-600">Everything you need to know</p>
+          </div>
+          
+          <div className="space-y-4">
+            {faqs.map((faq, i) => (
+              <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full px-6 py-4 flex items-center justify-between bg-white hover:bg-gray-50 transition"
+                >
+                  <span className="font-semibold text-gray-900 text-left">{faq.q}</span>
+                  {openFaq === i ? (
+                    <ChevronUp className="h-5 w-5 text-gray-500 flex-shrink-0" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-gray-500 flex-shrink-0" />
+                  )}
+                </button>
+                {openFaq === i && (
+                  <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                    <p className="text-gray-600">{faq.a}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-24 relative overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: images.cta ? `url(${images.cta})` : 'none' }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-900/95 to-gray-800/95"></div>
+        </div>
+        
+        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            Ready to Get Verified Leads?
+          </h2>
+          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+            Join hundreds of real estate professionals who are closing more deals with our verified homeowner leads.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link
+              to="/register"
+              className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition shadow-lg shadow-orange-500/30 flex items-center justify-center"
+            >
+              Start Free Trial
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+            <Link
+              to="/pricing"
+              className="bg-white/10 backdrop-blur-sm border border-white/30 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:bg-white/20 transition"
+            >
+              View Pricing
+            </Link>
+          </div>
+          <p className="mt-6 text-gray-400 text-sm">No credit card required. Start with our free plan.</p>
+        </div>
+      </section>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8 mb-12">
-            {/* Brand */}
             <div>
               <h3 className="text-white font-bold text-xl mb-4">Verified Homeowner</h3>
               <p className="text-sm leading-relaxed">
@@ -253,53 +416,33 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Product */}
             <div>
               <h4 className="text-white font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
-                <li>
-                  <Link to="/how-it-works" className="hover:text-white transition">How It Works</Link>
-                </li>
-                <li>
-                  <Link to="/pricing" className="hover:text-white transition">Pricing</Link>
-                </li>
-                <li>
-                  <Link to="/register" className="hover:text-white transition">Get Started</Link>
-                </li>
+                <li><Link to="/how-it-works" className="hover:text-white transition">How It Works</Link></li>
+                <li><Link to="/pricing" className="hover:text-white transition">Pricing</Link></li>
+                <li><Link to="/register" className="hover:text-white transition">Get Started</Link></li>
               </ul>
             </div>
 
-            {/* Company */}
             <div>
               <h4 className="text-white font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-sm">
-                <li>
-                  <Link to="/about" className="hover:text-white transition">About Us</Link>
-                </li>
-                <li>
-                  <a href="mailto:support@verifiedhomeowner.com" className="hover:text-white transition">Contact</a>
-                </li>
+                <li><Link to="/about" className="hover:text-white transition">About Us</Link></li>
+                <li><a href="mailto:support@verifiedhomeowner.com" className="hover:text-white transition">Contact</a></li>
               </ul>
             </div>
 
-            {/* Legal */}
             <div>
               <h4 className="text-white font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-sm">
-                <li>
-                  <Link to="/terms" className="hover:text-white transition">Terms of Service</Link>
-                </li>
-                <li>
-                  <Link to="/privacy" className="hover:text-white transition">Privacy Policy</Link>
-                </li>
-                <li>
-                  <Link to="/refund" className="hover:text-white transition">Refund Policy</Link>
-                </li>
+                <li><Link to="/terms" className="hover:text-white transition">Terms of Service</Link></li>
+                <li><Link to="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
+                <li><Link to="/refund" className="hover:text-white transition">Refund Policy</Link></li>
               </ul>
             </div>
           </div>
 
-          {/* Bottom Bar */}
           <div className="border-t border-gray-800 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <p className="text-sm">
