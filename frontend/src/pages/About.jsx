@@ -137,7 +137,7 @@ export default function About() {
             to="/register"
             className="inline-flex items-center bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-orange-600 hover:to-orange-700 transition shadow-lg shadow-orange-500/30"
           >
-            Start Free Trial
+            Start Free Plan
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </div>

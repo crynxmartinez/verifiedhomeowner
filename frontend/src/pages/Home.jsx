@@ -110,7 +110,7 @@ export default function Home() {
               to="/register"
               className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition shadow-lg shadow-orange-500/30 flex items-center justify-center"
             >
-              Start Free Trial
+              Start Free Plan
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
             <Link
@@ -128,7 +128,7 @@ export default function Home() {
               <div className="text-blue-200/70 text-sm">Leads Delivered</div>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-bold text-white">98%</div>
+              <div className="text-3xl md:text-4xl font-bold text-white">99%</div>
               <div className="text-blue-200/70 text-sm">Accuracy Rate</div>
             </div>
             <div>
@@ -250,7 +250,7 @@ export default function Home() {
             {[
               { icon: CheckCircle, title: 'Verified Numbers', desc: 'Every phone number is called and verified before delivery' },
               { icon: Clock, title: 'Daily Delivery', desc: 'Fresh leads delivered to your dashboard every single day' },
-              { icon: Shield, title: 'Accurate Data', desc: '98% accuracy rate on all contact information' },
+              { icon: Shield, title: 'Accurate Data', desc: '99% accuracy rate on all contact information' },
               { icon: Zap, title: 'Instant Access', desc: 'No waiting - leads appear in your dashboard immediately' },
             ].map((item, i) => (
               <div key={i} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/20 transition">
@@ -325,7 +325,7 @@ export default function Home() {
             {[
               { value: '10,000+', label: 'Leads Delivered' },
               { value: '500+', label: 'Active Users' },
-              { value: '98%', label: 'Accuracy Rate' },
+              { value: '99%', label: 'Accuracy Rate' },
               { value: '50', label: 'States Covered' },
             ].map((stat, i) => (
               <div key={i}>
@@ -391,7 +391,7 @@ export default function Home() {
               to="/register"
               className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition shadow-lg shadow-orange-500/30 flex items-center justify-center"
             >
-              Start Free Trial
+              Start Free Plan
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
             <Link
