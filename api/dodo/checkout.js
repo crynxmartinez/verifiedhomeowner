@@ -46,14 +46,10 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Create Dodo checkout session
-    const session = await dodo.checkoutSessions.create({
-      product_cart: [
-        {
-          product_id: DODO_PRODUCTS[plan],
-          quantity: 1,
-        }
-      ],
+    // Create Dodo subscription with payment link
+    const subscription = await dodo.subscriptions.create({
+      product_id: DODO_PRODUCTS[plan],
+      quantity: 1,
       customer: {
         email: user.email,
         name: user.full_name || user.email,
@@ -67,8 +63,8 @@ export default async function handler(req, res) {
     });
 
     return res.status(200).json({ 
-      url: session.url || session.payment_link,
-      sessionId: session.id,
+      url: subscription.payment_link,
+      subscriptionId: subscription.subscription_id,
     });
 
   } catch (error) {
