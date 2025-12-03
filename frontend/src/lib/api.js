@@ -55,10 +55,15 @@ export const userAPI = {
   distributeLeads: () => api.post('/user/leads/distribute'),
 };
 
-// Stripe API
-export const stripeAPI = {
-  createCheckout: (planId) => api.post('/stripe/checkout', { planId }),
+// Dodo Payments API
+export const dodoAPI = {
+  createCheckout: (plan, userId) => api.post('/dodo/checkout', { plan, userId }),
 };
+
+// Legacy Stripe API (deprecated - kept for reference)
+// export const stripeAPI = {
+//   createCheckout: (planId) => api.post('/stripe/checkout', { planId }),
+// };
 
 // Marketplace API
 export const marketplaceAPI = {

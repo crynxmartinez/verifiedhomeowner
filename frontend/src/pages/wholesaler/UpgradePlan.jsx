@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import useAuthStore from '../../store/authStore';
-import { userAPI, stripeAPI } from '../../lib/api';
+import { userAPI, dodoAPI } from '../../lib/api';
 import { CheckCircle, TrendingUp, CreditCard } from 'lucide-react';
 import SuccessModal from '../../components/SuccessModal';
 
@@ -14,25 +14,23 @@ export default function UpgradePlan() {
   const [successModal, setSuccessModal] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Handle Stripe redirect
+  // Handle Dodo checkout redirect
   useEffect(() => {
-    const success = searchParams.get('success');
-    const canceled = searchParams.get('canceled');
-    const plan = searchParams.get('plan');
+    const checkout = searchParams.get('checkout');
 
-    if (success === 'true' && plan) {
+    if (checkout === 'success') {
       // Refresh user data to get updated plan
       refreshUser?.();
       setSuccessModal({
         title: 'Payment Successful!',
-        message: `Your plan has been upgraded to ${plan.toUpperCase()}. New leads will be distributed shortly.`,
+        message: 'Your plan has been upgraded. New leads will be distributed shortly.',
         actionText: 'View My Leads',
         actionLink: '/leads',
         secondaryText: 'Stay here'
       });
       // Clear URL params
       setSearchParams({});
-    } else if (canceled === 'true') {
+    } else if (checkout === 'canceled') {
       setSuccessModal({
         title: 'Payment Canceled',
         message: 'Your payment was canceled. You can try again anytime.',
@@ -76,15 +74,15 @@ export default function UpgradePlan() {
   ];
 
   const handleUpgrade = async (planId) => {
-    // For paid plans, redirect to Stripe checkout
+    // For paid plans, redirect to Dodo checkout
     if (planId !== 'free') {
       setLoading(true);
       try {
-        const response = await stripeAPI.createCheckout(planId);
-        // Redirect to Stripe checkout
+        const response = await dodoAPI.createCheckout(planId, user?.id);
+        // Redirect to Dodo checkout
         window.location.href = response.data.url;
       } catch (error) {
-        console.error('[STRIPE] Checkout error:', error);
+        console.error('[DODO] Checkout error:', error);
         setSuccessModal({
           title: 'Error',
           message: error.response?.data?.error || 'Failed to start checkout. Please try again.',
@@ -143,7 +141,7 @@ export default function UpgradePlan() {
             <div>
               <h3 className="font-semibold text-green-900 dark:text-green-300">Secure Payment</h3>
               <p className="text-sm text-green-700 dark:text-green-400 mt-1">
-                Payments are processed securely through Stripe. Your subscription will be billed monthly.
+                Payments are processed securely through Dodo Payments. Your subscription will be billed monthly.
               </p>
             </div>
           </div>

@@ -34,8 +34,8 @@ export default function Refund() {
           <section className="bg-gray-50 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">2. Payment Processing</h2>
             <p className="text-gray-700 leading-relaxed">
-              All payments are processed by Paddle.com, our Merchant of Record. Refund requests will be handled through 
-              Paddle's payment system. When you request a refund, Paddle will process the return of funds to your original 
+              All payments are processed by Dodo Payments, our Merchant of Record. Refund requests will be handled through 
+              Dodo's payment system. When you request a refund, Dodo Payments will process the return of funds to your original 
               payment method.
             </p>
           </section>
@@ -72,7 +72,7 @@ export default function Refund() {
             </p>
             <ul className="list-disc list-inside text-gray-700 space-y-2">
               <li>Through your account settings dashboard</li>
-              <li>Via Paddle's customer portal</li>
+              <li>Via Dodo Payments' customer portal</li>
               <li>By contacting our support team</li>
             </ul>
             <p className="text-gray-700 leading-relaxed mt-4">

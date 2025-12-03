@@ -44,10 +44,10 @@ export default function Privacy() {
 
             <h3 className="text-xl font-semibold text-gray-800 mb-3">2.2 Payment Information</h3>
             <p className="text-gray-700 leading-relaxed">
-              Payment processing is handled by Paddle.com ("Paddle"), our Merchant of Record. We do not store your 
+              Payment processing is handled by Dodo Payments ("Dodo"), our Merchant of Record. We do not store your 
               credit card information on our servers. Please refer to{' '}
-              <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">
-                Paddle's Privacy Policy
+              <a href="https://dodopayments.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">
+                Dodo Payments' Privacy Policy
               </a>{' '}
               for information on how they handle your payment data.
             </p>

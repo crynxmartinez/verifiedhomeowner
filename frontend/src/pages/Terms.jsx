@@ -63,8 +63,8 @@ export default function Terms() {
           <section className="bg-gray-50 rounded-2xl p-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">4. Subscription Plans and Billing</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              All payments are processed by Paddle.com ("Paddle"), our Merchant of Record for all subscription transactions. 
-              By subscribing to a paid plan, you authorize Paddle to charge your payment method on a recurring basis.
+              All payments are processed by Dodo Payments ("Dodo"), our Merchant of Record for all subscription transactions. 
+              By subscribing to a paid plan, you authorize Dodo Payments to charge your payment method on a recurring basis.
             </p>
             <ul className="list-disc list-inside text-gray-700 space-y-2">
               <li>Free Plan: 1 lead per week, delivered on Mondays</li>

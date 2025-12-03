@@ -4,6 +4,7 @@
   "type": "module",
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
+    "dodopayments": "^0.20.0",
     "papaparse": "^5.4.1",
     "stripe": "^14.10.0"
   }
