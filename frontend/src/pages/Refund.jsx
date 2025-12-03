@@ -1,7 +1,12 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
 export default function Refund() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
@@ -12,7 +17,7 @@ export default function Refund() {
           Refund Policy
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mb-8">
-          Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          Last updated: December 3, 2024
         </p>
 
         <div className="prose dark:prose-invert max-w-none space-y-8">
@@ -21,125 +26,180 @@ export default function Refund() {
               Summary
             </h2>
             <p className="text-blue-800 dark:text-blue-400">
-              Due to the nature of our service (delivery of lead data), all subscription payments are 
-              non-refundable. You may cancel your subscription at any time, and you will retain access 
-              until the end of your current billing period.
+              Due to the nature of our digital software service, subscription payments are generally 
+              non-refundable once the service has been accessed. However, we handle refund requests on 
+              a case-by-case basis through our payment processor, Paddle. You may cancel your subscription 
+              at any time, and you will retain access until the end of your current billing period.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              1. No Refunds Policy
-            </h2>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              All payments made for Verified Homeowner subscriptions are final and non-refundable. This 
-              policy exists because:
-            </p>
-            <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-4">
-              <li>Our service provides immediate access to lead data upon subscription</li>
-              <li>Lead data, once delivered, cannot be "returned" or "unused"</li>
-              <li>The value of our service is delivered instantly upon payment</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              2. Cancellation Policy
+              1. Digital Product Nature
             </h2>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
-              You may cancel your subscription at any time through your account settings or by contacting 
-              our support team. When you cancel:
+              Verified Homeowner is a Software-as-a-Service (SaaS) platform that provides immediate access 
+              to digital services upon subscription activation. Due to the instant delivery nature of our 
+              software:
             </p>
             <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2">
-              <li>Your subscription will remain active until the end of your current billing period</li>
-              <li>You will continue to receive leads until your subscription ends</li>
-              <li>You will not be charged for the next billing cycle</li>
-              <li>All leads delivered during your subscription remain yours to keep</li>
+              <li>Access to the Software is granted immediately upon successful payment</li>
+              <li>Digital services and data delivered cannot be "returned"</li>
+              <li>The full value of the subscription is available from the moment of purchase</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              3. How to Cancel
+              2. Payment Processing and Refunds
+            </h2>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              All payments are processed by <strong>Paddle.com</strong>, our Merchant of Record. Paddle 
+              handles all billing, invoicing, and refund processing on our behalf.
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              <strong>Refund Requests:</strong> If you believe you are entitled to a refund, please contact 
+              us at support@verifiedhomeowner.com. We will review your request and, if approved, process 
+              the refund through Paddle. Refund requests are evaluated on a case-by-case basis.
+            </p>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              <strong>Processing Time:</strong> Approved refunds are typically processed within 5-10 business 
+              days. The time for the refund to appear in your account depends on your payment method and 
+              financial institution.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              3. Cancellation Policy
+            </h2>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              You may cancel your subscription at any time. Cancellation is the recommended approach if 
+              you no longer wish to use our Software. When you cancel:
+            </p>
+            <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2">
+              <li>Your subscription remains active until the end of your current billing period</li>
+              <li>You continue to have full access to all Software features until expiration</li>
+              <li>No further charges will be made to your payment method</li>
+              <li>Data and leads delivered during your subscription remain accessible until expiration</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              4. How to Cancel
             </h2>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
               To cancel your subscription:
             </p>
             <ol className="list-decimal list-inside text-gray-700 dark:text-gray-300 space-y-2">
-              <li>Log in to your account</li>
-              <li>Go to "Upgrade Plan" in the sidebar</li>
+              <li>Log in to your Verified Homeowner account</li>
+              <li>Navigate to "Upgrade Plan" in the sidebar</li>
               <li>Select the "Free" plan to downgrade</li>
               <li>Confirm your cancellation</li>
             </ol>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed mt-4">
-              Alternatively, you can email us at support@verifiedhomeowner.com to request cancellation.
+              Alternatively, you can:
             </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              4. Billing Cycle
-            </h2>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              Subscriptions are billed monthly on the same date you originally subscribed. For example, 
-              if you subscribed on the 15th, you will be billed on the 15th of each month. If you cancel 
-              before your next billing date, you will not be charged again.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              5. Plan Changes
-            </h2>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              You may upgrade or downgrade your plan at any time. When you change plans:
-            </p>
-            <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-4">
-              <li><strong>Upgrades:</strong> Take effect immediately, and you will be charged the prorated difference</li>
-              <li><strong>Downgrades:</strong> Take effect at the start of your next billing cycle</li>
+            <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-2">
+              <li>Email us at support@verifiedhomeowner.com to request cancellation</li>
+              <li>Manage your subscription directly through Paddle's customer portal (link provided in your receipt emails)</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              6. Exceptional Circumstances
+              5. Billing Cycle
             </h2>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              While we maintain a strict no-refund policy, we may consider exceptions in rare circumstances, 
-              such as:
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              Subscriptions are billed monthly in advance on a recurring basis. Your billing date is 
+              determined by the date of your initial subscription. For example, if you subscribed on 
+              the 15th, you will be billed on the 15th of each subsequent month.
             </p>
-            <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-4">
-              <li>Duplicate charges due to technical errors</li>
-              <li>Unauthorized transactions (with proper verification)</li>
-              <li>Extended service outages that significantly impact your ability to use the Service</li>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+              <strong>Important:</strong> To avoid being charged for the next billing cycle, ensure you 
+              cancel your subscription before your renewal date.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              6. Plan Changes
+            </h2>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              You may upgrade or downgrade your subscription plan at any time:
+            </p>
+            <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2">
+              <li><strong>Upgrades:</strong> Take effect immediately. You will be charged a prorated amount for the remainder of your current billing period.</li>
+              <li><strong>Downgrades:</strong> Take effect at the start of your next billing cycle. You retain access to your current plan's features until then.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              7. Circumstances for Refund Consideration
+            </h2>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              While our general policy is that subscriptions are non-refundable after service access, 
+              we may consider refunds in the following circumstances:
+            </p>
+            <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2">
+              <li><strong>Duplicate Charges:</strong> If you were charged multiple times for the same subscription period due to a technical error</li>
+              <li><strong>Unauthorized Transactions:</strong> If a charge was made without your authorization (subject to verification)</li>
+              <li><strong>Service Unavailability:</strong> If the Software was significantly unavailable during your subscription period due to issues on our end</li>
+              <li><strong>Technical Issues:</strong> If you experienced persistent technical problems that prevented you from using the Software, and our support team was unable to resolve them</li>
             </ul>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed mt-4">
-              Any exceptions are granted at our sole discretion. Please contact support@verifiedhomeowner.com 
-              to discuss your situation.
+              All refund requests are evaluated at our sole discretion. Please provide relevant details 
+              and documentation when submitting a refund request.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              7. Free Plan
+              8. Free Plan
             </h2>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              We offer a Free plan that allows you to try our service before committing to a paid 
-              subscription. We encourage you to use the Free plan to evaluate our service before upgrading.
+              We offer a Free plan that allows you to explore our Software before committing to a paid 
+              subscription. We strongly encourage you to use the Free plan to evaluate whether our 
+              Software meets your needs before upgrading. This helps ensure you make an informed decision 
+              and reduces the likelihood of refund requests.
             </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              8. Contact Us
+              9. Chargebacks
             </h2>
             <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-              If you have questions about our refund policy or need assistance with your subscription, 
-              please contact us:
+              If you have a billing dispute, please contact us at support@verifiedhomeowner.com before 
+              initiating a chargeback with your bank or credit card company. We are committed to resolving 
+              issues fairly and promptly. Initiating a chargeback without first contacting us may result 
+              in immediate suspension of your account.
             </p>
-            <p className="text-gray-700 dark:text-gray-300 mt-2">
-              Email: support@verifiedhomeowner.com
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              10. Contact Us
+            </h2>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              If you have questions about our refund policy, need assistance with your subscription, or 
+              wish to submit a refund request, please contact us:
             </p>
+            <div className="text-gray-700 dark:text-gray-300 space-y-2">
+              <p><strong>Email:</strong> support@verifiedhomeowner.com</p>
+              <p><strong>Response Time:</strong> We aim to respond to all inquiries within 24-48 business hours</p>
+            </div>
+            <p className="text-gray-700 dark:text-gray-300 leading-relaxed mt-4">
+              When contacting us about a refund, please include:
+            </p>
+            <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-2">
+              <li>Your account email address</li>
+              <li>Date of the charge in question</li>
+              <li>Reason for your refund request</li>
+              <li>Any relevant screenshots or documentation</li>
+            </ul>
           </section>
         </div>
       </main>
