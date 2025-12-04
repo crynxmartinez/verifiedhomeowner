@@ -76,7 +76,7 @@ export default async function handler(req, res) {
         name: user.name || user.email,
       },
       payment_link: true,
-      return_url: `${process.env.FRONTEND_URL || 'https://www.verifiedhomeowner.com'}/dashboard?checkout=success`,
+      return_url: `${process.env.FRONTEND_URL || 'https://www.verifiedhomeowner.com'}/upgrade?checkout=success`,
       metadata: {
         user_id: userId,
         plan: plan,
