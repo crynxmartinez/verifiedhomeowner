@@ -1,10 +1,5 @@
-import { dodo, getPlanFromProductId } from '../../lib/dodo.js';
 import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+import DodoPayments from 'dodopayments';
 
 // Disable body parsing to access raw body for webhook verification
 export const config = {
@@ -22,6 +17,29 @@ async function getRawBody(req) {
   return Buffer.concat(chunks).toString('utf8');
 }
 
+// Product IDs from Dodo Dashboard
+const DODO_PRODUCTS = {
+  basic: process.env.DODO_PRODUCT_BASIC,
+  elite: process.env.DODO_PRODUCT_ELITE,
+  pro: process.env.DODO_PRODUCT_PRO,
+};
+
+// Map Dodo product IDs back to plan types
+function getPlanFromProductId(productId) {
+  for (const [plan, id] of Object.entries(DODO_PRODUCTS)) {
+    if (id === productId) return plan;
+  }
+  return null;
+}
+
+// Create Supabase client
+function getSupabase() {
+  return createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_KEY
+  );
+}
+
 export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -37,6 +55,13 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Initialize Dodo client
+    const dodo = new DodoPayments({
+      bearerToken: process.env.DODO_PAYMENTS_API_KEY,
+      environment: process.env.DODO_PAYMENTS_ENVIRONMENT || 'test_mode',
+      webhookKey: process.env.DODO_PAYMENTS_WEBHOOK_KEY,
+    });
+
     // Get raw body for signature verification
     const rawBody = await getRawBody(req);
     
@@ -48,9 +73,8 @@ export default async function handler(req, res) {
     };
 
     // Verify webhook signature
-    let payload;
     try {
-      payload = dodo.webhooks.unwrap(rawBody, { headers: webhookHeaders });
+      dodo.webhooks.unwrap(rawBody, { headers: webhookHeaders });
       console.log('✅ Webhook signature verified');
     } catch (verifyError) {
       console.error('❌ Webhook verification failed:', verifyError);
@@ -64,31 +88,33 @@ export default async function handler(req, res) {
 
     console.log(`📋 Processing webhook: ${eventType}`);
 
+    const supabase = getSupabase();
+
     // Handle subscription events
     switch (eventType) {
       case 'subscription.active':
-        await handleSubscriptionActive(data);
+        await handleSubscriptionActive(supabase, data);
         break;
 
       case 'subscription.renewed':
-        await handleSubscriptionRenewed(data);
+        await handleSubscriptionRenewed(supabase, data);
         break;
 
       case 'subscription.cancelled':
-        await handleSubscriptionCancelled(data);
+        await handleSubscriptionCancelled(supabase, data);
         break;
 
       case 'subscription.expired':
       case 'subscription.failed':
-        await handleSubscriptionEnded(data);
+        await handleSubscriptionEnded(supabase, data);
         break;
 
       case 'subscription.on_hold':
-        await handleSubscriptionOnHold(data);
+        await handleSubscriptionOnHold(supabase, data);
         break;
 
       case 'subscription.plan_changed':
-        await handlePlanChanged(data);
+        await handlePlanChanged(supabase, data);
         break;
 
       case 'subscription.updated':
@@ -108,7 +134,7 @@ export default async function handler(req, res) {
 }
 
 // Handle new subscription activation
-async function handleSubscriptionActive(data) {
+async function handleSubscriptionActive(supabase, data) {
   const { subscription_id, product_id, customer, metadata, next_billing_date } = data;
   
   console.log('🎉 Subscription activated:', subscription_id);
@@ -144,7 +170,7 @@ async function handleSubscriptionActive(data) {
   const { error } = await supabase
     .from('users')
     .update({
-      plan: plan,
+      plan_type: plan,
       dodo_subscription_id: subscription_id,
       dodo_customer_id: customer?.customer_id,
       subscription_status: 'active',
@@ -161,7 +187,7 @@ async function handleSubscriptionActive(data) {
 }
 
 // Handle subscription renewal
-async function handleSubscriptionRenewed(data) {
+async function handleSubscriptionRenewed(supabase, data) {
   const { subscription_id, next_billing_date } = data;
   
   console.log('🔄 Subscription renewed:', subscription_id);
@@ -183,7 +209,7 @@ async function handleSubscriptionRenewed(data) {
 }
 
 // Handle subscription cancellation
-async function handleSubscriptionCancelled(data) {
+async function handleSubscriptionCancelled(supabase, data) {
   const { subscription_id, cancelled_at } = data;
   
   console.log('❌ Subscription cancelled:', subscription_id);
@@ -205,7 +231,7 @@ async function handleSubscriptionCancelled(data) {
 }
 
 // Handle subscription ended (expired or failed)
-async function handleSubscriptionEnded(data) {
+async function handleSubscriptionEnded(supabase, data) {
   const { subscription_id } = data;
   
   console.log('⏹️ Subscription ended:', subscription_id);
@@ -214,7 +240,7 @@ async function handleSubscriptionEnded(data) {
   const { error } = await supabase
     .from('users')
     .update({
-      plan: 'free',
+      plan_type: 'free',
       subscription_status: 'expired',
       dodo_subscription_id: null,
       updated_at: new Date().toISOString(),
@@ -229,7 +255,7 @@ async function handleSubscriptionEnded(data) {
 }
 
 // Handle subscription on hold (payment failed but not yet expired)
-async function handleSubscriptionOnHold(data) {
+async function handleSubscriptionOnHold(supabase, data) {
   const { subscription_id } = data;
   
   console.log('⏸️ Subscription on hold:', subscription_id);
@@ -250,7 +276,7 @@ async function handleSubscriptionOnHold(data) {
 }
 
 // Handle plan change (upgrade/downgrade)
-async function handlePlanChanged(data) {
+async function handlePlanChanged(supabase, data) {
   const { subscription_id, product_id, next_billing_date } = data;
   
   console.log('🔄 Plan changed:', subscription_id);
@@ -264,7 +290,7 @@ async function handlePlanChanged(data) {
   const { error } = await supabase
     .from('users')
     .update({
-      plan: plan,
+      plan_type: plan,
       subscription_status: 'active',
       subscription_end_date: next_billing_date,
       updated_at: new Date().toISOString(),

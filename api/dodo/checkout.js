@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   // Initialize clients inside handler to ensure env vars are available
   const supabase = createClient(
     process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
+    process.env.SUPABASE_SERVICE_KEY
   );
 
   const dodo = new DodoPayments({
