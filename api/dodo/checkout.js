@@ -1,12 +1,25 @@
-import { dodo, DODO_PRODUCTS } from '../../lib/dodo.js';
 import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+import DodoPayments from 'dodopayments';
 
 export default async function handler(req, res) {
+  // Initialize clients inside handler to ensure env vars are available
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+
+  const dodo = new DodoPayments({
+    bearerToken: process.env.DODO_PAYMENTS_API_KEY,
+    environment: process.env.DODO_PAYMENTS_ENVIRONMENT || 'test_mode',
+  });
+
+  // Product IDs from Dodo Dashboard
+  const DODO_PRODUCTS = {
+    basic: process.env.DODO_PRODUCT_BASIC,
+    elite: process.env.DODO_PRODUCT_ELITE,
+    pro: process.env.DODO_PRODUCT_PRO,
+  };
+
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
