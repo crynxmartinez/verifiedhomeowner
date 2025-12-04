@@ -64,6 +64,13 @@ export default async function handler(req, res) {
     const subscription = await dodo.subscriptions.create({
       product_id: DODO_PRODUCTS[plan],
       quantity: 1,
+      billing: {
+        city: 'N/A',
+        country: 'US',
+        state: 'N/A',
+        street: 'N/A',
+        zipcode: '00000',
+      },
       customer: {
         email: user.email,
         name: user.name || user.email,
