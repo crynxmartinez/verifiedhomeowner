@@ -51,11 +51,12 @@ export default async function handler(req, res) {
     // Get user details from Supabase
     const { data: user, error: userError } = await supabase
       .from('users')
-      .select('email, full_name')
+      .select('email, name')
       .eq('id', userId)
       .single();
 
     if (userError || !user) {
+      console.error('User lookup error:', userError);
       return res.status(404).json({ error: 'User not found' });
     }
 
@@ -65,7 +66,7 @@ export default async function handler(req, res) {
       quantity: 1,
       customer: {
         email: user.email,
-        name: user.full_name || user.email,
+        name: user.name || user.email,
       },
       payment_link: true,
       return_url: `${process.env.FRONTEND_URL || 'https://www.verifiedhomeowner.com'}/dashboard?checkout=success`,
