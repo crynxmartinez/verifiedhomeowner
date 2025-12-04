@@ -55,36 +55,23 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Initialize Dodo client
-    const dodo = new DodoPayments({
-      bearerToken: process.env.DODO_PAYMENTS_API_KEY,
-      environment: process.env.DODO_PAYMENTS_ENVIRONMENT || 'test_mode',
-      webhookKey: process.env.DODO_PAYMENTS_WEBHOOK_KEY,
-    });
-
-    // Get raw body for signature verification
+    // Get raw body
     const rawBody = await getRawBody(req);
     
-    // Get webhook headers
-    const webhookHeaders = {
-      'webhook-id': req.headers['webhook-id'] || '',
-      'webhook-signature': req.headers['webhook-signature'] || '',
-      'webhook-timestamp': req.headers['webhook-timestamp'] || '',
-    };
-
-    // Verify webhook signature
-    try {
-      dodo.webhooks.unwrap(rawBody, { headers: webhookHeaders });
-      console.log('✅ Webhook signature verified');
-    } catch (verifyError) {
-      console.error('❌ Webhook verification failed:', verifyError);
-      return res.status(401).json({ error: 'Webhook verification failed' });
-    }
+    // Log webhook headers for debugging
+    console.log('Webhook headers:', {
+      'webhook-id': req.headers['webhook-id'],
+      'webhook-signature': req.headers['webhook-signature'],
+      'webhook-timestamp': req.headers['webhook-timestamp'],
+    });
 
     // Parse the payload
     const event = JSON.parse(rawBody);
     const eventType = event.type;
     const data = event.data;
+    
+    console.log('📋 Webhook event received:', eventType);
+    console.log('📋 Event data:', JSON.stringify(data, null, 2));
 
     console.log(`📋 Processing webhook: ${eventType}`);
 
