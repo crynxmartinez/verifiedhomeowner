@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '../../lib/supabase.js';
-import { requireAuth } from '../../lib/auth.js';
+import prisma from '../../lib/prisma.js';
+import { requireAuth } from '../../lib/auth-prisma.js';
 
 async function handler(req, res) {
   if (req.method !== 'PATCH') {
@@ -14,46 +14,44 @@ async function handler(req, res) {
       return res.status(400).json({ error: 'Lead ID is required' });
     }
 
-    const updateData = {
-      updated_at: new Date().toISOString(),
-    };
+    const updateData = {};
 
     if (status) updateData.status = status;
     if (action) updateData.action = action;
     if (notes !== undefined) updateData.notes = notes;
-    if (follow_up_date) updateData.follow_up_date = follow_up_date;
+    if (follow_up_date) updateData.followUpDate = new Date(follow_up_date);
     if (countdown_days !== undefined) {
-      updateData.countdown_days = parseInt(countdown_days) || null;
+      updateData.countdownDays = parseInt(countdown_days) || null;
     }
     if (tags !== undefined) {
       updateData.tags = Array.isArray(tags) ? tags : [];
     }
 
-    // Determine which table to update
-    const table = source === 'purchased' ? 'user_marketplace_leads' : 'user_leads';
+    let data;
 
-    const { data, error } = await supabaseAdmin
-      .from(table)
-      .update(updateData)
-      .eq('id', id)
-      .eq('user_id', req.user.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Supabase error:', error);
-      throw error;
+    if (source === 'purchased') {
+      // Update marketplace lead
+      data = await prisma.userMarketplaceLead.update({
+        where: {
+          id: id,
+          userId: req.user.id
+        },
+        data: updateData
+      });
+    } else {
+      // Update subscription lead
+      data = await prisma.userLead.update({
+        where: {
+          id: id,
+          userId: req.user.id
+        },
+        data: updateData
+      });
     }
 
     res.status(200).json({ lead: data });
   } catch (error) {
     console.error('Update lead error:', error);
-    console.error('Error details:', {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint
-    });
     res.status(500).json({ 
       error: 'Failed to update lead',
       details: error.message 

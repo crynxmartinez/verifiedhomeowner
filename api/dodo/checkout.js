@@ -1,12 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
+import prisma from '../../lib/prisma.js';
 import DodoPayments from 'dodopayments';
 
 export default async function handler(req, res) {
-  // Initialize clients inside handler to ensure env vars are available
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_KEY
-  );
 
   const dodo = new DodoPayments({
     bearerToken: process.env.DODO_PAYMENTS_API_KEY,
@@ -48,15 +43,13 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    // Get user details from Supabase
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('email, name')
-      .eq('id', userId)
-      .single();
+    // Get user details from database
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, name: true }
+    });
 
-    if (userError || !user) {
-      console.error('User lookup error:', userError);
+    if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 

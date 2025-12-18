@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '../../lib/supabase.js';
-import { requireAdmin } from '../../lib/auth.js';
+import prisma from '../../lib/prisma.js';
+import { requireAdmin } from '../../lib/auth-prisma.js';
 import Papa from 'papaparse';
 
 // Detect if a name is a business/company rather than a person
@@ -65,14 +65,31 @@ async function handler(req, res) {
   if (req.method === 'GET') {
     // Get all leads
     try {
-      const { data: leads, error } = await supabaseAdmin
-        .from('leads')
-        .select('*')
-        .order('sequence_number', { ascending: true });
+      const leads = await prisma.lead.findMany({
+        orderBy: { sequenceNumber: 'asc' }
+      });
 
-      if (error) throw error;
+      // Format for frontend
+      const formattedLeads = leads.map(lead => ({
+        id: lead.id,
+        first_name: lead.firstName,
+        last_name: lead.lastName,
+        full_name: lead.fullName,
+        is_business: lead.isBusiness,
+        phone: lead.phone,
+        property_address: lead.propertyAddress,
+        city: lead.city,
+        state: lead.state,
+        zip_code: lead.zipCode,
+        mailing_address: lead.mailingAddress,
+        mailing_city: lead.mailingCity,
+        mailing_state: lead.mailingState,
+        mailing_zip: lead.mailingZip,
+        sequence_number: lead.sequenceNumber,
+        created_at: lead.createdAt,
+      }));
 
-      res.status(200).json({ leads: leads || [] });
+      res.status(200).json({ leads: formattedLeads });
     } catch (error) {
       console.error('Fetch leads error:', error);
       res.status(500).json({ error: 'Failed to fetch leads' });
@@ -118,49 +135,60 @@ async function handler(req, res) {
         processedLead.is_business = false;
         
         // Check for duplicate by property_address
-        const { data: existing } = await supabaseAdmin
-          .from('leads')
-          .select('*')
-          .eq('property_address', processedLead.property_address)
-          .single();
+        const existing = await prisma.lead.findFirst({
+          where: { propertyAddress: processedLead.property_address }
+        });
 
         if (existing) {
           // Update existing lead
-          const { data, error } = await supabaseAdmin
-            .from('leads')
-            .update({
-              ...processedLead,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', existing.id)
-            .select()
-            .single();
-
-          if (error) throw error;
+          const data = await prisma.lead.update({
+            where: { id: existing.id },
+            data: {
+              firstName: processedLead.first_name,
+              lastName: processedLead.last_name,
+              fullName: processedLead.full_name,
+              isBusiness: processedLead.is_business,
+              phone: processedLead.phone,
+              propertyAddress: processedLead.property_address,
+              city: processedLead.city,
+              state: processedLead.state,
+              zipCode: processedLead.zip_code,
+              mailingAddress: processedLead.mailing_address,
+              mailingCity: processedLead.mailing_city,
+              mailingState: processedLead.mailing_state,
+              mailingZip: processedLead.mailing_zip,
+            }
+          });
 
           return res.status(200).json({ lead: data, updated: true });
         }
 
         // Create new lead
-        const { data: maxLead } = await supabaseAdmin
-          .from('leads')
-          .select('sequence_number')
-          .order('sequence_number', { ascending: false })
-          .limit(1)
-          .single();
+        const maxLead = await prisma.lead.findFirst({
+          orderBy: { sequenceNumber: 'desc' },
+          select: { sequenceNumber: true }
+        });
 
-        const nextSequence = (maxLead?.sequence_number || 0) + 1;
+        const nextSequence = (maxLead?.sequenceNumber || 0) + 1;
 
-        const { data, error } = await supabaseAdmin
-          .from('leads')
-          .insert({
-            ...processedLead,
-            sequence_number: nextSequence,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
+        const data = await prisma.lead.create({
+          data: {
+            firstName: processedLead.first_name,
+            lastName: processedLead.last_name,
+            fullName: processedLead.full_name,
+            isBusiness: processedLead.is_business,
+            phone: processedLead.phone,
+            propertyAddress: processedLead.property_address,
+            city: processedLead.city,
+            state: processedLead.state,
+            zipCode: processedLead.zip_code,
+            mailingAddress: processedLead.mailing_address,
+            mailingCity: processedLead.mailing_city,
+            mailingState: processedLead.mailing_state,
+            mailingZip: processedLead.mailing_zip,
+            sequenceNumber: nextSequence,
+          }
+        });
 
         return res.status(201).json({ lead: data, updated: false });
       }
@@ -168,23 +196,21 @@ async function handler(req, res) {
       if (mappedData) {
         // Handle mapped CSV data from frontend
         // Get existing leads for duplicate check
-        const { data: existingLeads } = await supabaseAdmin
-          .from('leads')
-          .select('id, property_address, sequence_number');
+        const existingLeads = await prisma.lead.findMany({
+          select: { id: true, propertyAddress: true, sequenceNumber: true }
+        });
 
         const existingAddresses = new Map(
-          existingLeads?.map(l => [l.property_address?.toLowerCase(), l]) || []
+          existingLeads?.map(l => [l.propertyAddress?.toLowerCase(), l]) || []
         );
 
         // Get next sequence number
-        const { data: maxLead } = await supabaseAdmin
-          .from('leads')
-          .select('sequence_number')
-          .order('sequence_number', { ascending: false })
-          .limit(1)
-          .single();
+        const maxLead = await prisma.lead.findFirst({
+          orderBy: { sequenceNumber: 'desc' },
+          select: { sequenceNumber: true }
+        });
 
-        let nextSequence = (maxLead?.sequence_number || 0) + 1;
+        let nextSequence = (maxLead?.sequenceNumber || 0) + 1;
 
         const leadsToInsert = [];
         const leadsToUpdate = [];
@@ -218,61 +244,45 @@ async function handler(req, res) {
           }
 
           const leadData = {
-            owner_name: ownerName, // Use owner_name for backward compatibility
             phone: row.phone || '',
-            property_address: row.property_address || '',
+            propertyAddress: row.property_address || '',
             city: row.city || '',
             state: row.state || '',
-            zip_code: row.zip_code || '',
-            mailing_address: row.mailing_address || '',
-            mailing_city: row.mailing_city || '',
-            mailing_state: row.mailing_state || '',
-            mailing_zip: row.mailing_zip || '',
+            zipCode: row.zip_code || '',
+            mailingAddress: row.mailing_address || '',
+            mailingCity: row.mailing_city || '',
+            mailingState: row.mailing_state || '',
+            mailingZip: row.mailing_zip || '',
+            isBusiness: false,
           };
           
-          // Add new name fields only if they have values (for new schema)
-          if (firstName) leadData.first_name = firstName;
-          if (lastName) leadData.last_name = lastName;
-          if (fullName) leadData.full_name = fullName;
-          
-          // Mark as NOT a business (we already filtered businesses out above)
-          leadData.is_business = false;
+          if (firstName) leadData.firstName = firstName;
+          if (lastName) leadData.lastName = lastName;
+          if (fullName) leadData.fullName = fullName;
 
           // Check for duplicates by property address
-          const existing = existingAddresses.get(leadData.property_address?.toLowerCase());
-          if (existing && leadData.property_address) {
-            // Update existing
-            leadsToUpdate.push({
-              ...leadData,
-              id: existing.id,
-            });
+          const existing = existingAddresses.get(leadData.propertyAddress?.toLowerCase());
+          if (existing && leadData.propertyAddress) {
+            leadsToUpdate.push({ ...leadData, id: existing.id });
           } else {
-            // Insert new
-            leadsToInsert.push({
-              ...leadData,
-              sequence_number: nextSequence++,
-            });
+            leadsToInsert.push({ ...leadData, sequenceNumber: nextSequence++ });
           }
         });
 
         // Insert new leads
         if (leadsToInsert.length > 0) {
-          const { error: insertError } = await supabaseAdmin
-            .from('leads')
-            .insert(leadsToInsert);
-
-          if (insertError) throw insertError;
+          await prisma.lead.createMany({ data: leadsToInsert });
         }
 
         // Update existing leads
         for (const lead of leadsToUpdate) {
           const { id, ...updateData } = lead;
-          const { error: updateError } = await supabaseAdmin
-            .from('leads')
-            .update(updateData)
-            .eq('id', id);
-
-          if (!updateError) updatedCount++;
+          try {
+            await prisma.lead.update({ where: { id }, data: updateData });
+            updatedCount++;
+          } catch (e) {
+            console.error('Update error:', e);
+          }
         }
 
         return res.status(201).json({ 
@@ -294,23 +304,21 @@ async function handler(req, res) {
         }
 
         // Get existing leads for duplicate check
-        const { data: existingLeads } = await supabaseAdmin
-          .from('leads')
-          .select('id, property_address, sequence_number');
+        const existingLeads = await prisma.lead.findMany({
+          select: { id: true, propertyAddress: true, sequenceNumber: true }
+        });
 
         const existingAddresses = new Map(
-          existingLeads?.map(l => [l.property_address, l]) || []
+          existingLeads?.map(l => [l.propertyAddress, l]) || []
         );
 
         // Get next sequence number
-        const { data: maxLead } = await supabaseAdmin
-          .from('leads')
-          .select('sequence_number')
-          .order('sequence_number', { ascending: false })
-          .limit(1)
-          .single();
+        const maxLead = await prisma.lead.findFirst({
+          orderBy: { sequenceNumber: 'desc' },
+          select: { sequenceNumber: true }
+        });
 
-        let nextSequence = (maxLead?.sequence_number || 0) + 1;
+        let nextSequence = (maxLead?.sequenceNumber || 0) + 1;
 
         const leadsToInsert = [];
         const leadsToUpdate = [];
@@ -318,55 +326,43 @@ async function handler(req, res) {
 
         // Process each row
         parsed.data
-          .filter(row => row.full_name || row.owner_name) // Skip empty rows
+          .filter(row => row.full_name || row.owner_name)
           .forEach(row => {
             const leadData = {
-              owner_name: row.full_name || row.owner_name || '',
+              fullName: row.full_name || row.owner_name || '',
               phone: row.phone || row.number || '',
-              property_address: row.address || '',
+              propertyAddress: row.address || '',
               city: row.city || '',
               state: row.state || '',
-              zip_code: row.zip || row.zip_code || '',
-              mailing_address: row.mailing_address || '',
-              mailing_city: row.mailing_city || '',
-              mailing_state: row.mailing_state || '',
-              mailing_zip: row.mailing_zip || '',
+              zipCode: row.zip || row.zip_code || '',
+              mailingAddress: row.mailing_address || '',
+              mailingCity: row.mailing_city || '',
+              mailingState: row.mailing_state || '',
+              mailingZip: row.mailing_zip || '',
             };
 
-            const existing = existingAddresses.get(leadData.property_address);
+            const existing = existingAddresses.get(leadData.propertyAddress);
             if (existing) {
-              // Update existing
-              leadsToUpdate.push({
-                ...leadData,
-                id: existing.id,
-              });
+              leadsToUpdate.push({ ...leadData, id: existing.id });
             } else {
-              // Insert new
-              leadsToInsert.push({
-                ...leadData,
-                sequence_number: nextSequence++,
-              });
+              leadsToInsert.push({ ...leadData, sequenceNumber: nextSequence++ });
             }
           });
 
         // Insert new leads
         if (leadsToInsert.length > 0) {
-          const { error: insertError } = await supabaseAdmin
-            .from('leads')
-            .insert(leadsToInsert);
-
-          if (insertError) throw insertError;
+          await prisma.lead.createMany({ data: leadsToInsert });
         }
 
         // Update existing leads
         for (const lead of leadsToUpdate) {
           const { id, ...updateData } = lead;
-          const { error: updateError } = await supabaseAdmin
-            .from('leads')
-            .update(updateData)
-            .eq('id', id);
-
-          if (!updateError) updatedCount++;
+          try {
+            await prisma.lead.update({ where: { id }, data: updateData });
+            updatedCount++;
+          } catch (e) {
+            console.error('Update error:', e);
+          }
         }
 
         return res.status(201).json({ 
@@ -391,12 +387,7 @@ async function handler(req, res) {
         return res.status(400).json({ error: 'Lead ID required' });
       }
 
-      const { error } = await supabaseAdmin
-        .from('leads')
-        .delete()
-        .eq('id', leadId);
-
-      if (error) throw error;
+      await prisma.lead.delete({ where: { id: leadId } });
 
       res.status(200).json({ message: 'Lead deleted successfully' });
     } catch (error) {

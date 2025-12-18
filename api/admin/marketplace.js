@@ -1,19 +1,37 @@
-import { supabaseAdmin } from '../../lib/supabase.js';
-import { requireAdmin } from '../../lib/auth.js';
+import prisma from '../../lib/prisma.js';
+import { requireAdmin } from '../../lib/auth-prisma.js';
 import Papa from 'papaparse';
 
 async function handler(req, res) {
   if (req.method === 'GET') {
     // Get all marketplace leads
     try {
-      const { data: leads, error } = await supabaseAdmin
-        .from('marketplace_leads')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const leads = await prisma.marketplaceLead.findMany({
+        orderBy: { createdAt: 'desc' }
+      });
 
-      if (error) throw error;
+      // Format for frontend
+      const formattedLeads = leads.map(lead => ({
+        id: lead.id,
+        owner_name: lead.ownerName,
+        phone: lead.phone,
+        property_address: lead.propertyAddress,
+        city: lead.city,
+        state: lead.state,
+        zip_code: lead.zipCode,
+        mailing_address: lead.mailingAddress,
+        mailing_city: lead.mailingCity,
+        mailing_state: lead.mailingState,
+        mailing_zip: lead.mailingZip,
+        motivation: lead.motivation,
+        timeline: lead.timeline,
+        price: lead.price,
+        max_buyers: lead.maxBuyers,
+        times_sold: lead.timesSold,
+        created_at: lead.createdAt,
+      }));
 
-      res.status(200).json({ leads: leads || [] });
+      res.status(200).json({ leads: formattedLeads });
     } catch (error) {
       console.error('Fetch marketplace leads error:', error);
       res.status(500).json({ error: 'Failed to fetch marketplace leads' });
@@ -25,13 +43,24 @@ async function handler(req, res) {
 
       if (singleLead) {
         // Create single marketplace lead
-        const { data, error } = await supabaseAdmin
-          .from('marketplace_leads')
-          .insert(singleLead)
-          .select()
-          .single();
-
-        if (error) throw error;
+        const data = await prisma.marketplaceLead.create({
+          data: {
+            ownerName: singleLead.owner_name,
+            phone: singleLead.phone,
+            propertyAddress: singleLead.property_address,
+            city: singleLead.city,
+            state: singleLead.state,
+            zipCode: singleLead.zip_code,
+            mailingAddress: singleLead.mailing_address,
+            mailingCity: singleLead.mailing_city,
+            mailingState: singleLead.mailing_state,
+            mailingZip: singleLead.mailing_zip,
+            motivation: singleLead.motivation,
+            timeline: singleLead.timeline,
+            price: parseFloat(singleLead.price) || 0,
+            maxBuyers: parseInt(singleLead.max_buyers) || 0,
+          }
+        });
 
         return res.status(201).json({ lead: data });
       }
@@ -46,34 +75,29 @@ async function handler(req, res) {
 
         // Map CSV data to marketplace lead objects
         const leads = parsed.data
-          .filter(row => row.full_name || row.owner_name) // Skip empty rows
+          .filter(row => row.full_name || row.owner_name)
           .map(row => ({
-            owner_name: row.full_name || row.owner_name || '',
+            ownerName: row.full_name || row.owner_name || '',
             phone: row.phone || row.number || '',
-            property_address: row.address || '',
+            propertyAddress: row.address || '',
             city: row.city || '',
             state: row.state || '',
-            zip_code: row.zip || row.zip_code || '',
-            mailing_address: row.mailing_address || '',
-            mailing_city: row.mailing_city || '',
-            mailing_state: row.mailing_state || '',
-            mailing_zip: row.mailing_zip || '',
+            zipCode: row.zip || row.zip_code || '',
+            mailingAddress: row.mailing_address || '',
+            mailingCity: row.mailing_city || '',
+            mailingState: row.mailing_state || '',
+            mailingZip: row.mailing_zip || '',
             motivation: row.motivation || '',
             timeline: row.timeline || '',
             price: parseFloat(row.price) || 0,
-            max_buyers: parseInt(row.max_buyers) || 0,
+            maxBuyers: parseInt(row.max_buyers) || 0,
           }));
 
         if (leads.length === 0) {
           return res.status(400).json({ error: 'No valid leads found in CSV' });
         }
 
-        const { data, error } = await supabaseAdmin
-          .from('marketplace_leads')
-          .insert(leads)
-          .select();
-
-        if (error) throw error;
+        await prisma.marketplaceLead.createMany({ data: leads });
 
         return res.status(201).json({ 
           message: `${leads.length} marketplace leads uploaded successfully`,
@@ -95,12 +119,7 @@ async function handler(req, res) {
         return res.status(400).json({ error: 'Lead ID required' });
       }
 
-      const { error } = await supabaseAdmin
-        .from('marketplace_leads')
-        .delete()
-        .eq('id', leadId);
-
-      if (error) throw error;
+      await prisma.marketplaceLead.delete({ where: { id: leadId } });
 
       res.status(200).json({ message: 'Lead deleted successfully' });
     } catch (error) {

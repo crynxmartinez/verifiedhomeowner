@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '../../lib/supabase.js';
-import { requireAuth } from '../../lib/auth.js';
+import prisma from '../../lib/prisma.js';
+import { requireAuth } from '../../lib/auth-prisma.js';
 
 async function handler(req, res) {
   // Check if user is admin
@@ -22,19 +22,12 @@ async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid status' });
       }
 
-      const { data, error } = await supabaseAdmin
-        .from('support_tickets')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', id)
-        .select()
-        .single();
+      const ticket = await prisma.supportTicket.update({
+        where: { id },
+        data: { status }
+      });
 
-      if (error) {
-        console.error('Error updating support ticket:', error);
-        return res.status(500).json({ error: 'Failed to update support ticket' });
-      }
-
-      return res.status(200).json({ message: 'Ticket updated successfully', ticket: data });
+      return res.status(200).json({ message: 'Ticket updated successfully', ticket });
     } catch (error) {
       console.error('Error updating support ticket:', error);
       return res.status(500).json({ error: 'Server error' });
@@ -44,15 +37,9 @@ async function handler(req, res) {
   // DELETE - Delete ticket
   if (req.method === 'DELETE') {
     try {
-      const { error } = await supabaseAdmin
-        .from('support_tickets')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        console.error('Error deleting support ticket:', error);
-        return res.status(500).json({ error: 'Failed to delete support ticket' });
-      }
+      await prisma.supportTicket.delete({
+        where: { id }
+      });
 
       return res.status(200).json({ message: 'Ticket deleted successfully' });
     } catch (error) {

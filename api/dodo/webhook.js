@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import prisma from '../../lib/prisma.js';
 import DodoPayments from 'dodopayments';
 
 // Disable body parsing to access raw body for webhook verification
@@ -32,13 +32,6 @@ function getPlanFromProductId(productId) {
   return null;
 }
 
-// Create Supabase client
-function getSupabase() {
-  return createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_KEY
-  );
-}
 
 export default async function handler(req, res) {
   // Set CORS headers
@@ -75,33 +68,31 @@ export default async function handler(req, res) {
 
     console.log(`📋 Processing webhook: ${eventType}`);
 
-    const supabase = getSupabase();
-
     // Handle subscription events
     switch (eventType) {
       case 'subscription.active':
-        await handleSubscriptionActive(supabase, data);
+        await handleSubscriptionActive(data);
         break;
 
       case 'subscription.renewed':
-        await handleSubscriptionRenewed(supabase, data);
+        await handleSubscriptionRenewed(data);
         break;
 
       case 'subscription.cancelled':
-        await handleSubscriptionCancelled(supabase, data);
+        await handleSubscriptionCancelled(data);
         break;
 
       case 'subscription.expired':
       case 'subscription.failed':
-        await handleSubscriptionEnded(supabase, data);
+        await handleSubscriptionEnded(data);
         break;
 
       case 'subscription.on_hold':
-        await handleSubscriptionOnHold(supabase, data);
+        await handleSubscriptionOnHold(data);
         break;
 
       case 'subscription.plan_changed':
-        await handlePlanChanged(supabase, data);
+        await handlePlanChanged(data);
         break;
 
       case 'subscription.updated':
@@ -121,7 +112,7 @@ export default async function handler(req, res) {
 }
 
 // Handle new subscription activation
-async function handleSubscriptionActive(supabase, data) {
+async function handleSubscriptionActive(data) {
   const { subscription_id, product_id, customer, metadata, next_billing_date } = data;
   
   console.log('🎉 Subscription activated:', subscription_id);
@@ -137,11 +128,10 @@ async function handleSubscriptionActive(supabase, data) {
   let userId = metadata?.user_id;
   
   if (!userId && customer?.email) {
-    const { data: user } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', customer.email)
-      .single();
+    const user = await prisma.user.findUnique({
+      where: { email: customer.email },
+      select: { id: true }
+    });
     
     if (user) {
       userId = user.id;
@@ -154,116 +144,102 @@ async function handleSubscriptionActive(supabase, data) {
   }
 
   // Update user's plan
-  const { error } = await supabase
-    .from('users')
-    .update({
-      plan_type: plan,
-      dodo_subscription_id: subscription_id,
-      dodo_customer_id: customer?.customer_id,
-      subscription_status: 'active',
-      subscription_end_date: next_billing_date,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', userId);
-
-  if (error) {
-    console.error('Failed to update user plan:', error);
-  } else {
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        planType: plan,
+        dodoSubscriptionId: subscription_id,
+        dodoCustomerId: customer?.customer_id,
+        subscriptionStatus: 'active',
+        subscriptionEndDate: next_billing_date ? new Date(next_billing_date) : null,
+      }
+    });
     console.log(`✅ User ${userId} upgraded to ${plan} plan`);
+  } catch (error) {
+    console.error('Failed to update user plan:', error);
   }
 }
 
 // Handle subscription renewal
-async function handleSubscriptionRenewed(supabase, data) {
+async function handleSubscriptionRenewed(data) {
   const { subscription_id, next_billing_date } = data;
   
   console.log('🔄 Subscription renewed:', subscription_id);
 
-  const { error } = await supabase
-    .from('users')
-    .update({
-      subscription_status: 'active',
-      subscription_end_date: next_billing_date,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('dodo_subscription_id', subscription_id);
-
-  if (error) {
-    console.error('Failed to update renewal:', error);
-  } else {
+  try {
+    await prisma.user.updateMany({
+      where: { dodoSubscriptionId: subscription_id },
+      data: {
+        subscriptionStatus: 'active',
+        subscriptionEndDate: next_billing_date ? new Date(next_billing_date) : null,
+      }
+    });
     console.log('✅ Subscription renewal recorded');
+  } catch (error) {
+    console.error('Failed to update renewal:', error);
   }
 }
 
 // Handle subscription cancellation
-async function handleSubscriptionCancelled(supabase, data) {
+async function handleSubscriptionCancelled(data) {
   const { subscription_id, cancelled_at } = data;
   
   console.log('❌ Subscription cancelled:', subscription_id);
 
   // Keep the current plan until end of billing period
-  const { error } = await supabase
-    .from('users')
-    .update({
-      subscription_status: 'cancelled',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('dodo_subscription_id', subscription_id);
-
-  if (error) {
-    console.error('Failed to update cancellation:', error);
-  } else {
+  try {
+    await prisma.user.updateMany({
+      where: { dodoSubscriptionId: subscription_id },
+      data: { subscriptionStatus: 'cancelled' }
+    });
     console.log('✅ Subscription marked as cancelled');
+  } catch (error) {
+    console.error('Failed to update cancellation:', error);
   }
 }
 
 // Handle subscription ended (expired or failed)
-async function handleSubscriptionEnded(supabase, data) {
+async function handleSubscriptionEnded(data) {
   const { subscription_id } = data;
   
   console.log('⏹️ Subscription ended:', subscription_id);
 
   // Downgrade to free plan
-  const { error } = await supabase
-    .from('users')
-    .update({
-      plan_type: 'free',
-      subscription_status: 'expired',
-      dodo_subscription_id: null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('dodo_subscription_id', subscription_id);
-
-  if (error) {
-    console.error('Failed to downgrade user:', error);
-  } else {
+  try {
+    await prisma.user.updateMany({
+      where: { dodoSubscriptionId: subscription_id },
+      data: {
+        planType: 'free',
+        subscriptionStatus: 'expired',
+        dodoSubscriptionId: null,
+      }
+    });
     console.log('✅ User downgraded to free plan');
+  } catch (error) {
+    console.error('Failed to downgrade user:', error);
   }
 }
 
 // Handle subscription on hold (payment failed but not yet expired)
-async function handleSubscriptionOnHold(supabase, data) {
+async function handleSubscriptionOnHold(data) {
   const { subscription_id } = data;
   
   console.log('⏸️ Subscription on hold:', subscription_id);
 
-  const { error } = await supabase
-    .from('users')
-    .update({
-      subscription_status: 'on_hold',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('dodo_subscription_id', subscription_id);
-
-  if (error) {
-    console.error('Failed to update on_hold status:', error);
-  } else {
+  try {
+    await prisma.user.updateMany({
+      where: { dodoSubscriptionId: subscription_id },
+      data: { subscriptionStatus: 'on_hold' }
+    });
     console.log('✅ Subscription marked as on_hold');
+  } catch (error) {
+    console.error('Failed to update on_hold status:', error);
   }
 }
 
 // Handle plan change (upgrade/downgrade)
-async function handlePlanChanged(supabase, data) {
+async function handlePlanChanged(data) {
   const { subscription_id, product_id, next_billing_date } = data;
   
   console.log('🔄 Plan changed:', subscription_id);
@@ -274,19 +250,17 @@ async function handlePlanChanged(supabase, data) {
     return;
   }
 
-  const { error } = await supabase
-    .from('users')
-    .update({
-      plan_type: plan,
-      subscription_status: 'active',
-      subscription_end_date: next_billing_date,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('dodo_subscription_id', subscription_id);
-
-  if (error) {
-    console.error('Failed to update plan change:', error);
-  } else {
+  try {
+    await prisma.user.updateMany({
+      where: { dodoSubscriptionId: subscription_id },
+      data: {
+        planType: plan,
+        subscriptionStatus: 'active',
+        subscriptionEndDate: next_billing_date ? new Date(next_billing_date) : null,
+      }
+    });
     console.log(`✅ Plan changed to ${plan}`);
+  } catch (error) {
+    console.error('Failed to update plan change:', error);
   }
 }

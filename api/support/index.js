@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '../../lib/supabase.js';
-import { requireAuth } from '../../lib/auth.js';
+import prisma from '../../lib/prisma.js';
+import { requireAuth } from '../../lib/auth-prisma.js';
 
 async function handler(req, res) {
   // POST - Create a support ticket (wholesaler)
@@ -12,27 +12,18 @@ async function handler(req, res) {
         return res.status(400).json({ error: 'All fields are required' });
       }
 
-      const { data, error } = await supabaseAdmin
-        .from('support_tickets')
-        .insert([
-          {
-            user_id: userId,
-            name,
-            email,
-            category,
-            message,
-            status: 'open'
-          }
-        ])
-        .select()
-        .single();
+      const ticket = await prisma.supportTicket.create({
+        data: {
+          userId,
+          name,
+          email,
+          category,
+          message,
+          status: 'open'
+        }
+      });
 
-      if (error) {
-        console.error('Error creating support ticket:', error);
-        return res.status(500).json({ error: 'Failed to create support ticket' });
-      }
-
-      return res.status(201).json({ message: 'Support ticket created successfully', ticket: data });
+      return res.status(201).json({ message: 'Support ticket created successfully', ticket });
     } catch (error) {
       console.error('Error creating support ticket:', error);
       return res.status(500).json({ error: 'Server error' });
@@ -47,17 +38,11 @@ async function handler(req, res) {
         return res.status(403).json({ error: 'Access denied' });
       }
 
-      const { data, error } = await supabaseAdmin
-        .from('support_tickets')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const tickets = await prisma.supportTicket.findMany({
+        orderBy: { createdAt: 'desc' }
+      });
 
-      if (error) {
-        console.error('Error fetching support tickets:', error);
-        return res.status(500).json({ error: 'Failed to fetch support tickets' });
-      }
-
-      return res.status(200).json(data);
+      return res.status(200).json(tickets);
     } catch (error) {
       console.error('Error fetching support tickets:', error);
       return res.status(500).json({ error: 'Server error' });

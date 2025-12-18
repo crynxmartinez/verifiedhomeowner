@@ -1,5 +1,6 @@
-import { supabase, supabaseAdmin } from '../../lib/supabase.js';
-import { distributeLeadsToUser } from '../../lib/distributeLeads.js';
+import prisma from '../../lib/prisma.js';
+import { generateToken, hashPassword } from '../../lib/auth-prisma.js';
+import { distributeLeadsToUser } from '../../lib/distributeLeads-prisma.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -13,62 +14,50 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'All fields required' });
     }
 
-    // Use Supabase Auth to create user with admin client to auto-confirm
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true, // Auto-confirm email
-      user_metadata: {
-        name: name,
+    // Check if email already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already registered' });
+    }
+
+    // Hash password
+    const hashedPassword = await hashPassword(password);
+
+    // Determine role based on email
+    const isAdmin = email.toLowerCase() === 'el@admin.com';
+
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        email: email.toLowerCase(),
+        password: hashedPassword,
+        name,
+        role: isAdmin ? 'admin' : 'wholesaler',
+        planType: isAdmin ? 'elite' : 'free',
+        subscriptionStatus: 'active',
       }
     });
 
-    if (authError) {
-      return res.status(400).json({ error: authError.message });
-    }
-
-    if (!authData.user) {
-      return res.status(400).json({ error: 'Registration failed' });
-    }
-
-    // Profile will be auto-created by database trigger
-    // Wait a moment for trigger to complete
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Get user profile
-    const { data: profile } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq('id', authData.user.id)
-      .single();
-
-    // Create a session for the user by signing them in
-    const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (sessionError) {
-      console.error('Session creation error:', sessionError);
-    }
+    // Generate JWT token
+    const token = generateToken(user.id);
 
     // Distribute initial leads to new user
     try {
-      await distributeLeadsToUser(authData.user.id);
+      await distributeLeadsToUser(user.id);
     } catch (distError) {
       console.error('Failed to distribute initial leads:', distError);
       // Don't fail registration if lead distribution fails
     }
 
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
+
     res.status(201).json({
-      token: sessionData?.session?.access_token || null,
-      user: profile || {
-        id: authData.user.id,
-        email: authData.user.email,
-        name,
-        role: 'wholesaler',
-        plan_type: 'free',
-      },
+      token,
+      user: userWithoutPassword,
     });
   } catch (error) {
     console.error('Registration error:', error);

@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '../../lib/supabase.js';
-import { requireAuth } from '../../lib/auth.js';
+import prisma from '../../lib/prisma.js';
+import { requireAuth } from '../../lib/auth-prisma.js';
 
 async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -7,15 +7,18 @@ async function handler(req, res) {
   }
 
   try {
-    const { data: user, error } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq('id', req.user.id)
-      .single();
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id }
+    });
 
-    if (error) throw error;
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
-    res.status(200).json({ user });
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
+
+    res.status(200).json({ user: userWithoutPassword });
   } catch (error) {
     console.error('Profile error:', error);
     res.status(500).json({ error: 'Failed to fetch profile' });

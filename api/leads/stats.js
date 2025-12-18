@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '../../lib/supabase.js';
-import { requireAuth } from '../../lib/auth.js';
+import prisma from '../../lib/prisma.js';
+import { requireAuth } from '../../lib/auth-prisma.js';
 
 async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -7,12 +7,10 @@ async function handler(req, res) {
   }
 
   try {
-    const { data: leads, error } = await supabaseAdmin
-      .from('user_leads')
-      .select('status, action, created_at')
-      .eq('user_id', req.user.id);
-
-    if (error) throw error;
+    const leads = await prisma.userLead.findMany({
+      where: { userId: req.user.id },
+      select: { status: true, action: true, createdAt: true }
+    });
 
     // Calculate today's start (midnight UTC)
     const todayStart = new Date();
@@ -25,7 +23,7 @@ async function handler(req, res) {
       notInterested: leads?.filter(l => l.status === 'not_interested').length || 0,
       callNow: leads?.filter(l => l.action === 'call_now').length || 0,
       pending: leads?.filter(l => l.action === 'pending').length || 0,
-      newToday: leads?.filter(l => new Date(l.created_at) >= todayStart).length || 0,
+      newToday: leads?.filter(l => new Date(l.createdAt) >= todayStart).length || 0,
     };
 
     res.status(200).json({ stats });

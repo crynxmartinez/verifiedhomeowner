@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '../../lib/supabase.js';
+import prisma from '../../lib/prisma.js';
 import { PLAN_CONFIGS } from '../../lib/plans.js';
 
 export default async function handler(req, res) {
@@ -10,22 +10,19 @@ export default async function handler(req, res) {
 
   try {
     // Get all active wholesalers
-    const { data: users, error: usersError } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq('role', 'wholesaler')
-      .eq('subscription_status', 'active');
-
-    if (usersError) throw usersError;
+    const users = await prisma.user.findMany({
+      where: {
+        role: 'wholesaler',
+        subscriptionStatus: 'active'
+      }
+    });
 
     if (!users || users.length === 0) {
       return res.status(200).json({ message: 'No active wholesalers found' });
     }
 
     // Get total leads count for validation
-    const { count: totalLeadsCount } = await supabaseAdmin
-      .from('leads')
-      .select('*', { count: 'exact', head: true });
+    const totalLeadsCount = await prisma.lead.count();
 
     if (!totalLeadsCount || totalLeadsCount === 0) {
       return res.status(200).json({ message: 'No leads available' });
@@ -42,7 +39,7 @@ export default async function handler(req, res) {
 
     // Process each user
     for (const user of users) {
-      const planConfig = PLAN_CONFIGS[user.plan_type] || PLAN_CONFIGS.free;
+      const planConfig = PLAN_CONFIGS[user.planType] || PLAN_CONFIGS.free;
       let leadsToAssign = 0;
 
       // Determine how many leads to assign based on plan
@@ -56,34 +53,46 @@ export default async function handler(req, res) {
       }
 
       if (leadsToAssign === 0) {
-        console.log(`[User: ${user.name}] Skipping - no leads for plan ${user.plan_type} today`);
+        console.log(`[User: ${user.name}] Skipping - no leads for plan ${user.planType} today`);
         continue;
       }
 
-      let currentPosition = user.lead_sequence_position || 0;
+      let currentPosition = user.leadSequencePosition || 0;
 
       console.log(`\n[User: ${user.name} (${user.email})]`);
-      console.log(`  - Plan: ${user.plan_type}`);
+      console.log(`  - Plan: ${user.planType}`);
       console.log(`  - Current position: ${currentPosition}`);
       console.log(`  - Daily allocation: ${leadsToAssign}`);
 
-      // Get unassigned leads for this user
-      const { data: unassignedLeads, error: leadsError } = await supabaseAdmin
-        .rpc('get_unassigned_leads', {
-          p_user_id: user.id,
-          p_start_position: currentPosition,
-          p_limit: leadsToAssign
-        });
+      // Get leads already assigned to this user
+      const assignedLeadIds = await prisma.userLead.findMany({
+        where: { userId: user.id },
+        select: { leadId: true }
+      });
+      const assignedIds = assignedLeadIds.map(l => l.leadId);
 
-      if (leadsError) {
-        console.error(`  - Error getting leads:`, leadsError);
-        results.push({
-          userId: user.id,
-          userName: user.name,
-          assigned: 0,
-          error: leadsError.message
+      // Get unassigned leads starting from current position
+      let unassignedLeads = await prisma.lead.findMany({
+        where: {
+          id: { notIn: assignedIds },
+          sequenceNumber: { gte: currentPosition }
+        },
+        orderBy: { sequenceNumber: 'asc' },
+        take: leadsToAssign
+      });
+
+      // If we need more leads, wrap around to beginning
+      if (unassignedLeads.length < leadsToAssign) {
+        const remaining = leadsToAssign - unassignedLeads.length;
+        const moreLeads = await prisma.lead.findMany({
+          where: {
+            id: { notIn: [...assignedIds, ...unassignedLeads.map(l => l.id)] },
+            sequenceNumber: { lt: currentPosition }
+          },
+          orderBy: { sequenceNumber: 'asc' },
+          take: remaining
         });
-        continue;
+        unassignedLeads = [...unassignedLeads, ...moreLeads];
       }
 
       if (!unassignedLeads || unassignedLeads.length === 0) {
@@ -105,18 +114,39 @@ export default async function handler(req, res) {
 
       // Bulk insert assignments
       const assignments = unassignedLeads.map(lead => ({
-        user_id: user.id,
-        lead_id: lead.id,
+        userId: user.id,
+        leadId: lead.id,
         status: 'new',
         action: 'call_now',
       }));
 
-      const { data: inserted, error: insertError } = await supabaseAdmin
-        .from('user_leads')
-        .insert(assignments)
-        .select();
+      try {
+        const inserted = await prisma.userLead.createMany({
+          data: assignments
+        });
 
-      if (insertError) {
+        const assigned = inserted.count || 0;
+        totalAssigned += assigned;
+
+        // Update position: move forward by number assigned, wrap around
+        const newPosition = (currentPosition + assigned) % totalLeadsCount;
+
+        console.log(`  - Assigned: ${assigned} leads`);
+        console.log(`  - New position: ${newPosition}`);
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { leadSequencePosition: newPosition }
+        });
+
+        results.push({
+          userId: user.id,
+          userName: user.name,
+          plan: user.planType,
+          assigned,
+          newPosition
+        });
+      } catch (insertError) {
         console.error(`  - Error inserting leads:`, insertError);
         results.push({
           userId: user.id,
@@ -126,28 +156,6 @@ export default async function handler(req, res) {
         });
         continue;
       }
-
-      const assigned = inserted?.length || 0;
-      totalAssigned += assigned;
-
-      // Update position: move forward by number assigned, wrap around
-      const newPosition = (currentPosition + assigned) % totalLeadsCount;
-
-      console.log(`  - Assigned: ${assigned} leads`);
-      console.log(`  - New position: ${newPosition}`);
-
-      await supabaseAdmin
-        .from('users')
-        .update({ lead_sequence_position: newPosition })
-        .eq('id', user.id);
-
-      results.push({
-        userId: user.id,
-        userName: user.name,
-        plan: user.plan_type,
-        assigned,
-        newPosition
-      });
     }
 
     console.log(`\n[CRON Distribution Complete]`);

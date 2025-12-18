@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '../../lib/supabase.js';
-import { requireAdmin } from '../../lib/auth.js';
+import prisma from '../../lib/prisma.js';
+import { requireAdmin } from '../../lib/auth-prisma.js';
 
 async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -8,36 +8,31 @@ async function handler(req, res) {
 
   try {
     // Get total counts
-    const { count: totalWholesalers } = await supabaseAdmin
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .eq('role', 'wholesaler');
+    const totalWholesalers = await prisma.user.count({
+      where: { role: 'wholesaler' }
+    });
 
-    const { count: totalLeads } = await supabaseAdmin
-      .from('leads')
-      .select('*', { count: 'exact', head: true });
+    const totalLeads = await prisma.lead.count();
 
-    const { count: totalAssignments } = await supabaseAdmin
-      .from('user_leads')
-      .select('*', { count: 'exact', head: true });
+    const totalAssignments = await prisma.userLead.count();
 
     // Get plan distribution
-    const { data: planData } = await supabaseAdmin
-      .from('users')
-      .select('plan_type')
-      .eq('role', 'wholesaler');
+    const planData = await prisma.user.findMany({
+      where: { role: 'wholesaler' },
+      select: { planType: true }
+    });
 
     const planDistribution = {
-      free: planData?.filter(u => u.plan_type === 'free').length || 0,
-      basic: planData?.filter(u => u.plan_type === 'basic').length || 0,
-      elite: planData?.filter(u => u.plan_type === 'elite').length || 0,
-      pro: planData?.filter(u => u.plan_type === 'pro').length || 0,
+      free: planData?.filter(u => u.planType === 'free').length || 0,
+      basic: planData?.filter(u => u.planType === 'basic').length || 0,
+      elite: planData?.filter(u => u.planType === 'elite').length || 0,
+      pro: planData?.filter(u => u.planType === 'pro').length || 0,
     };
 
     // Get status distribution across all assignments
-    const { data: statusData } = await supabaseAdmin
-      .from('user_leads')
-      .select('status, action');
+    const statusData = await prisma.userLead.findMany({
+      select: { status: true, action: true }
+    });
 
     const statusDistribution = {
       new: statusData?.filter(l => l.status === 'new').length || 0,
@@ -54,16 +49,16 @@ async function handler(req, res) {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const { count: newWholesalersLast30Days } = await supabaseAdmin
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .eq('role', 'wholesaler')
-      .gte('created_at', thirtyDaysAgo.toISOString());
+    const newWholesalersLast30Days = await prisma.user.count({
+      where: {
+        role: 'wholesaler',
+        createdAt: { gte: thirtyDaysAgo }
+      }
+    });
 
-    const { count: newLeadsLast30Days } = await supabaseAdmin
-      .from('leads')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', thirtyDaysAgo.toISOString());
+    const newLeadsLast30Days = await prisma.lead.count({
+      where: { createdAt: { gte: thirtyDaysAgo } }
+    });
 
     res.status(200).json({
       analytics: {

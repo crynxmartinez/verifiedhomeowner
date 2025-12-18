@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '../../../lib/supabase.js';
-import { requireAdmin } from '../../../lib/auth.js';
+import prisma from '../../../lib/prisma.js';
+import { requireAdmin } from '../../../lib/auth-prisma.js';
 
 async function handler(req, res) {
   if (req.method === 'DELETE') {
@@ -11,12 +11,9 @@ async function handler(req, res) {
         return res.status(400).json({ error: 'Lead IDs array required' });
       }
 
-      const { error } = await supabaseAdmin
-        .from('leads')
-        .delete()
-        .in('id', leadIds);
-
-      if (error) throw error;
+      await prisma.lead.deleteMany({
+        where: { id: { in: leadIds } }
+      });
 
       res.status(200).json({ 
         message: `${leadIds.length} lead(s) deleted successfully`,

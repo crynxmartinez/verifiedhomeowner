@@ -1,4 +1,5 @@
-import { supabase, supabaseAdmin } from '../../lib/supabase.js';
+import prisma from '../../lib/prisma.js';
+import { generateToken, comparePassword } from '../../lib/auth-prisma.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -12,31 +13,30 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Email and password required' });
     }
 
-    // Use Supabase Auth to sign in
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() }
     });
 
-    if (authError || !authData.user) {
+    if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Get user profile from users table
-    const { data: profile } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq('id', authData.user.id)
-      .single();
+    // Verify password
+    const isValidPassword = await comparePassword(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Generate JWT token
+    const token = generateToken(user.id);
+
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user;
 
     res.status(200).json({
-      token: authData.session.access_token,
-      user: profile || {
-        id: authData.user.id,
-        email: authData.user.email,
-        role: 'wholesaler',
-        plan_type: 'free',
-      },
+      token,
+      user: userWithoutPassword,
     });
   } catch (error) {
     console.error('Login error:', error);

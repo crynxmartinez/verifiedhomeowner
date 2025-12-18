@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '../../lib/supabase.js';
-import { requireAuth } from '../../lib/auth.js';
+import prisma from '../../lib/prisma.js';
+import { requireAuth } from '../../lib/auth-prisma.js';
 
 async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -12,15 +12,9 @@ async function handler(req, res) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const { count, error } = await supabaseAdmin
-      .from('support_tickets')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'open');
-
-    if (error) {
-      console.error('Error fetching unread count:', error);
-      return res.status(500).json({ error: 'Failed to fetch unread count' });
-    }
+    const count = await prisma.supportTicket.count({
+      where: { status: 'open' }
+    });
 
     return res.status(200).json({ count: count || 0 });
   } catch (error) {

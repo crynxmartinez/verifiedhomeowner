@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '../../lib/supabase.js';
-import { requireAuth } from '../../lib/auth.js';
+import prisma from '../../lib/prisma.js';
+import { requireAuth } from '../../lib/auth-prisma.js';
 
 /**
  * Update User Plan
@@ -24,36 +24,28 @@ async function handler(req, res) {
     console.log(`[PLAN UPDATE] User ${userId}: Changing to ${plan_type}`);
 
     // Get current plan
-    const { data: currentUser } = await supabaseAdmin
-      .from('users')
-      .select('plan_type')
-      .eq('id', userId)
-      .single();
+    const currentUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { planType: true }
+    });
 
-    const oldPlan = currentUser?.plan_type || 'free';
+    const oldPlan = currentUser?.planType || 'free';
 
     // Update plan in database
-    const { data: updatedUser, error: updateError } = await supabaseAdmin
-      .from('users')
-      .update({ 
-        plan_type,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', userId)
-      .select()
-      .single();
-
-    if (updateError) {
-      console.error('[PLAN UPDATE] Error:', updateError);
-      return res.status(500).json({ error: 'Failed to update plan' });
-    }
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { planType: plan_type }
+    });
 
     console.log(`[PLAN UPDATE] ✅ Success: ${oldPlan} → ${plan_type}`);
+
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = updatedUser;
 
     // Return immediately - no lead distribution here
     return res.status(200).json({
       success: true,
-      user: updatedUser,
+      user: userWithoutPassword,
       oldPlan: oldPlan,
       newPlan: plan_type,
       message: `Plan updated from ${oldPlan} to ${plan_type}`

@@ -1,0 +1,230 @@
+// Verified Homeowner - Prisma Schema
+// Migrated from Supabase PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USERS
+// ============================================================================
+
+model User {
+  id                    String    @id @default(uuid()) @db.Uuid
+  email                 String    @unique @db.VarChar(255)
+  password              String    @db.VarChar(255)
+  name                  String    @db.VarChar(255)
+  role                  UserRole  @default(wholesaler)
+  planType              PlanType  @default(free) @map("plan_type")
+  subscriptionStatus    SubscriptionStatus @default(active) @map("subscription_status")
+  leadSequencePosition  Int       @default(0) @map("lead_sequence_position")
+  
+  // Dodo Payments
+  dodoSubscriptionId    String?   @map("dodo_subscription_id")
+  dodoCustomerId        String?   @map("dodo_customer_id")
+  subscriptionEndDate   DateTime? @map("subscription_end_date") @db.Timestamptz
+  
+  // Timestamps
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  userLeads             UserLead[]
+  userMarketplaceLeads  UserMarketplaceLead[]
+  supportTickets        SupportTicket[]
+
+  @@index([email])
+  @@index([role])
+  @@index([planType])
+  @@map("users")
+}
+
+enum UserRole {
+  admin
+  wholesaler
+}
+
+enum PlanType {
+  free
+  basic
+  elite
+  pro
+}
+
+enum SubscriptionStatus {
+  active
+  inactive
+  cancelled
+  expired
+  on_hold
+}
+
+// ============================================================================
+// LEADS (Master Lead Database)
+// ============================================================================
+
+model Lead {
+  id              String    @id @default(uuid()) @db.Uuid
+  firstName       String?   @map("first_name") @db.VarChar(255)
+  lastName        String?   @map("last_name") @db.VarChar(255)
+  fullName        String?   @map("full_name") @db.VarChar(255)
+  isBusiness      Boolean   @default(false) @map("is_business")
+  phone           String?   @db.VarChar(50)
+  propertyAddress String?   @map("property_address") @db.VarChar(500)
+  city            String?   @db.VarChar(255)
+  state           String?   @db.VarChar(100)
+  zipCode         String?   @map("zip_code") @db.VarChar(20)
+  mailingAddress  String?   @map("mailing_address") @db.VarChar(500)
+  mailingCity     String?   @map("mailing_city") @db.VarChar(255)
+  mailingState    String?   @map("mailing_state") @db.VarChar(100)
+  mailingZip      String?   @map("mailing_zip") @db.VarChar(20)
+  sequenceNumber  Int       @unique @map("sequence_number")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  userLeads       UserLead[]
+
+  @@index([sequenceNumber])
+  @@index([propertyAddress])
+  @@map("leads")
+}
+
+// ============================================================================
+// USER LEADS (Assigned Subscription Leads)
+// ============================================================================
+
+model UserLead {
+  id            String      @id @default(uuid()) @db.Uuid
+  userId        String      @map("user_id") @db.Uuid
+  leadId        String      @map("lead_id") @db.Uuid
+  status        LeadStatus  @default(new)
+  action        LeadAction  @default(call_now)
+  motivation    String?     @db.VarChar(100)
+  assignedAt    DateTime    @default(now()) @map("assigned_at")
+  lastCalledAt  DateTime?   @map("last_called_at")
+  followUpDate  DateTime?   @map("follow_up_date") @db.Date
+  countdownDays Int?        @map("countdown_days")
+  notes         String?
+  tags          String[]    @default([])
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lead          Lead        @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, leadId])
+  @@index([userId])
+  @@index([status])
+  @@index([action])
+  @@map("user_leads")
+}
+
+enum LeadStatus {
+  new
+  follow_up
+  not_interested
+  pending
+}
+
+enum LeadAction {
+  call_now
+  pending
+}
+
+// ============================================================================
+// MARKETPLACE LEADS (Hot Leads for Purchase)
+// ============================================================================
+
+model MarketplaceLead {
+  id              String    @id @default(uuid()) @db.Uuid
+  ownerName       String?   @map("owner_name") @db.VarChar(255)
+  phone           String?   @db.VarChar(50)
+  propertyAddress String?   @map("property_address") @db.VarChar(500)
+  city            String?   @db.VarChar(255)
+  state           String?   @db.VarChar(100)
+  zipCode         String?   @map("zip_code") @db.VarChar(20)
+  mailingAddress  String?   @map("mailing_address") @db.VarChar(500)
+  mailingCity     String?   @map("mailing_city") @db.VarChar(255)
+  mailingState    String?   @map("mailing_state") @db.VarChar(100)
+  mailingZip      String?   @map("mailing_zip") @db.VarChar(20)
+  motivation      String    @db.VarChar(100)
+  timeline        String    @db.VarChar(100)
+  price           Decimal   @db.Decimal(10, 2)
+  maxBuyers       Int       @default(0) @map("max_buyers")
+  timesSold       Int       @default(0) @map("times_sold")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  userMarketplaceLeads UserMarketplaceLead[]
+
+  @@index([state])
+  @@index([motivation])
+  @@index([timeline])
+  @@map("marketplace_leads")
+}
+
+// ============================================================================
+// USER MARKETPLACE LEADS (Purchased Hot Leads)
+// ============================================================================
+
+model UserMarketplaceLead {
+  id                String          @id @default(uuid()) @db.Uuid
+  userId            String          @map("user_id") @db.Uuid
+  marketplaceLeadId String          @map("marketplace_lead_id") @db.Uuid
+  purchasedAt       DateTime        @default(now()) @map("purchased_at")
+  pricePaid         Decimal         @map("price_paid") @db.Decimal(10, 2)
+  status            LeadStatus      @default(new)
+  action            LeadAction      @default(call_now)
+  lastCalledAt      DateTime?       @map("last_called_at")
+  followUpDate      DateTime?       @map("follow_up_date") @db.Date
+  countdownDays     Int?            @map("countdown_days")
+  notes             String?
+  tags              String[]        @default([])
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  marketplaceLead   MarketplaceLead @relation(fields: [marketplaceLeadId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, marketplaceLeadId])
+  @@index([userId])
+  @@index([status])
+  @@map("user_marketplace_leads")
+}
+
+// ============================================================================
+// SUPPORT TICKETS
+// ============================================================================
+
+model SupportTicket {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String?      @map("user_id") @db.Uuid
+  name      String       @db.VarChar(255)
+  email     String       @db.VarChar(255)
+  category  String       @db.VarChar(100)
+  message   String
+  status    TicketStatus @default(open)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  user      User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("support_tickets")
+}
+
+enum TicketStatus {
+  open
+  resolved
+}

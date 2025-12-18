@@ -1,15 +1,12 @@
-import { supabaseAdmin } from '../../lib/supabase.js';
+import prisma from '../../lib/prisma.js';
 
 /**
  * Daily CRON job to decrement countdown_days and auto-change status
  * Runs at midnight UTC (0 0 * * *)
  * 
  * Process:
- * 1. Decrement all countdown_days by 1 where countdown_days > 0 (via RPC)
- * 2. Reset leads where countdown_days reached 0 (via RPC)
- * 
- * NOTE: Uses PostgreSQL RPC functions because Supabase JS client doesn't support
- *       raw SQL expressions like 'countdown_days - 1' in update calls.
+ * 1. Decrement all countdown_days by 1 where countdown_days > 0
+ * 2. Reset leads where countdown_days reached 0
  */
 async function handler(req, res) {
   console.log('=== COUNTDOWN CRON STARTED ===');
@@ -34,33 +31,34 @@ async function handler(req, res) {
     // ========================================================================
     console.log('\n--- Processing subscription leads (user_leads) ---');
 
-    // Decrement countdown_days by 1 for all leads with countdown > 0 using RPC
-    const { data: decrementedSubscription, error: decrementError1 } = await supabaseAdmin
-      .rpc('decrement_user_leads_countdown');
-
-    if (decrementError1) {
-      console.error('Error decrementing subscription leads:', decrementError1);
-      results.errors.push({ table: 'user_leads', step: 'decrement', error: decrementError1.message });
-    } else {
-      results.subscription_leads.decremented = decrementedSubscription?.length || 0;
+    // Decrement countdown_days by 1 for all leads with countdown > 0
+    try {
+      const decremented = await prisma.userLead.updateMany({
+        where: { countdownDays: { gt: 0 } },
+        data: { countdownDays: { decrement: 1 } }
+      });
+      results.subscription_leads.decremented = decremented.count;
       console.log(`✅ Decremented ${results.subscription_leads.decremented} subscription leads`);
+    } catch (error) {
+      console.error('Error decrementing subscription leads:', error);
+      results.errors.push({ table: 'user_leads', step: 'decrement', error: error.message });
     }
 
-    // Reset leads where countdown reached 0 using RPC
-    const { data: resetSubscription, error: resetError1 } = await supabaseAdmin
-      .rpc('reset_zero_countdown_user_leads');
-
-    if (resetError1) {
-      console.error('Error resetting subscription leads:', resetError1);
-      results.errors.push({ table: 'user_leads', step: 'reset', error: resetError1.message });
-    } else {
-      results.subscription_leads.reset = resetSubscription?.length || 0;
-      console.log(`✅ Reset ${results.subscription_leads.reset} subscription leads to "call now"`);
-      
-      // Log each reset lead
-      resetSubscription?.forEach(lead => {
-        console.log(`  - Lead ${lead.id} (User: ${lead.user_id}) → status: new, action: call_now`);
+    // Reset leads where countdown reached 0
+    try {
+      const reset = await prisma.userLead.updateMany({
+        where: { countdownDays: 0 },
+        data: {
+          status: 'new',
+          action: 'call_now',
+          countdownDays: null
+        }
       });
+      results.subscription_leads.reset = reset.count;
+      console.log(`✅ Reset ${results.subscription_leads.reset} subscription leads to "call now"`);
+    } catch (error) {
+      console.error('Error resetting subscription leads:', error);
+      results.errors.push({ table: 'user_leads', step: 'reset', error: error.message });
     }
 
     // ========================================================================
@@ -68,33 +66,34 @@ async function handler(req, res) {
     // ========================================================================
     console.log('\n--- Processing purchased leads (user_marketplace_leads) ---');
 
-    // Decrement countdown_days by 1 for all leads with countdown > 0 using RPC
-    const { data: decrementedPurchased, error: decrementError2 } = await supabaseAdmin
-      .rpc('decrement_marketplace_leads_countdown');
-
-    if (decrementError2) {
-      console.error('Error decrementing purchased leads:', decrementError2);
-      results.errors.push({ table: 'user_marketplace_leads', step: 'decrement', error: decrementError2.message });
-    } else {
-      results.purchased_leads.decremented = decrementedPurchased?.length || 0;
+    // Decrement countdown_days by 1 for all leads with countdown > 0
+    try {
+      const decremented = await prisma.userMarketplaceLead.updateMany({
+        where: { countdownDays: { gt: 0 } },
+        data: { countdownDays: { decrement: 1 } }
+      });
+      results.purchased_leads.decremented = decremented.count;
       console.log(`✅ Decremented ${results.purchased_leads.decremented} purchased leads`);
+    } catch (error) {
+      console.error('Error decrementing purchased leads:', error);
+      results.errors.push({ table: 'user_marketplace_leads', step: 'decrement', error: error.message });
     }
 
-    // Reset leads where countdown reached 0 using RPC
-    const { data: resetPurchased, error: resetError2 } = await supabaseAdmin
-      .rpc('reset_zero_countdown_marketplace_leads');
-
-    if (resetError2) {
-      console.error('Error resetting purchased leads:', resetError2);
-      results.errors.push({ table: 'user_marketplace_leads', step: 'reset', error: resetError2.message });
-    } else {
-      results.purchased_leads.reset = resetPurchased?.length || 0;
-      console.log(`✅ Reset ${results.purchased_leads.reset} purchased leads to "call now"`);
-      
-      // Log each reset lead
-      resetPurchased?.forEach(lead => {
-        console.log(`  - Lead ${lead.id} (User: ${lead.user_id}) → status: new, action: call_now`);
+    // Reset leads where countdown reached 0
+    try {
+      const reset = await prisma.userMarketplaceLead.updateMany({
+        where: { countdownDays: 0 },
+        data: {
+          status: 'new',
+          action: 'call_now',
+          countdownDays: null
+        }
       });
+      results.purchased_leads.reset = reset.count;
+      console.log(`✅ Reset ${results.purchased_leads.reset} purchased leads to "call now"`);
+    } catch (error) {
+      console.error('Error resetting purchased leads:', error);
+      results.errors.push({ table: 'user_marketplace_leads', step: 'reset', error: error.message });
     }
 
     // ========================================================================

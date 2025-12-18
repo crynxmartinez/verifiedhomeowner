@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '../../lib/supabase.js';
-import { requireAuth } from '../../lib/auth.js';
+import prisma from '../../lib/prisma.js';
+import { requireAuth } from '../../lib/auth-prisma.js';
 
 async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -12,90 +12,97 @@ async function handler(req, res) {
 
     // Get user's subscription leads
     try {
-      const { data, error: subError } = await supabaseAdmin
-        .from('user_leads')
-        .select(`
-          *,
-          lead:leads(*)
-        `)
-        .eq('user_id', req.user.id)
-        .order('assigned_at', { ascending: false });
-
-      if (subError) {
-        console.error('Subscription leads query error:', subError);
-        throw subError;
-      }
-      subscriptionLeads = data || [];
+      subscriptionLeads = await prisma.userLead.findMany({
+        where: { userId: req.user.id },
+        include: { lead: true },
+        orderBy: { assignedAt: 'desc' }
+      });
     } catch (subErr) {
       console.error('Failed to fetch subscription leads:', subErr);
-      // Continue with empty subscription leads instead of failing completely
       subscriptionLeads = [];
     }
 
     // Get user's purchased marketplace leads
     try {
-      const { data, error: mktError } = await supabaseAdmin
-        .from('user_marketplace_leads')
-        .select(`
-          *,
-          lead:marketplace_leads(*)
-        `)
-        .eq('user_id', req.user.id)
-        .order('purchased_at', { ascending: false });
-
-      if (mktError) {
-        console.error('Marketplace leads query error:', mktError);
-        throw mktError;
-      }
-      marketplaceLeads = data || [];
+      marketplaceLeads = await prisma.userMarketplaceLead.findMany({
+        where: { userId: req.user.id },
+        include: { marketplaceLead: true },
+        orderBy: { purchasedAt: 'desc' }
+      });
     } catch (mktErr) {
       console.error('Failed to fetch marketplace leads:', mktErr);
-      // Continue with empty marketplace leads instead of failing completely
       marketplaceLeads = [];
     }
 
     // Format subscription leads
     const formattedSubLeads = (subscriptionLeads || []).map(ul => {
-      // Handle case where lead might be null or missing
       if (!ul.lead) {
         console.warn(`Lead data missing for user_lead ${ul.id}`);
         return null;
       }
       
       return {
-        ...ul,
+        id: ul.id,
+        user_id: ul.userId,
+        lead_id: ul.leadId,
+        status: ul.status,
+        action: ul.action,
+        assigned_at: ul.assignedAt,
+        last_called_at: ul.lastCalledAt,
+        follow_up_date: ul.followUpDate,
+        countdown_days: ul.countdownDays,
+        notes: ul.notes,
+        tags: ul.tags,
+        created_at: ul.createdAt,
+        updated_at: ul.updatedAt,
         source: 'subscription',
         lead: {
-          ...ul.lead,
+          id: ul.lead.id,
+          full_name: ul.lead.fullName || '',
+          first_name: ul.lead.firstName || '',
+          last_name: ul.lead.lastName || '',
+          is_business: ul.lead.isBusiness || false,
+          phone: ul.lead.phone,
+          property_address: ul.lead.propertyAddress,
+          city: ul.lead.city,
+          state: ul.lead.state,
+          zip_code: ul.lead.zipCode,
+          mailing_address: ul.lead.mailingAddress,
+          mailing_city: ul.lead.mailingCity,
+          mailing_state: ul.lead.mailingState,
+          mailing_zip: ul.lead.mailingZip,
           motivation: ul.motivation || null,
-          // Ensure backward compatibility with old schema
-          full_name: ul.lead.full_name || ul.lead.owner_name || '',
-          first_name: ul.lead.first_name || '',
-          last_name: ul.lead.last_name || '',
-          is_business: ul.lead.is_business || false,
         }
       };
-    }).filter(Boolean); // Remove null entries
+    }).filter(Boolean);
 
     // Format marketplace leads
     const formattedMktLeads = (marketplaceLeads || []).map(uml => ({
       id: uml.id,
-      user_id: uml.user_id,
-      lead_id: uml.marketplace_lead_id,
+      user_id: uml.userId,
+      lead_id: uml.marketplaceLeadId,
       status: uml.status,
       action: uml.action,
-      assigned_at: uml.purchased_at,
-      last_called_at: uml.last_called_at,
-      follow_up_date: uml.follow_up_date,
-      countdown_days: uml.countdown_days,
+      assigned_at: uml.purchasedAt,
+      last_called_at: uml.lastCalledAt,
+      follow_up_date: uml.followUpDate,
+      countdown_days: uml.countdownDays,
       notes: uml.notes,
-      created_at: uml.created_at,
-      updated_at: uml.updated_at,
+      tags: uml.tags,
+      created_at: uml.createdAt,
+      updated_at: uml.updatedAt,
       source: 'purchased',
-      price_paid: uml.price_paid,
+      price_paid: uml.pricePaid,
       lead: {
-        ...uml.lead,
-        id: uml.marketplace_lead_id,
+        id: uml.marketplaceLeadId,
+        owner_name: uml.marketplaceLead?.ownerName,
+        phone: uml.marketplaceLead?.phone,
+        property_address: uml.marketplaceLead?.propertyAddress,
+        city: uml.marketplaceLead?.city,
+        state: uml.marketplaceLead?.state,
+        zip_code: uml.marketplaceLead?.zipCode,
+        motivation: uml.marketplaceLead?.motivation,
+        timeline: uml.marketplaceLead?.timeline,
       }
     }));
 
