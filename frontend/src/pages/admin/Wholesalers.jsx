@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { adminAPI } from '../../lib/api';
-import { Users, Activity, CreditCard, Mail, Search, Download, ChevronUp, ChevronDown } from 'lucide-react';
+import { Users, Activity, CreditCard, Mail, Search, Download, ChevronUp, ChevronDown, Edit2, X, Save, Loader2 } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 const EMAIL_TYPE_LABELS = {
   marketplace_lead: 'Marketplace',
@@ -42,6 +43,7 @@ function formatTimeAgo(date) {
 }
 
 export default function Wholesalers() {
+  const toast = useToast();
   const [stats, setStats] = useState(null);
   const [wholesalers, setWholesalers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,6 +53,18 @@ export default function Wholesalers() {
   const [filterEmail, setFilterEmail] = useState('all');
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState('desc');
+
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    plan_type: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchWholesalers();
@@ -65,6 +79,71 @@ export default function Wholesalers() {
       console.error('Failed to fetch wholesalers:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Edit handlers
+  const handleEdit = (user) => {
+    setEditingUser(user);
+    setFormData({
+      name: user.name || '',
+      email: user.email || '',
+      plan_type: user.plan_type || 'free',
+      password: '',
+      confirmPassword: ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowEditModal(false);
+    setEditingUser(null);
+    setFormData({
+      name: '',
+      email: '',
+      plan_type: '',
+      password: '',
+      confirmPassword: ''
+    });
+  };
+
+  const handleSaveModal = async () => {
+    if (!formData.name || !formData.email) {
+      toast.error('Name and email are required');
+      return;
+    }
+    
+    if (formData.password && formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    
+    if (formData.password && formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      const updateData = {
+        name: formData.name,
+        email: formData.email,
+        plan_type: formData.plan_type
+      };
+      
+      if (formData.password) {
+        updateData.password = formData.password;
+      }
+      
+      await adminAPI.updateUser(editingUser.id, updateData);
+      handleCloseModal();
+      fetchWholesalers();
+      toast.success('Wholesaler updated successfully');
+    } catch (error) {
+      console.error('Failed to update user:', error);
+      toast.error(error.response?.data?.error || 'Failed to update wholesaler');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -346,12 +425,15 @@ export default function Wholesalers() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
                     Markets
                   </th>
+                  <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y dark:divide-gray-700">
                 {filteredWholesalers.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan="7" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                       No wholesalers found
                     </td>
                   </tr>
@@ -406,6 +488,17 @@ export default function Wholesalers() {
                           )}
                         </div>
                       </td>
+                      <td className="px-4 py-4">
+                        <div className="flex justify-end">
+                          <button
+                            onClick={() => handleEdit(w)}
+                            className="p-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition"
+                            title="Edit wholesaler"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -421,6 +514,153 @@ export default function Wholesalers() {
           </div>
         </div>
       </div>
+
+      {/* Edit Wholesaler Modal */}
+      {showEditModal && editingUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Modal Header */}
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Wholesaler</h2>
+                <button
+                  onClick={handleCloseModal}
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="space-y-4">
+                {/* Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    placeholder="Enter full name"
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-4 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    placeholder="Enter email address"
+                  />
+                </div>
+
+                {/* Plan Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Plan Type *
+                  </label>
+                  <select
+                    value={formData.plan_type}
+                    onChange={(e) => setFormData({ ...formData, plan_type: e.target.value })}
+                    className="w-full px-4 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="free">Free</option>
+                    <option value="basic">Basic</option>
+                    <option value="elite">Elite</option>
+                    <option value="pro">Pro</option>
+                  </select>
+                </div>
+
+                {/* Password Section */}
+                <div className="border-t dark:border-gray-700 pt-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Change Password</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Leave blank to keep current password
+                  </p>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        New Password
+                      </label>
+                      <input
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        className="w-full px-4 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        placeholder="Enter new password (min 6 characters)"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Confirm New Password
+                      </label>
+                      <input
+                        type="password"
+                        value={formData.confirmPassword}
+                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                        className="w-full px-4 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        placeholder="Confirm new password"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* User Info */}
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2">User Info</h4>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">Total Leads:</span>
+                      <span className="ml-2 font-semibold text-gray-900 dark:text-white">{editingUser.total_leads || 0}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600 dark:text-gray-400">Last Login:</span>
+                      <span className="ml-2 font-semibold text-gray-900 dark:text-white">{formatTimeAgo(editingUser.last_login_at)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex justify-end space-x-3 mt-6 pt-6 border-t dark:border-gray-700">
+                <button
+                  onClick={handleCloseModal}
+                  disabled={saving}
+                  className="px-6 py-2 border dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveModal}
+                  disabled={saving}
+                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center space-x-2"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      <span>Save Changes</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }

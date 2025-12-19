@@ -27,7 +27,6 @@ import WholesalerProfile from './pages/wholesaler/Profile';
 
 // Admin pages
 import AdminDashboard from './pages/admin/Dashboard';
-import AdminUsers from './pages/admin/Users';
 import AdminLeads from './pages/admin/Leads';
 import AdminMarketplace from './pages/admin/Marketplace';
 import AdminAnalytics from './pages/admin/Analytics';
@@ -124,14 +123,6 @@ function App() {
           element={
             <AdminRoute>
               <AdminDashboard />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/users"
-          element={
-            <AdminRoute>
-              <AdminUsers />
             </AdminRoute>
           }
         />
