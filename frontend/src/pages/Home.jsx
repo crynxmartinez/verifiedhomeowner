@@ -94,15 +94,15 @@ export default function Home() {
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold mb-6 text-white leading-tight">
-            Get <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-400">Verified Leads</span>
-            <br />Delivered Daily
+            Get <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-400">Verified Homeowner</span>
+            <br />Leads Delivered Daily
           </h1>
           
           <p className="text-xl md:text-2xl mb-4 text-blue-100 max-w-3xl mx-auto">
             Stop wasting time on wrong numbers and dead ends.
           </p>
           <p className="text-lg mb-10 text-blue-200/80 max-w-2xl mx-auto">
-            We verify every homeowner contact before delivering it to you. No skip tracing needed.
+            Every verified homeowner contact is confirmed before delivery. No skip tracing needed.
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
@@ -151,7 +151,7 @@ export default function Home() {
             {[
               { icon: Users, title: 'Sign Up', desc: 'Create your free account in under 2 minutes', color: 'bg-purple-500' },
               { icon: Target, title: 'Choose Plan', desc: 'Select a plan based on how many leads you need', color: 'bg-blue-500' },
-              { icon: Phone, title: 'Receive Leads', desc: 'Get verified homeowner leads delivered daily', color: 'bg-indigo-500' },
+              { icon: Phone, title: 'Receive Leads', desc: 'Get verified homeowner leads delivered to your dashboard daily', color: 'bg-indigo-500' },
               { icon: DollarSign, title: 'Close Deals', desc: 'Call verified numbers and close more deals', color: 'bg-orange-500' },
             ].map((step, i) => (
               <div key={i} className="relative">
@@ -381,10 +381,10 @@ export default function Home() {
         
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to Get Verified Leads?
+            Ready to Get Verified Homeowner Leads?
           </h2>
           <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
-            Join hundreds of real estate professionals who are closing more deals with our verified homeowner leads.
+            Join hundreds of real estate professionals who close more deals with verified homeowner data.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link
