@@ -624,9 +624,12 @@ export default function Marketplace() {
                 return (
                 <tr key={lead.id} className={lead.is_hidden ? 'opacity-50' : ''}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    <button
+                      onClick={() => handleEdit(lead)}
+                      className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-left"
+                    >
                       {lead.property_address}
-                    </div>
+                    </button>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                       {lead.city}, {lead.state} {lead.zip_code}
                     </div>

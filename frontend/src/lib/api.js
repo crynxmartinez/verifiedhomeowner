@@ -86,6 +86,7 @@ export const adminAPI = {
   updateUser: (userId, updateData) => api.patch('/admin/users', { userId, ...updateData }),
   getLeads: () => api.get('/admin/leads'),
   createLead: (singleLead) => api.post('/admin/leads', { singleLead }),
+  updateLead: (data) => api.put('/admin/leads', data),
   uploadCSV: (csvData) => api.post('/admin/leads', { csvData }),
   uploadMappedCSV: (mappedData) => api.post('/admin/leads', { mappedData }),
   deleteLead: (leadId) => api.delete('/admin/leads', { data: { leadId } }),

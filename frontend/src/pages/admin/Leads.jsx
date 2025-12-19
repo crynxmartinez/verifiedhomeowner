@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { adminAPI } from '../../lib/api';
-import { Upload, Plus, X, FileText, Search, ArrowRight, Trash2, Loader2 } from 'lucide-react';
+import { Upload, Plus, X, FileText, Search, ArrowRight, Trash2, Loader2, Edit2 } from 'lucide-react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { useToast } from '../../context/ToastContext';
@@ -47,6 +47,9 @@ export default function AdminLeads() {
   const [selectedLeads, setSelectedLeads] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
   const [distributing, setDistributing] = useState(false);
+  const [editingLead, setEditingLead] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchLeads();
@@ -439,6 +442,47 @@ export default function AdminLeads() {
     }
   };
 
+  const handleEditLead = (lead) => {
+    setEditingLead({
+      id: lead.id,
+      first_name: lead.first_name || '',
+      last_name: lead.last_name || '',
+      full_name: lead.full_name || '',
+      phone: lead.phone || '',
+      property_address: lead.property_address || '',
+      city: lead.city || '',
+      state: lead.state || '',
+      zip_code: lead.zip_code || '',
+      mailing_address: lead.mailing_address || '',
+      mailing_city: lead.mailing_city || '',
+      mailing_state: lead.mailing_state || '',
+      mailing_zip: lead.mailing_zip || '',
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditingLead(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingLead) return;
+    setSaving(true);
+    try {
+      await adminAPI.updateLead(editingLead);
+      toast.success('Lead updated successfully');
+      setShowEditModal(false);
+      setEditingLead(null);
+      fetchLeads();
+    } catch (error) {
+      console.error('Failed to update lead:', error);
+      toast.error('Failed to update lead');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Filter leads based on search query
   const filteredLeads = leads.filter(lead => {
     if (!searchQuery) return true;
@@ -624,7 +668,12 @@ export default function AdminLeads() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <div className="font-medium text-gray-900 dark:text-white">{lead.full_name || lead.owner_name}</div>
+                            <button
+                              onClick={() => handleEditLead(lead)}
+                              className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-left"
+                            >
+                              {lead.full_name || lead.owner_name}
+                            </button>
                             {lead.is_business && (
                               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                                 Business
@@ -653,13 +702,22 @@ export default function AdminLeads() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <button
-                            onClick={() => handleDeleteLead(lead.id)}
-                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-                            title="Delete lead"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleEditLead(lead)}
+                              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                              title="Edit lead"
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteLead(lead.id)}
+                              className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                              title="Delete lead"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -1215,6 +1273,165 @@ export default function AdminLeads() {
                     ) : (
                       'Distribute'
                     )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Lead Modal */}
+      {showEditModal && editingLead && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Lead</h2>
+                <button onClick={() => setShowEditModal(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name</label>
+                    <input
+                      type="text"
+                      name="first_name"
+                      value={editingLead.first_name}
+                      onChange={handleEditChange}
+                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name</label>
+                    <input
+                      type="text"
+                      name="last_name"
+                      value={editingLead.last_name}
+                      onChange={handleEditChange}
+                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
+                  <input
+                    type="text"
+                    name="phone"
+                    value={editingLead.phone}
+                    onChange={handleEditChange}
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Property Address</label>
+                  <input
+                    type="text"
+                    name="property_address"
+                    value={editingLead.property_address}
+                    onChange={handleEditChange}
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City</label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={editingLead.city}
+                      onChange={handleEditChange}
+                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State</label>
+                    <input
+                      type="text"
+                      name="state"
+                      value={editingLead.state}
+                      onChange={handleEditChange}
+                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zip Code</label>
+                    <input
+                      type="text"
+                      name="zip_code"
+                      value={editingLead.zip_code}
+                      onChange={handleEditChange}
+                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="border-t dark:border-gray-700 pt-4 mt-4">
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Mailing Address</h3>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
+                    <input
+                      type="text"
+                      name="mailing_address"
+                      value={editingLead.mailing_address}
+                      onChange={handleEditChange}
+                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-4 mt-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City</label>
+                      <input
+                        type="text"
+                        name="mailing_city"
+                        value={editingLead.mailing_city}
+                        onChange={handleEditChange}
+                        className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State</label>
+                      <input
+                        type="text"
+                        name="mailing_state"
+                        value={editingLead.mailing_state}
+                        onChange={handleEditChange}
+                        className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zip</label>
+                      <input
+                        type="text"
+                        name="mailing_zip"
+                        value={editingLead.mailing_zip}
+                        onChange={handleEditChange}
+                        className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveEdit}
+                    disabled={saving}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {saving ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Save Changes'}
                   </button>
                 </div>
               </div>

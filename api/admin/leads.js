@@ -416,6 +416,40 @@ async function handler(req, res) {
       console.error('Create leads error:', error);
       res.status(500).json({ error: 'Failed to create leads' });
     }
+  } else if (req.method === 'PUT') {
+    // Update single lead
+    try {
+      const { id, ...updateData } = req.body;
+
+      if (!id) {
+        return res.status(400).json({ error: 'Lead ID required' });
+      }
+
+      // Map snake_case to camelCase for Prisma
+      const prismaData = {};
+      if (updateData.first_name !== undefined) prismaData.firstName = updateData.first_name;
+      if (updateData.last_name !== undefined) prismaData.lastName = updateData.last_name;
+      if (updateData.full_name !== undefined) prismaData.fullName = updateData.full_name;
+      if (updateData.phone !== undefined) prismaData.phone = updateData.phone;
+      if (updateData.property_address !== undefined) prismaData.propertyAddress = updateData.property_address;
+      if (updateData.city !== undefined) prismaData.city = updateData.city;
+      if (updateData.state !== undefined) prismaData.state = updateData.state;
+      if (updateData.zip_code !== undefined) prismaData.zipCode = updateData.zip_code;
+      if (updateData.mailing_address !== undefined) prismaData.mailingAddress = updateData.mailing_address;
+      if (updateData.mailing_city !== undefined) prismaData.mailingCity = updateData.mailing_city;
+      if (updateData.mailing_state !== undefined) prismaData.mailingState = updateData.mailing_state;
+      if (updateData.mailing_zip !== undefined) prismaData.mailingZip = updateData.mailing_zip;
+
+      const updated = await prisma.lead.update({
+        where: { id },
+        data: prismaData,
+      });
+
+      res.status(200).json({ lead: updated });
+    } catch (error) {
+      console.error('Update lead error:', error);
+      res.status(500).json({ error: 'Failed to update lead' });
+    }
   } else if (req.method === 'DELETE') {
     // Delete single lead
     try {
