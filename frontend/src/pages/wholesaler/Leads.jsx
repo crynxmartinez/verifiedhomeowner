@@ -353,6 +353,7 @@ export default function WholesalerLeads() {
   const renderLeadCard = (userLead) => {
     const lead = userLead.lead;
     const isSaving = savingLeads.has(userLead.id);
+    const displayName = lead.owner_name || lead.full_name || `${lead.first_name || ''} ${lead.last_name || ''}`.trim() || 'Unknown';
 
     return (
       <div key={userLead.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
@@ -361,7 +362,7 @@ export default function WholesalerLeads() {
           <div className="flex items-center gap-2">
             {getSourceIcon(userLead.source)}
             <div>
-              <div className="font-medium dark:text-white">{lead.owner_name}</div>
+              <div className="font-medium dark:text-white">{displayName}</div>
               <div className="flex items-center gap-2 mt-1">
                 <a
                   href={`tel:${lead.phone}`}
@@ -459,13 +460,15 @@ export default function WholesalerLeads() {
     const lead = userLead.lead;
     const isSaving = savingLeads.has(userLead.id);
 
+    const displayName = lead.owner_name || lead.full_name || `${lead.first_name || ''} ${lead.last_name || ''}`.trim() || 'Unknown';
+    
     return (
       <tr key={userLead.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
         <td className="px-4 py-3">
           <div className="flex items-center gap-2">
             {getSourceIcon(userLead.source)}
             <div>
-              <div className="font-medium dark:text-white">{lead.owner_name}</div>
+              <div className="font-medium dark:text-white">{displayName}</div>
               <div className="flex items-center gap-1 mt-1">
                 <a
                   href={`tel:${lead.phone}`}
@@ -588,7 +591,7 @@ export default function WholesalerLeads() {
               onClick={() => setExpandedNotes({
                 id: userLead.id,
                 source: userLead.source,
-                name: lead.owner_name,
+                name: displayName,
                 notes: localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')
               })}
               className="absolute top-1 left-1 p-1 rounded bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all opacity-0 group-hover:opacity-100"
