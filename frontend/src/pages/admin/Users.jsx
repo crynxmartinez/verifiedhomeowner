@@ -298,23 +298,23 @@ export default function AdminUsers() {
                                 : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
                             }`}
                           >
-                            {user.plan_type.toUpperCase()}
+                            {(user.plan_type || 'free').toUpperCase()}
                           </span>
                         </td>
                         <td className="px-6 py-4">
                           <span className="font-semibold text-gray-900 dark:text-white">{user.lead_count}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-blue-600 dark:text-blue-400 font-medium">{user.stats.new}</span>
+                          <span className="text-blue-600 dark:text-blue-400 font-medium">{user.stats?.new || 0}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-yellow-600 dark:text-yellow-400 font-medium">{user.stats.follow_up}</span>
+                          <span className="text-yellow-600 dark:text-yellow-400 font-medium">{user.stats?.follow_up || 0}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-red-600 dark:text-red-400 font-medium">{user.stats.not_interested}</span>
+                          <span className="text-red-600 dark:text-red-400 font-medium">{user.stats?.not_interested || 0}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-gray-600 dark:text-gray-400 font-medium">{user.stats.pending}</span>
+                          <span className="text-gray-600 dark:text-gray-400 font-medium">{user.stats?.pending || 0}</span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -506,19 +506,19 @@ export default function AdminUsers() {
                     </div>
                     <div>
                       <span className="text-blue-600 dark:text-blue-400">New:</span>
-                      <span className="ml-2 font-semibold">{editingUser.stats.new}</span>
+                      <span className="ml-2 font-semibold">{editingUser.stats?.new || 0}</span>
                     </div>
                     <div>
                       <span className="text-yellow-600 dark:text-yellow-400">Follow-up:</span>
-                      <span className="ml-2 font-semibold">{editingUser.stats.follow_up}</span>
+                      <span className="ml-2 font-semibold">{editingUser.stats?.follow_up || 0}</span>
                     </div>
                     <div>
                       <span className="text-red-600 dark:text-red-400">Not Interested:</span>
-                      <span className="ml-2 font-semibold">{editingUser.stats.not_interested}</span>
+                      <span className="ml-2 font-semibold">{editingUser.stats?.not_interested || 0}</span>
                     </div>
                     <div>
                       <span className="text-gray-600 dark:text-gray-400">Pending:</span>
-                      <span className="ml-2 font-semibold">{editingUser.stats.pending}</span>
+                      <span className="ml-2 font-semibold">{editingUser.stats?.pending || 0}</span>
                     </div>
                   </div>
                 </div>
