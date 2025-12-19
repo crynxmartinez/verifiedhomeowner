@@ -42,6 +42,13 @@ export default function UpgradePlan() {
     }
   };
 
+  // Refresh user data on page load to get latest email_verified status
+  useEffect(() => {
+    if (refreshUser) {
+      refreshUser();
+    }
+  }, []);
+
   // Handle Dodo checkout redirect
   useEffect(() => {
     const checkout = searchParams.get('checkout');
