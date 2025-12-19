@@ -81,12 +81,21 @@ async function handler(req, res) {
       }
     }
 
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    // Format user for frontend (snake_case)
+    const formattedUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      plan_type: user.planType,
+      subscription_status: user.subscriptionStatus,
+      email_verified: user.emailVerified,
+      created_at: user.createdAt,
+    };
 
     res.status(201).json({
       token,
-      user: userWithoutPassword,
+      user: formattedUser,
     });
   } catch (error) {
     console.error('Registration error:', error);
