@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/Navbar';
 import { 
   TrendingUp, Users, Zap, CheckCircle, Phone, Target, 
@@ -68,8 +69,29 @@ export default function Home() {
     { q: 'How is this different from skip tracing?', a: 'Skip tracing gives you raw data that may be outdated. We deliver pre-verified, ready-to-call leads. No more wrong numbers or disconnected lines.' },
   ];
 
+  // FAQ Schema for SEO rich snippets
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.a
+      }
+    }))
+  };
+
   return (
     <div className="min-h-screen bg-white">
+      {/* SEO: FAQ Schema for Google Rich Snippets */}
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(faqSchema)}
+        </script>
+      </Helmet>
+
       <Navbar />
 
       {/* Hero Section */}
@@ -210,7 +232,7 @@ export default function Home() {
               <div key={i} className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100">
                 <div className="h-48 overflow-hidden relative">
                   {item.img ? (
-                    <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <img src={item.img} alt={`${item.title} - Real estate wholesaling challenge for verified homeowner leads`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-gray-100 to-blue-100 flex items-center justify-center">
                       <span className="text-6xl">{item.icon}</span>
@@ -295,7 +317,7 @@ export default function Home() {
               <div key={i} className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-2xl transition-all duration-300">
                 <div className="h-56 overflow-hidden">
                   {role.img ? (
-                    <img src={role.img} alt={role.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <img src={role.img} alt={`${role.title} using verified homeowner leads for real estate success`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-gray-100 to-blue-100"></div>
                   )}
