@@ -46,11 +46,19 @@ export default async function handler(req, res) {
     // Get user details from database
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { email: true, name: true }
+      select: { email: true, name: true, emailVerified: true }
     });
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Block upgrade if email not verified
+    if (!user.emailVerified) {
+      return res.status(403).json({ 
+        error: 'Email verification required',
+        message: 'Please verify your email address before upgrading your plan.'
+      });
     }
 
     // Create Dodo subscription with payment link

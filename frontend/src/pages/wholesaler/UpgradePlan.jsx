@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import useAuthStore from '../../store/authStore';
-import { userAPI, dodoAPI } from '../../lib/api';
-import { CheckCircle, TrendingUp, CreditCard } from 'lucide-react';
+import { userAPI, dodoAPI, authAPI } from '../../lib/api';
+import { CheckCircle, TrendingUp, CreditCard, Mail, AlertTriangle } from 'lucide-react';
 import SuccessModal from '../../components/SuccessModal';
 
 export default function UpgradePlan() {
@@ -11,8 +11,36 @@ export default function UpgradePlan() {
   const setUser = useAuthStore((state) => state.setUser);
   const refreshUser = useAuthStore((state) => state.refreshUser);
   const [loading, setLoading] = useState(false);
+  const [sendingVerification, setSendingVerification] = useState(false);
   const [successModal, setSuccessModal] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Check if email is verified
+  const isEmailVerified = user?.email_verified;
+
+  // Handle resend verification email
+  const handleResendVerification = async () => {
+    setSendingVerification(true);
+    try {
+      await authAPI.sendVerification();
+      setSuccessModal({
+        title: 'Verification Email Sent',
+        message: `We've sent a verification link to ${user?.email}. Please check your inbox.`,
+        actionText: 'Got it!',
+        secondaryText: null
+      });
+    } catch (error) {
+      const errorMsg = error.response?.data?.error || 'Failed to send verification email';
+      setSuccessModal({
+        title: 'Error',
+        message: errorMsg,
+        actionText: 'Close',
+        secondaryText: null
+      });
+    } finally {
+      setSendingVerification(false);
+    }
+  };
 
   // Handle Dodo checkout redirect
   useEffect(() => {
@@ -135,6 +163,29 @@ export default function UpgradePlan() {
           </p>
         </div>
 
+        {/* Email Verification Warning */}
+        {!isEmailVerified && (
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-amber-900 dark:text-amber-300">Email Verification Required</h3>
+                <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
+                  Please verify your email address before upgrading your plan. Check your inbox for a verification link.
+                </p>
+                <button
+                  onClick={handleResendVerification}
+                  disabled={sendingVerification}
+                  className="mt-3 inline-flex items-center px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition disabled:opacity-50"
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  {sendingVerification ? 'Sending...' : 'Resend Verification Email'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
           <div className="flex items-start space-x-3">
             <CreditCard className="h-6 w-6 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
@@ -187,7 +238,7 @@ export default function UpgradePlan() {
 
                 <button
                   onClick={() => handleUpgrade(plan.id)}
-                  disabled={isCurrentPlan || loading}
+                  disabled={isCurrentPlan || loading || (plan.id !== 'free' && !isEmailVerified)}
                   className={`w-full py-3 rounded-lg font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 mt-auto ${
                     isCurrentPlan
                       ? 'bg-green-600 text-white'
@@ -196,7 +247,7 @@ export default function UpgradePlan() {
                       : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                   }`}
                 >
-                  {loading ? 'Changing...' : isCurrentPlan ? 'Current Plan' : 'Select Plan'}
+                  {loading ? 'Changing...' : isCurrentPlan ? 'Current Plan' : (plan.id !== 'free' && !isEmailVerified) ? 'Verify Email First' : 'Select Plan'}
                 </button>
               </div>
             );

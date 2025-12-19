@@ -40,6 +40,8 @@ export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
   getProfile: () => api.get('/auth/profile'),
+  sendVerification: () => api.post('/auth/send-verification'),
+  verifyEmail: (token) => api.get(`/auth/verify-email?token=${token}`),
 };
 
 // Leads API

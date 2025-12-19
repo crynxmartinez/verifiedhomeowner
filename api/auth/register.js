@@ -3,6 +3,7 @@ import { generateToken, hashPassword } from '../../lib/auth-prisma.js';
 import { distributeLeadsToUser } from '../../lib/distributeLeads-prisma.js';
 import { rateLimitRegister } from '../../lib/rateLimit.js';
 import { validateRegistration } from '../../lib/validation.js';
+import { sendVerificationEmail, generateToken as generateEmailToken } from '../../lib/email.js';
 
 async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -40,6 +41,10 @@ async function handler(req, res) {
     // Determine role based on email
     const isAdmin = email.toLowerCase() === 'el@admin.com';
 
+    // Generate email verification token
+    const verificationToken = generateEmailToken();
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
     // Create user
     const user = await prisma.user.create({
       data: {
@@ -49,6 +54,9 @@ async function handler(req, res) {
         role: isAdmin ? 'admin' : 'wholesaler',
         planType: isAdmin ? 'elite' : 'free',
         subscriptionStatus: 'active',
+        emailVerified: isAdmin, // Admins are auto-verified
+        verificationToken: isAdmin ? null : verificationToken,
+        verificationExpires: isAdmin ? null : verificationExpires,
       }
     });
 
@@ -61,6 +69,16 @@ async function handler(req, res) {
     } catch (distError) {
       console.error('Failed to distribute initial leads:', distError);
       // Don't fail registration if lead distribution fails
+    }
+
+    // Send verification email (don't block registration if it fails)
+    if (!isAdmin) {
+      try {
+        await sendVerificationEmail(user.email, user.name, verificationToken);
+      } catch (emailError) {
+        console.error('Failed to send verification email:', emailError);
+        // Don't fail registration if email fails
+      }
     }
 
     // Remove password from response

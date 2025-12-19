@@ -24,6 +24,11 @@ model User {
   subscriptionStatus    SubscriptionStatus @default(active) @map("subscription_status")
   leadSequencePosition  Int       @default(0) @map("lead_sequence_position")
   
+  // Email Verification
+  emailVerified         Boolean   @default(false) @map("email_verified")
+  verificationToken     String?   @map("verification_token")
+  verificationExpires   DateTime? @map("verification_expires") @db.Timestamptz
+  
   // Dodo Payments
   dodoSubscriptionId    String?   @map("dodo_subscription_id")
   dodoCustomerId        String?   @map("dodo_customer_id")

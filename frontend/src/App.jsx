@@ -13,6 +13,7 @@ import Refund from './pages/Refund';
 // Auth pages
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VerifyEmail from './pages/VerifyEmail';
 
 // Wholesaler pages
 import WholesalerDashboard from './pages/wholesaler/Dashboard';
@@ -58,6 +59,7 @@ function App() {
         <Route path="/refund" element={<Refund />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
 
         {/* Wholesaler routes */}
         <Route
