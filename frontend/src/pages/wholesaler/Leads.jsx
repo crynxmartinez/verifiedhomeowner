@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
-import { Phone, Clock, DollarSign, Package, Copy, Check, Expand, X, ChevronLeft, ChevronRight, Search, SlidersHorizontal, Download, Loader2 } from 'lucide-react';
+import { Phone, Clock, DollarSign, Package, Copy, Check, X, ChevronLeft, ChevronRight, Search, SlidersHorizontal, Download, Loader2, Eye } from 'lucide-react';
 import TagInput from '../../components/TagInput';
 import FilterPanel from '../../components/FilterPanel';
+import LeadDetailModal from '../../components/LeadDetailModal';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonLeadCard } from '../../components/Skeleton';
 
@@ -12,10 +13,8 @@ export default function WholesalerLeads() {
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingLeads, setSavingLeads] = useState(new Set());
-  const [notesDebounce, setNotesDebounce] = useState({});
-  const [localNotes, setLocalNotes] = useState({});
   const [copiedPhone, setCopiedPhone] = useState(null);
-  const [expandedNotes, setExpandedNotes] = useState(null); // { id, name, notes }
+  const [selectedLead, setSelectedLead] = useState(null); // For lead detail modal
 
   // Pagination state for Call Now board
   const [callNowPage, setCallNowPage] = useState(1);
@@ -101,41 +100,6 @@ export default function WholesalerLeads() {
         return next;
       });
     }
-  };
-
-  const handleNotesChange = (leadId, source, newNotes) => {
-    // Update local state immediately for instant feedback
-    setLocalNotes(prev => ({ ...prev, [leadId]: newNotes }));
-
-    // Clear existing timeout for this lead
-    if (notesDebounce[leadId]) {
-      clearTimeout(notesDebounce[leadId]);
-    }
-
-    // Set new timeout (auto-save after 1 second of no typing)
-    const timeoutId = setTimeout(async () => {
-      setSavingLeads(prev => new Set(prev).add(leadId));
-      try {
-        await leadsAPI.updateLead(leadId, source, { notes: newNotes });
-        // Update leads state after successful save
-        setLeads(prevLeads => 
-          prevLeads.map(lead => 
-            lead.id === leadId ? { ...lead, notes: newNotes } : lead
-          )
-        );
-      } catch (error) {
-        console.error('Failed to update notes:', error);
-        toast.error('Failed to update notes');
-      } finally {
-        setSavingLeads(prev => {
-          const next = new Set(prev);
-          next.delete(leadId);
-          return next;
-        });
-      }
-    }, 1000);
-
-    setNotesDebounce(prev => ({ ...prev, [leadId]: timeoutId }));
   };
 
   const handleCountdownChange = async (leadId, source, countdownDays) => {
@@ -359,97 +323,78 @@ export default function WholesalerLeads() {
       <div key={userLead.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
         {/* Header */}
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
+          <div 
+            className="flex items-center gap-2 cursor-pointer flex-1"
+            onClick={() => setSelectedLead(userLead)}
+          >
             {getSourceIcon(userLead.source)}
             <div>
-              <div className="font-medium dark:text-white">{displayName}</div>
-              <div className="flex items-center gap-2 mt-1">
-                <a
-                  href={`tel:${lead.phone}`}
-                  className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900 rounded text-green-700 dark:text-green-300 text-sm"
-                >
-                  <Phone size={14} />
-                  <span>Call</span>
-                </a>
-                <button
-                  onClick={() => handleCopyPhone(lead.phone, userLead.id)}
-                  className="p-1.5 rounded bg-gray-100 dark:bg-gray-700"
-                >
-                  {copiedPhone === userLead.id ? (
-                    <Check size={14} className="text-green-600" />
-                  ) : (
-                    <Copy size={14} className="text-gray-600 dark:text-gray-400" />
-                  )}
-                </button>
-              </div>
+              <div className="font-medium dark:text-white hover:text-blue-600 dark:hover:text-blue-400">{displayName}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">{lead.phone}</div>
             </div>
           </div>
-          <select
-            value={userLead.status}
-            onChange={(e) => handleStatusChange(userLead.id, userLead.source, e.target.value)}
-            disabled={isSaving}
-            className="border dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-          >
-            <option value="new">New</option>
-            <option value="follow_up">Follow-up</option>
-            <option value="not_interested">Not Interested</option>
-            <option value="pending">Pending</option>
-          </select>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSelectedLead(userLead)}
+              className="p-1.5 rounded bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800"
+              title="View details"
+            >
+              <Eye size={14} className="text-blue-600 dark:text-blue-400" />
+            </button>
+            <select
+              value={userLead.status}
+              onChange={(e) => handleStatusChange(userLead.id, userLead.source, e.target.value)}
+              disabled={isSaving}
+              className="border dark:border-gray-600 rounded px-2 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              <option value="new">New</option>
+              <option value="follow_up">Follow-up</option>
+              <option value="not_interested">Not Interested</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
         </div>
 
         {/* Property */}
-        <div className="text-sm">
+        <div className="text-sm" onClick={() => setSelectedLead(userLead)} style={{ cursor: 'pointer' }}>
           <div className="text-gray-500 dark:text-gray-400">Property</div>
           <div className="dark:text-white">{lead.property_address}</div>
           <div className="text-gray-500 dark:text-gray-400">{lead.city}, {lead.state} {lead.zip_code}</div>
         </div>
 
-        {/* Countdown (for pending leads) */}
-        <div className="flex flex-wrap gap-2">
-          {(userLead.status === 'follow_up' || userLead.status === 'not_interested' || userLead.status === 'pending') && (
-            userLead.countdown_days > 0 ? (
-              <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs font-medium">
-                {userLead.countdown_days} day{userLead.countdown_days !== 1 ? 's' : ''}
-              </span>
+        {/* Quick Actions Row */}
+        <div className="flex items-center gap-2">
+          <a
+            href={`tel:${lead.phone}`}
+            className="flex items-center gap-1 px-3 py-1.5 bg-green-100 dark:bg-green-900 rounded text-green-700 dark:text-green-300 text-sm"
+          >
+            <Phone size={14} />
+            <span>Call</span>
+          </a>
+          <button
+            onClick={() => handleCopyPhone(lead.phone, userLead.id)}
+            className="p-1.5 rounded bg-gray-100 dark:bg-gray-700"
+          >
+            {copiedPhone === userLead.id ? (
+              <Check size={14} className="text-green-600" />
             ) : (
-              <select
-                value=""
-                onChange={(e) => handleCountdownChange(userLead.id, userLead.source, e.target.value)}
-                disabled={isSaving}
-                className="border dark:border-gray-600 rounded px-2 py-1 text-xs bg-white dark:bg-gray-700"
-              >
-                <option value="">Set countdown...</option>
-                <option value="7">7 days</option>
-                <option value="15">15 days</option>
-                <option value="30">30 days</option>
-                <option value="60">60 days</option>
-                <option value="90">90 days</option>
-              </select>
-            )
+              <Copy size={14} className="text-gray-600 dark:text-gray-400" />
+            )}
+          </button>
+          {userLead.notes && (
+            <span className="text-xs text-gray-500 dark:text-gray-400 truncate flex-1">
+              📝 {userLead.notes.substring(0, 30)}{userLead.notes.length > 30 ? '...' : ''}
+            </span>
           )}
         </div>
 
         {/* Tags */}
         <div>
-          <div className="text-gray-500 dark:text-gray-400 text-xs mb-1">Tags</div>
           <TagInput
             tags={userLead.tags || []}
             onTagsChange={(newTags) => handleTagsChange(userLead.id, userLead.source, newTags)}
             disabled={isSaving}
           />
-        </div>
-
-        {/* Notes */}
-        <div>
-          <textarea
-            value={localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')}
-            onChange={(e) => handleNotesChange(userLead.id, userLead.source, e.target.value)}
-            disabled={isSaving}
-            className="border dark:border-gray-600 rounded px-2 py-2 text-sm w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white resize-none"
-            rows="2"
-            placeholder="Add notes..."
-          />
-          {isSaving && <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Saving...</div>}
         </div>
       </div>
     );
@@ -470,7 +415,12 @@ export default function WholesalerLeads() {
               {getSourceIcon(userLead.source)}
             </div>
             <div className="min-w-0">
-              <div className="font-medium dark:text-white">{displayName}</div>
+              <div 
+                className="font-medium dark:text-white cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+                onClick={() => setSelectedLead(userLead)}
+              >
+                {displayName}
+              </div>
               <div className="flex items-center gap-1 mt-1">
                 <a
                   href={`tel:${lead.phone}`}
@@ -495,7 +445,7 @@ export default function WholesalerLeads() {
             </div>
           </div>
         </td>
-        <td className="px-4 py-3">
+        <td className="px-4 py-3 cursor-pointer" onClick={() => setSelectedLead(userLead)}>
           <div className="dark:text-white">{lead.property_address}</div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
             {lead.city}, {lead.state} {lead.zip_code}
@@ -580,31 +530,22 @@ export default function WholesalerLeads() {
           />
         </td>
         <td className="px-4 py-3">
-          <div className="relative group">
-            <textarea
-              value={localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')}
-              onChange={(e) => handleNotesChange(userLead.id, userLead.source, e.target.value)}
-              disabled={isSaving}
-              className="border dark:border-gray-600 rounded px-2 py-1 text-sm w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50 resize-none hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              rows="2"
-              placeholder="Add notes..."
-            />
+          <div className="flex items-center gap-2">
+            {userLead.notes ? (
+              <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-[150px]">
+                📝 {userLead.notes.substring(0, 40)}{userLead.notes.length > 40 ? '...' : ''}
+              </span>
+            ) : (
+              <span className="text-sm text-gray-400 dark:text-gray-500">No notes</span>
+            )}
             <button
-              onClick={() => setExpandedNotes({
-                id: userLead.id,
-                source: userLead.source,
-                name: displayName,
-                notes: localNotes[userLead.id] !== undefined ? localNotes[userLead.id] : (userLead.notes || '')
-              })}
-              className="absolute top-1 left-1 p-1 rounded bg-white dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all opacity-0 group-hover:opacity-100"
-              title="Expand notes"
+              onClick={() => setSelectedLead(userLead)}
+              className="p-1.5 rounded bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 transition flex-shrink-0"
+              title="View details"
             >
-              <Expand size={12} className="text-gray-500 dark:text-gray-400" />
+              <Eye size={14} className="text-blue-600 dark:text-blue-400" />
             </button>
           </div>
-          {isSaving && (
-            <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Saving...</div>
-          )}
         </td>
       </tr>
     );
@@ -986,47 +927,18 @@ export default function WholesalerLeads() {
         </div>
       </div>
 
-      {/* Expanded Notes Modal (Editable) */}
-      {expandedNotes && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Notes for {expandedNotes.name}
-              </h3>
-              <button
-                onClick={() => setExpandedNotes(null)}
-                className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <X size={20} className="text-gray-500 dark:text-gray-400" />
-              </button>
-            </div>
-            <div className="p-4 overflow-y-auto flex-1">
-              <textarea
-                value={expandedNotes.notes}
-                onChange={(e) => {
-                  const newNotes = e.target.value;
-                  setExpandedNotes(prev => ({ ...prev, notes: newNotes }));
-                  // Also update local notes and trigger save
-                  handleNotesChange(expandedNotes.id, expandedNotes.source, newNotes);
-                }}
-                className="w-full h-64 border dark:border-gray-600 rounded-lg px-3 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 resize-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                placeholder="Add notes..."
-              />
-            </div>
-            <div className="p-4 border-t dark:border-gray-700 flex items-center justify-between">
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                {savingLeads.has(expandedNotes.id) ? 'Saving...' : 'Auto-saves as you type'}
-              </span>
-              <button
-                onClick={() => setExpandedNotes(null)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Lead Detail Modal */}
+      {selectedLead && (
+        <LeadDetailModal
+          lead={selectedLead.lead}
+          userLead={selectedLead}
+          onClose={() => setSelectedLead(null)}
+          onUpdate={(updatedLead) => {
+            setLeads(prevLeads =>
+              prevLeads.map(l => l.id === updatedLead.id ? { ...l, ...updatedLead } : l)
+            );
+          }}
+        />
       )}
 
       {/* Filter Panel */}
