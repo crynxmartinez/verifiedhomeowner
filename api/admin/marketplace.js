@@ -110,22 +110,34 @@ async function sendMarketplaceNotifications(lead) {
       
       await Promise.all(batch.map(async (user) => {
         try {
+          // Get temperature-based pricing
+          const temperature = lead.temperature || 'warm';
+          const tempPrices = { hot: 100, warm: 80 };
+          const tempEmojis = { hot: '🔥', warm: '🌡️' };
+          const tempLabels = { hot: 'Hot', warm: 'Warm' };
+          const price = tempPrices[temperature] || 80;
+
           const { html, text } = getMarketplaceLeadEmailTemplate({
             lead: {
               city: lead.city || 'Unknown',
               state: state,
               motivation: lead.motivation,
               timeline: lead.timeline,
-              price: lead.price,
+              price: price,
+              temperature: temperature,
+              temperatureLabel: tempLabels[temperature] || 'Warm',
             },
             recipientName: user.name?.split(' ')[0] || 'there',
             unsubscribeUrl: `${process.env.FRONTEND_URL || 'https://verifiedhomeowner.com'}/profile`,
           });
 
+          const emoji = tempEmojis[temperature] || '🌡️';
+          const label = tempLabels[temperature] || 'Warm';
+
           await resend.emails.send({
             from: process.env.EMAIL_FROM || 'Verified Homeowner <noreply@verifiedhomeowner.com>',
             to: user.email,
-            subject: `🔥 New Hot Lead in ${state} - ${lead.motivation}`,
+            subject: `${emoji} New ${label} Lead in ${state} - ${lead.motivation}`,
             html,
             text,
           });
