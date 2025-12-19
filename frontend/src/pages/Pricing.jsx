@@ -88,9 +88,9 @@ export default function Pricing() {
       <Navbar />
 
       {/* Hero */}
-      <section className="pt-24 pb-16 px-4 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
+      <section className="pt-24 pb-16 px-4 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 relative overflow-hidden">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl"></div>
         
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <div className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6">
@@ -127,7 +127,7 @@ export default function Pricing() {
 
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
                 <div className="mb-4">
-                  <span className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
+                  <span className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-700">
                     {plan.price}
                   </span>
                   <span className="text-gray-500">{plan.period}</span>
@@ -139,7 +139,7 @@ export default function Pricing() {
                 <ul className="space-y-3 mb-8 flex-grow">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start space-x-2">
-                      <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <CheckCircle className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
                       <span className="text-gray-600 text-sm">{feature}</span>
                     </li>
                   ))}
@@ -162,7 +162,7 @@ export default function Pricing() {
       </section>
 
       {/* Secure Payment */}
-      <section className="py-12 px-4 bg-gradient-to-r from-purple-600 to-blue-600">
+      <section className="py-12 px-4 bg-gradient-to-r from-blue-700 to-blue-600">
         <div className="max-w-3xl mx-auto text-center">
           <div className="flex items-center justify-center space-x-3 mb-4">
             <Shield className="h-8 w-8 text-white" />
@@ -185,7 +185,7 @@ export default function Pricing() {
           <div className="overflow-x-auto">
             <table className="w-full bg-white rounded-2xl shadow-xl overflow-hidden">
               <thead>
-                <tr className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+                <tr className="bg-gradient-to-r from-blue-700 to-blue-600 text-white">
                   <th className="text-left py-4 px-6 font-semibold">Feature</th>
                   <th className="text-center py-4 px-4 font-semibold">Free</th>
                   <th className="text-center py-4 px-4 font-semibold">Basic</th>
@@ -213,42 +213,42 @@ export default function Pricing() {
                   <td className="text-center py-4 px-4 text-gray-400">—</td>
                   <td className="text-center py-4 px-4 text-gray-600">5/month</td>
                   <td className="text-center py-4 px-4 text-gray-600">15/month</td>
-                  <td className="text-center py-4 px-4 text-purple-600 font-semibold">Unlimited</td>
+                  <td className="text-center py-4 px-4 text-blue-600 font-semibold">Unlimited</td>
                 </tr>
                 <tr className="hover:bg-gray-50">
                   <td className="py-4 px-6 font-medium text-gray-900">🔥 Hot Lead Alerts</td>
                   <td className="text-center py-4 px-4 text-gray-400">—</td>
                   <td className="text-center py-4 px-4 text-gray-600">+4 hours</td>
                   <td className="text-center py-4 px-4 text-gray-600">+30 min</td>
-                  <td className="text-center py-4 px-4 text-green-600 font-semibold">Instant</td>
+                  <td className="text-center py-4 px-4 text-orange-500 font-semibold">Instant</td>
                 </tr>
                 <tr className="hover:bg-gray-50">
                   <td className="py-4 px-6 font-medium text-gray-900">🌡️ Warm Lead Alerts</td>
                   <td className="text-center py-4 px-4 text-gray-400">—</td>
                   <td className="text-center py-4 px-4 text-gray-600">+1 hour</td>
                   <td className="text-center py-4 px-4 text-gray-600">+15 min</td>
-                  <td className="text-center py-4 px-4 text-green-600 font-semibold">Instant</td>
+                  <td className="text-center py-4 px-4 text-orange-500 font-semibold">Instant</td>
                 </tr>
                 <tr className="hover:bg-gray-50">
                   <td className="py-4 px-6 font-medium text-gray-900">Lead Tracking</td>
-                  <td className="text-center py-4 px-4 text-green-600">✓</td>
-                  <td className="text-center py-4 px-4 text-green-600">✓</td>
-                  <td className="text-center py-4 px-4 text-green-600">✓</td>
-                  <td className="text-center py-4 px-4 text-green-600">✓</td>
+                  <td className="text-center py-4 px-4 text-blue-600">✓</td>
+                  <td className="text-center py-4 px-4 text-blue-600">✓</td>
+                  <td className="text-center py-4 px-4 text-blue-600">✓</td>
+                  <td className="text-center py-4 px-4 text-blue-600">✓</td>
                 </tr>
                 <tr className="hover:bg-gray-50">
                   <td className="py-4 px-6 font-medium text-gray-900">Analytics</td>
                   <td className="text-center py-4 px-4 text-gray-400">—</td>
                   <td className="text-center py-4 px-4 text-gray-600">7 days</td>
                   <td className="text-center py-4 px-4 text-gray-600">30 days</td>
-                  <td className="text-center py-4 px-4 text-purple-600 font-semibold">90 days + Export</td>
+                  <td className="text-center py-4 px-4 text-blue-600 font-semibold">90 days + Export</td>
                 </tr>
                 <tr className="hover:bg-gray-50">
                   <td className="py-4 px-6 font-medium text-gray-900">Support</td>
                   <td className="text-center py-4 px-4 text-gray-600">Email</td>
                   <td className="text-center py-4 px-4 text-gray-600">Priority</td>
                   <td className="text-center py-4 px-4 text-gray-600">Premium</td>
-                  <td className="text-center py-4 px-4 text-purple-600 font-semibold">VIP</td>
+                  <td className="text-center py-4 px-4 text-blue-600 font-semibold">VIP</td>
                 </tr>
               </tbody>
             </table>
@@ -256,7 +256,7 @@ export default function Pricing() {
 
           {/* Marketplace Info */}
           <div className="mt-12 grid md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-red-500">
+            <div className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-orange-500">
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-2xl">🔥</span>
                 <h3 className="font-bold text-gray-900">Hot Leads - $100</h3>

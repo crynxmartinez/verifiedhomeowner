@@ -13,9 +13,9 @@ export default function HowItWorks() {
       <Navbar />
       
       {/* Hero */}
-      <section className="pt-24 pb-32 px-4 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
+      <section className="pt-24 pb-32 px-4 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 relative overflow-hidden">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl"></div>
         
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">How It Works</h1>
@@ -30,9 +30,9 @@ export default function HowItWorks() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8">
             {[
-              { icon: UserPlus, title: 'Sign Up', desc: 'Create your free account in under 2 minutes', color: 'from-purple-500 to-purple-600' },
+              { icon: UserPlus, title: 'Sign Up', desc: 'Create your free account in under 2 minutes', color: 'from-blue-600 to-blue-700' },
               { icon: Target, title: 'Choose Plan', desc: 'Select a plan based on how many leads you need', color: 'from-blue-500 to-blue-600' },
-              { icon: Download, title: 'Receive Leads', desc: 'Get verified homeowner leads delivered daily', color: 'from-indigo-500 to-indigo-600' },
+              { icon: Download, title: 'Receive Leads', desc: 'Get verified homeowner leads delivered daily', color: 'from-blue-600 to-blue-700' },
               { icon: DollarSign, title: 'Close Deals', desc: 'Call verified numbers and close more deals', color: 'from-orange-500 to-orange-600' },
             ].map((step, i) => (
               <div key={i} className="relative">
@@ -59,9 +59,9 @@ export default function HowItWorks() {
           <h2 className="text-4xl font-bold text-center mb-16 text-gray-900">For Wholesalers</h2>
           <div className="space-y-12">
             {[
-              { icon: UserPlus, num: '01', title: 'Sign Up & Choose Your Plan', desc: 'Register for free and select a plan that matches your business needs. Start with 1 lead per week or scale up to 10 leads per day.', color: 'from-purple-500 to-purple-600' },
+              { icon: UserPlus, num: '01', title: 'Sign Up & Choose Your Plan', desc: 'Register for free and select a plan that matches your business needs. Start with 1 lead per week or scale up to 10 leads per day.', color: 'from-blue-600 to-blue-700' },
               { icon: Download, num: '02', title: 'Receive Verified Leads', desc: 'Leads are automatically delivered to your dashboard based on your plan. Each lead includes verified homeowner information, property address, and contact details.', color: 'from-blue-500 to-blue-600' },
-              { icon: Phone, num: '03', title: 'Contact & Track', desc: 'Call your leads and update their status (New, Follow-up, Not Interested, Pending). Set countdown timers for follow-ups and add notes.', color: 'from-indigo-500 to-indigo-600' },
+              { icon: Phone, num: '03', title: 'Contact & Track', desc: 'Call your leads and update their status (New, Follow-up, Not Interested, Pending). Set countdown timers for follow-ups and add notes.', color: 'from-blue-600 to-blue-700' },
               { icon: TrendingUp, num: '04', title: 'Close More Deals', desc: 'Use our tracking system to manage your pipeline and close more deals. Upgrade your plan anytime to receive more leads.', color: 'from-orange-500 to-orange-600' },
             ].map((step, i) => (
               <div key={i} className="flex items-start space-x-6 bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition">
@@ -85,7 +85,7 @@ export default function HowItWorks() {
           <h2 className="text-4xl font-bold text-center mb-4 text-gray-900">Lead Distribution System</h2>
           <p className="text-xl text-gray-600 text-center mb-12">Fair, transparent, and designed for scale</p>
           
-          <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl p-8 border border-purple-100">
+          <div className="bg-gradient-to-br from-blue-50 to-gray-50 rounded-2xl p-8 border border-blue-100">
             <div className="space-y-6">
               {[
                 { title: 'Sequential Distribution', desc: 'Each wholesaler gets leads in their own independent sequence. You start from Lead #1 and progress through all available leads.' },
@@ -93,7 +93,7 @@ export default function HowItWorks() {
                 { title: 'Fair & Transparent', desc: 'Everyone gets the same quality leads in the same order. Your position advances daily based on your plan.' },
               ].map((item, i) => (
                 <div key={i} className="flex items-start space-x-4 bg-white rounded-xl p-6 shadow-sm">
-                  <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0 mt-1" />
+                  <CheckCircle className="h-6 w-6 text-blue-500 flex-shrink-0 mt-1" />
                   <div>
                     <h4 className="font-bold text-lg mb-2 text-gray-900">{item.title}</h4>
                     <p className="text-gray-600">{item.desc}</p>
@@ -106,9 +106,9 @@ export default function HowItWorks() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-        <div className="absolute top-10 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
+      <section className="py-24 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 relative overflow-hidden">
+        <div className="absolute top-10 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl"></div>
         
         <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Ready to Start?</h2>

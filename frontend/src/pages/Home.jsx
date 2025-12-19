@@ -79,12 +79,12 @@ export default function Home() {
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: images.hero ? `url(${images.hero})` : 'none' }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/95 via-blue-900/95 to-indigo-900/95"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/95 via-blue-800/95 to-blue-900/95"></div>
         </div>
         
         {/* Decorative Elements */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl"></div>
         
         <div className="max-w-6xl mx-auto px-4 text-center relative z-10">
           {/* Trust Badge */}
@@ -149,9 +149,9 @@ export default function Home() {
           
           <div className="grid md:grid-cols-4 gap-8">
             {[
-              { icon: Users, title: 'Sign Up', desc: 'Create your free account in under 2 minutes', color: 'bg-purple-500' },
+              { icon: Users, title: 'Sign Up', desc: 'Create your free account in under 2 minutes', color: 'bg-blue-600' },
               { icon: Target, title: 'Choose Plan', desc: 'Select a plan based on how many leads you need', color: 'bg-blue-500' },
-              { icon: Phone, title: 'Receive Leads', desc: 'Get verified homeowner leads delivered to your dashboard daily', color: 'bg-indigo-500' },
+              { icon: Phone, title: 'Receive Leads', desc: 'Get verified homeowner leads delivered to your dashboard daily', color: 'bg-blue-600' },
               { icon: DollarSign, title: 'Close Deals', desc: 'Call verified numbers and close more deals', color: 'bg-orange-500' },
             ].map((step, i) => (
               <div key={i} className="relative">
@@ -212,18 +212,18 @@ export default function Home() {
                   {item.img ? (
                     <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-red-100 to-orange-100 flex items-center justify-center">
+                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-blue-100 flex items-center justify-center">
                       <span className="text-6xl">{item.icon}</span>
                     </div>
                   )}
-                  <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                  <div className="absolute top-4 right-4 bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold">
                     {item.stat}
                   </div>
                 </div>
                 <div className="p-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
                   <p className="text-gray-600 mb-3">{item.desc}</p>
-                  <p className="text-sm text-red-500 font-medium">{item.statLabel}</p>
+                  <p className="text-sm text-orange-500 font-medium">{item.statLabel}</p>
                 </div>
               </div>
             ))}
@@ -237,7 +237,7 @@ export default function Home() {
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: images.solution ? `url(${images.solution})` : 'none' }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/95 to-purple-700/95"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-700/95 to-blue-900/95"></div>
         </div>
         
         <div className="max-w-6xl mx-auto px-4 relative z-10">
@@ -297,7 +297,7 @@ export default function Home() {
                   {role.img ? (
                     <img src={role.img} alt={role.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-purple-100 to-blue-100"></div>
+                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-blue-100"></div>
                   )}
                 </div>
                 <div className="p-6">
@@ -306,7 +306,7 @@ export default function Home() {
                   <ul className="space-y-2">
                     {role.features.map((f, j) => (
                       <li key={j} className="flex items-center text-sm text-gray-600">
-                        <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                        <CheckCircle className="h-4 w-4 text-blue-500 mr-2" />
                         {f}
                       </li>
                     ))}
@@ -319,7 +319,7 @@ export default function Home() {
       </section>
 
       {/* Stats Banner */}
-      <section className="py-16 bg-gradient-to-r from-purple-600 to-blue-600">
+      <section className="py-16 bg-gradient-to-r from-blue-700 to-blue-600">
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[

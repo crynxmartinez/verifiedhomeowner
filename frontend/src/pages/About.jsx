@@ -15,9 +15,9 @@ export default function About() {
       <Navbar />
       
       {/* Hero */}
-      <section className="pt-24 pb-32 px-4 bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl"></div>
+      <section className="pt-24 pb-32 px-4 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 relative overflow-hidden">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl"></div>
         
         <div className="max-w-5xl mx-auto text-center relative z-10">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">About Us</h1>
@@ -69,11 +69,11 @@ export default function About() {
             <p className="text-xl text-gray-600 leading-relaxed text-center">
               We remove all those problems and give you what you actually need:
             </p>
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-8 my-8">
-              <p className="text-2xl font-bold text-green-800 mb-4 text-center">
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 rounded-2xl p-8 my-8">
+              <p className="text-2xl font-bold text-blue-800 mb-4 text-center">
                 Verified, ready-to-call homeowner leads delivered daily.
               </p>
-              <p className="text-xl text-green-700 text-center">
+              <p className="text-xl text-blue-700 text-center">
                 No wrong numbers. No skip tracing. No wasted time.
               </p>
             </div>
@@ -88,7 +88,7 @@ export default function About() {
                 { title: 'Deliver fresh leads daily', desc: 'directly to your dashboard' },
               ].map((item, i) => (
                 <div key={i} className="flex items-start bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
-                  <CheckCircle className="h-6 w-6 text-green-500 mr-3 flex-shrink-0 mt-1" />
+                  <CheckCircle className="h-6 w-6 text-blue-500 mr-3 flex-shrink-0 mt-1" />
                   <div>
                     <span className="font-semibold text-gray-900">{item.title}</span>
                     <span className="text-gray-600"> {item.desc}</span>
@@ -97,7 +97,7 @@ export default function About() {
               ))}
             </div>
             <div className="text-center mt-12">
-              <p className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
+              <p className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-blue-700">
                 You focus on what you do best: talking to sellers and closing deals.
               </p>
             </div>
@@ -110,7 +110,7 @@ export default function About() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: Target, title: 'Our Mission', desc: 'To eliminate the time-wasting problems that hold wholesalers back and give them more time to close deals.', color: 'from-purple-500 to-purple-600' },
+              { icon: Target, title: 'Our Mission', desc: 'To eliminate the time-wasting problems that hold wholesalers back and give them more time to close deals.', color: 'from-blue-600 to-blue-700' },
               { icon: Heart, title: 'Our Values', desc: 'Quality over quantity. Every lead is verified, researched, and ready to contact. No filler, no fluff.', color: 'from-blue-500 to-blue-600' },
               { icon: Award, title: 'Our Promise', desc: 'Verified contact information, motivated sellers, and daily delivery. We guarantee it or your money back.', color: 'from-orange-500 to-orange-600' },
             ].map((item, i) => (
