@@ -176,9 +176,12 @@ async function handler(req, res) {
         mailing_zip: lead.mailingZip,
         motivation: lead.motivation,
         timeline: lead.timeline,
+        asking_price: lead.askingPrice,
+        temperature: lead.temperature || 'warm',
         price: lead.price,
         max_buyers: lead.maxBuyers,
         times_sold: lead.timesSold,
+        is_hidden: lead.isHidden,
         created_at: lead.createdAt,
       }));
 
@@ -208,6 +211,8 @@ async function handler(req, res) {
             mailingZip: singleLead.mailing_zip,
             motivation: singleLead.motivation,
             timeline: singleLead.timeline,
+            askingPrice: singleLead.asking_price ? parseFloat(singleLead.asking_price) : null,
+            temperature: singleLead.temperature || 'warm',
             price: parseFloat(singleLead.price) || 0,
             maxBuyers: parseInt(singleLead.max_buyers) || 0,
           }
@@ -251,6 +256,8 @@ async function handler(req, res) {
             mailingZip: row.mailing_zip || '',
             motivation: row.motivation || '',
             timeline: row.timeline || '',
+            askingPrice: row.asking_price ? parseFloat(row.asking_price) : null,
+            temperature: row.temperature || 'warm',
             price: parseFloat(row.price) || 0,
             maxBuyers: parseInt(row.max_buyers) || 0,
           }));
@@ -271,6 +278,45 @@ async function handler(req, res) {
     } catch (error) {
       console.error('Create marketplace leads error:', error);
       res.status(500).json({ error: 'Failed to create marketplace leads' });
+    }
+  } else if (req.method === 'PUT') {
+    // Update marketplace lead
+    try {
+      const { id, ...updateData } = req.body;
+
+      if (!id) {
+        return res.status(400).json({ error: 'Lead ID required' });
+      }
+
+      // Map snake_case to camelCase for Prisma
+      const prismaData = {};
+      if (updateData.owner_name !== undefined) prismaData.ownerName = updateData.owner_name;
+      if (updateData.phone !== undefined) prismaData.phone = updateData.phone;
+      if (updateData.property_address !== undefined) prismaData.propertyAddress = updateData.property_address;
+      if (updateData.city !== undefined) prismaData.city = updateData.city;
+      if (updateData.state !== undefined) prismaData.state = updateData.state;
+      if (updateData.zip_code !== undefined) prismaData.zipCode = updateData.zip_code;
+      if (updateData.mailing_address !== undefined) prismaData.mailingAddress = updateData.mailing_address;
+      if (updateData.mailing_city !== undefined) prismaData.mailingCity = updateData.mailing_city;
+      if (updateData.mailing_state !== undefined) prismaData.mailingState = updateData.mailing_state;
+      if (updateData.mailing_zip !== undefined) prismaData.mailingZip = updateData.mailing_zip;
+      if (updateData.motivation !== undefined) prismaData.motivation = updateData.motivation;
+      if (updateData.timeline !== undefined) prismaData.timeline = updateData.timeline;
+      if (updateData.asking_price !== undefined) prismaData.askingPrice = updateData.asking_price ? parseFloat(updateData.asking_price) : null;
+      if (updateData.temperature !== undefined) prismaData.temperature = updateData.temperature;
+      if (updateData.price !== undefined) prismaData.price = parseFloat(updateData.price);
+      if (updateData.max_buyers !== undefined) prismaData.maxBuyers = parseInt(updateData.max_buyers);
+      if (updateData.is_hidden !== undefined) prismaData.isHidden = updateData.is_hidden;
+
+      const updated = await prisma.marketplaceLead.update({
+        where: { id },
+        data: prismaData,
+      });
+
+      res.status(200).json({ lead: updated });
+    } catch (error) {
+      console.error('Update marketplace lead error:', error);
+      res.status(500).json({ error: 'Failed to update lead' });
     }
   } else if (req.method === 'DELETE') {
     // Delete marketplace lead

@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { adminAPI } from '../../lib/api';
-import { Upload, Plus, Trash2, Search, Loader2, Download } from 'lucide-react';
+import { Upload, Plus, Trash2, Search, Loader2, Download, Edit2, X, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+
+const TEMPERATURES = [
+  { value: 'hot', label: '🔥 Hot', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+  { value: 'warm', label: '🌡️ Warm', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
+  { value: 'cold', label: '❄️ Cold', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+];
 
 const MOTIVATIONS = [
   'Code Violation',
@@ -48,12 +54,17 @@ export default function Marketplace() {
     mailing_zip: '',
     motivation: MOTIVATIONS[0],
     timeline: TIMELINES[0],
+    asking_price: '',
+    temperature: 'warm',
     price: '',
     max_buyers: '0',
   });
   const [csvFile, setCsvFile] = useState(null);
   const [uploadMessage, setUploadMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [editingLead, setEditingLead] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchLeads();
@@ -113,6 +124,8 @@ export default function Marketplace() {
         mailing_zip: '',
         motivation: MOTIVATIONS[0],
         timeline: TIMELINES[0],
+        asking_price: '',
+        temperature: 'warm',
         price: '',
         max_buyers: '0',
       });
@@ -120,6 +133,87 @@ export default function Marketplace() {
     } catch (error) {
       console.error('Failed to create marketplace lead:', error);
       toast.error('Failed to create lead');
+    }
+  };
+
+  const handleEdit = (lead) => {
+    setEditingLead({
+      id: lead.id,
+      owner_name: lead.owner_name || '',
+      phone: lead.phone || '',
+      property_address: lead.property_address || '',
+      city: lead.city || '',
+      state: lead.state || '',
+      zip_code: lead.zip_code || '',
+      mailing_address: lead.mailing_address || '',
+      mailing_city: lead.mailing_city || '',
+      mailing_state: lead.mailing_state || '',
+      mailing_zip: lead.mailing_zip || '',
+      motivation: lead.motivation || MOTIVATIONS[0],
+      timeline: lead.timeline || TIMELINES[0],
+      asking_price: lead.asking_price || '',
+      temperature: lead.temperature || 'warm',
+      price: lead.price || '',
+      max_buyers: lead.max_buyers || 0,
+      is_hidden: lead.is_hidden || false,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setEditingLead(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingLead) return;
+    setSaving(true);
+    try {
+      await adminAPI.updateMarketplaceLead({
+        id: editingLead.id,
+        owner_name: editingLead.owner_name,
+        phone: editingLead.phone,
+        property_address: editingLead.property_address,
+        city: editingLead.city,
+        state: editingLead.state,
+        zip_code: editingLead.zip_code,
+        mailing_address: editingLead.mailing_address,
+        mailing_city: editingLead.mailing_city,
+        mailing_state: editingLead.mailing_state,
+        mailing_zip: editingLead.mailing_zip,
+        motivation: editingLead.motivation,
+        timeline: editingLead.timeline,
+        asking_price: editingLead.asking_price,
+        temperature: editingLead.temperature,
+        price: parseFloat(editingLead.price),
+        max_buyers: parseInt(editingLead.max_buyers),
+        is_hidden: editingLead.is_hidden,
+      });
+      toast.success('Lead updated successfully');
+      setShowEditModal(false);
+      setEditingLead(null);
+      fetchLeads();
+    } catch (error) {
+      console.error('Failed to update lead:', error);
+      toast.error('Failed to update lead');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggleHidden = async (lead) => {
+    try {
+      await adminAPI.updateMarketplaceLead({
+        id: lead.id,
+        is_hidden: !lead.is_hidden,
+      });
+      toast.success(lead.is_hidden ? 'Lead is now visible' : 'Lead is now hidden');
+      fetchLeads();
+    } catch (error) {
+      toast.error('Failed to update lead visibility');
     }
   };
 
@@ -326,7 +420,40 @@ export default function Marketplace() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Price ($) *
+                    Asking Price ($)
+                  </label>
+                  <input
+                    type="number"
+                    name="asking_price"
+                    value={formData.asking_price}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="0.01"
+                    placeholder="Property asking price"
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Lead Temperature
+                  </label>
+                  <select
+                    name="temperature"
+                    value={formData.temperature}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    {TEMPERATURES.map(t => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Lead Price ($) *
                   </label>
                   <input
                     type="number"
@@ -336,6 +463,7 @@ export default function Marketplace() {
                     required
                     min="0"
                     step="0.01"
+                    placeholder="Price to buy this lead"
                     className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 </div>
@@ -460,19 +588,22 @@ export default function Marketplace() {
                 Address
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                Temp
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Motivation
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Timeline
+                Asking
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Price
+                Lead Price
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Max Buyers
+                Sold
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Times Sold
+                Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Actions
@@ -482,13 +613,16 @@ export default function Marketplace() {
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {filteredLeads.length === 0 ? (
               <tr>
-                <td colSpan="7" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan="8" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                   {searchQuery ? 'No leads match your search' : 'No marketplace leads yet. Add your first lead!'}
                 </td>
               </tr>
             ) : (
-              filteredLeads.map((lead) => (
-                <tr key={lead.id}>
+              filteredLeads.map((lead) => {
+                const tempConfig = TEMPERATURES.find(t => t.value === lead.temperature) || TEMPERATURES[1];
+                const isSoldOut = lead.max_buyers > 0 && lead.times_sold >= lead.max_buyers;
+                return (
+                <tr key={lead.id} className={lead.is_hidden ? 'opacity-50' : ''}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
                       {lead.property_address}
@@ -496,36 +630,266 @@ export default function Marketplace() {
                     <div className="text-sm text-gray-500 dark:text-gray-400">
                       {lead.city}, {lead.state} {lead.zip_code}
                     </div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500">
+                      {lead.owner_name} • {lead.phone}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${tempConfig.color}`}>
+                      {tempConfig.label}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {lead.motivation}
+                    <div>{lead.motivation}</div>
+                    <div className="text-xs text-gray-500">{lead.timeline}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {lead.timeline}
+                    {lead.asking_price ? `$${parseFloat(lead.asking_price).toLocaleString()}` : '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600 dark:text-green-400">
                     ${parseFloat(lead.price).toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {lead.max_buyers === 0 ? 'Unlimited' : lead.max_buyers}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    {lead.times_sold}
+                    {lead.times_sold}/{lead.max_buyers === 0 ? '∞' : lead.max_buyers}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <button
-                      onClick={() => handleDelete(lead.id)}
-                      className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    {lead.is_hidden ? (
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                        Hidden
+                      </span>
+                    ) : isSoldOut ? (
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                        Sold Out
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                        Active
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleEdit(lead)}
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
+                        title="Edit lead"
+                      >
+                        <Edit2 size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleToggleHidden(lead)}
+                        className={`${lead.is_hidden ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'} hover:text-gray-900 dark:hover:text-gray-300`}
+                        title={lead.is_hidden ? 'Show lead' : 'Hide lead'}
+                      >
+                        {lead.is_hidden ? <Eye size={18} /> : <EyeOff size={18} />}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(lead.id)}
+                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
+                        title="Delete lead"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              ))
+              );
+              })
             )}
           </tbody>
         </table>
       </div>
+
+      {/* Edit Modal */}
+      {showEditModal && editingLead && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold dark:text-white">Edit Marketplace Lead</h2>
+              <button onClick={() => setShowEditModal(false)} className="text-gray-500 hover:text-gray-700">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Owner Name</label>
+                  <input
+                    type="text"
+                    name="owner_name"
+                    value={editingLead.owner_name}
+                    onChange={handleEditChange}
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
+                  <input
+                    type="text"
+                    name="phone"
+                    value={editingLead.phone}
+                    onChange={handleEditChange}
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Property Address</label>
+                <input
+                  type="text"
+                  name="property_address"
+                  value={editingLead.property_address}
+                  onChange={handleEditChange}
+                  className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City</label>
+                  <input
+                    type="text"
+                    name="city"
+                    value={editingLead.city}
+                    onChange={handleEditChange}
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State</label>
+                  <input
+                    type="text"
+                    name="state"
+                    value={editingLead.state}
+                    onChange={handleEditChange}
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zip Code</label>
+                  <input
+                    type="text"
+                    name="zip_code"
+                    value={editingLead.zip_code}
+                    onChange={handleEditChange}
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Motivation</label>
+                  <select
+                    name="motivation"
+                    value={editingLead.motivation}
+                    onChange={handleEditChange}
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    {MOTIVATIONS.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Timeline</label>
+                  <select
+                    name="timeline"
+                    value={editingLead.timeline}
+                    onChange={handleEditChange}
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    {TIMELINES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Asking Price ($)</label>
+                  <input
+                    type="number"
+                    name="asking_price"
+                    value={editingLead.asking_price}
+                    onChange={handleEditChange}
+                    min="0"
+                    step="0.01"
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lead Temperature</label>
+                  <select
+                    name="temperature"
+                    value={editingLead.temperature}
+                    onChange={handleEditChange}
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    {TEMPERATURES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lead Price ($)</label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={editingLead.price}
+                    onChange={handleEditChange}
+                    min="0"
+                    step="0.01"
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Max Buyers</label>
+                  <input
+                    type="number"
+                    name="max_buyers"
+                    value={editingLead.max_buyers}
+                    onChange={handleEditChange}
+                    min="0"
+                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="is_hidden"
+                  id="is_hidden"
+                  checked={editingLead.is_hidden}
+                  onChange={handleEditChange}
+                  className="w-4 h-4 text-blue-600 rounded"
+                />
+                <label htmlFor="is_hidden" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Hide from marketplace (lead won't be visible to wholesalers)
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={saving}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {saving ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </Layout>
   );

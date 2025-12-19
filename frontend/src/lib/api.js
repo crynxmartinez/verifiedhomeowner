@@ -94,6 +94,7 @@ export const adminAPI = {
   // Marketplace admin
   getMarketplaceLeads: () => api.get('/admin/marketplace'),
   createMarketplaceLead: (singleLead) => api.post('/admin/marketplace', { singleLead }),
+  updateMarketplaceLead: (data) => api.put('/admin/marketplace', data),
   uploadMarketplaceCSV: (csvData) => api.post('/admin/marketplace', { csvData }),
   deleteMarketplaceLead: (leadId) => api.delete('/admin/marketplace', { data: { leadId } }),
   // Wholesalers admin

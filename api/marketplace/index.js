@@ -17,8 +17,10 @@ async function handler(req, res) {
 
       const purchasedIds = purchased?.map(p => p.marketplaceLeadId) || [];
 
-      // Build where clause
-      const where = {};
+      // Build where clause - exclude hidden leads
+      const where = {
+        isHidden: false, // Only show non-hidden leads
+      };
       
       if (purchasedIds.length > 0) {
         where.id = { notIn: purchasedIds };
@@ -38,32 +40,32 @@ async function handler(req, res) {
         orderBy: { createdAt: 'desc' }
       });
 
-      // Filter out leads that reached max_buyers
-      const availableLeads = (leads || []).filter(lead => {
-        if (lead.maxBuyers === 0) return true; // unlimited
-        return lead.timesSold < lead.maxBuyers;
+      // Format response - include sold_out status but don't filter them out
+      const formattedLeads = (leads || []).map(lead => {
+        const isSoldOut = lead.maxBuyers > 0 && lead.timesSold >= lead.maxBuyers;
+        return {
+          id: lead.id,
+          owner_name: lead.ownerName,
+          phone: lead.phone,
+          property_address: lead.propertyAddress,
+          city: lead.city,
+          state: lead.state,
+          zip_code: lead.zipCode,
+          mailing_address: lead.mailingAddress,
+          mailing_city: lead.mailingCity,
+          mailing_state: lead.mailingState,
+          mailing_zip: lead.mailingZip,
+          motivation: lead.motivation,
+          timeline: lead.timeline,
+          asking_price: lead.askingPrice,
+          temperature: lead.temperature || 'warm',
+          price: lead.price,
+          max_buyers: lead.maxBuyers,
+          times_sold: lead.timesSold,
+          is_sold_out: isSoldOut,
+          created_at: lead.createdAt,
+        };
       });
-
-      // Format response to match frontend expectations
-      const formattedLeads = availableLeads.map(lead => ({
-        id: lead.id,
-        owner_name: lead.ownerName,
-        phone: lead.phone,
-        property_address: lead.propertyAddress,
-        city: lead.city,
-        state: lead.state,
-        zip_code: lead.zipCode,
-        mailing_address: lead.mailingAddress,
-        mailing_city: lead.mailingCity,
-        mailing_state: lead.mailingState,
-        mailing_zip: lead.mailingZip,
-        motivation: lead.motivation,
-        timeline: lead.timeline,
-        price: lead.price,
-        max_buyers: lead.maxBuyers,
-        times_sold: lead.timesSold,
-        created_at: lead.createdAt,
-      }));
 
       res.status(200).json({ leads: formattedLeads });
     } catch (error) {

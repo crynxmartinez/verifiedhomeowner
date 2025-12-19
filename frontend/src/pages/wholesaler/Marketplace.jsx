@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { marketplaceAPI } from '../../lib/api';
-import { Filter, DollarSign, Loader2 } from 'lucide-react';
+import { Filter, DollarSign, Loader2, Flame, Thermometer, Snowflake } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+
+const TEMPERATURES = {
+  hot: { icon: Flame, label: '🔥 Hot', color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-900/30' },
+  warm: { icon: Thermometer, label: '🌡️ Warm', color: 'text-orange-500', bg: 'bg-orange-100 dark:bg-orange-900/30' },
+  cold: { icon: Snowflake, label: '❄️ Cold', color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30' },
+};
 
 const MOTIVATIONS = [
   'All',
@@ -181,14 +187,20 @@ export default function Marketplace() {
           </div>
         ) : (
           <div className="grid grid-cols-5 gap-4">
-            {leads.map((lead) => (
+            {leads.map((lead) => {
+              const tempConfig = TEMPERATURES[lead.temperature] || TEMPERATURES.warm;
+              const isSoldOut = lead.is_sold_out;
+              return (
               <div
                 key={lead.id}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 hover:shadow-lg dark:hover:shadow-gray-900 transition-shadow p-4 cursor-pointer"
-                onClick={() => setSelectedLead(lead)}
+                className={`bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 hover:shadow-lg dark:hover:shadow-gray-900 transition-shadow p-4 ${isSoldOut ? 'opacity-60' : 'cursor-pointer'}`}
+                onClick={() => !isSoldOut && setSelectedLead(lead)}
               >
                 <div className="text-center space-y-2">
-                  <div className="text-2xl">💰</div>
+                  {/* Temperature Badge */}
+                  <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${tempConfig.bg} ${tempConfig.color}`}>
+                    {tempConfig.label}
+                  </div>
                   <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {maskName(lead.owner_name)}
                   </div>
@@ -198,6 +210,11 @@ export default function Marketplace() {
                   <div className="text-xs text-gray-600 dark:text-gray-400">
                     {lead.state}, {lead.zip_code}
                   </div>
+                  {lead.asking_price && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      Asking: <span className="font-medium">${parseFloat(lead.asking_price).toLocaleString()}</span>
+                    </div>
+                  )}
                   <div className="border-t pt-2 mt-2">
                     <div className="text-xs text-gray-500 dark:text-gray-400">Motivation:</div>
                     <div className="text-xs font-medium text-gray-700 dark:text-gray-300">{lead.motivation}</div>
@@ -206,12 +223,22 @@ export default function Marketplace() {
                     <div className="text-xs text-gray-500 dark:text-gray-400">Timeline:</div>
                     <div className="text-xs font-medium text-gray-900 dark:text-white">{lead.timeline}</div>
                   </div>
-                  <button className="w-full mt-3 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700">
-                    Buy - ${parseFloat(lead.price).toFixed(2)}
-                  </button>
+                  {isSoldOut ? (
+                    <button 
+                      disabled
+                      className="w-full mt-3 px-3 py-2 bg-gray-400 text-white text-sm font-medium rounded-lg cursor-not-allowed"
+                    >
+                      Sold Out
+                    </button>
+                  ) : (
+                    <button className="w-full mt-3 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700">
+                      Buy - ${parseFloat(lead.price).toFixed(2)}
+                    </button>
+                  )}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
