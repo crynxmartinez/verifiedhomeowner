@@ -32,6 +32,7 @@ import AdminLeads from './pages/admin/Leads';
 import AdminMarketplace from './pages/admin/Marketplace';
 import AdminAnalytics from './pages/admin/Analytics';
 import AdminSupport from './pages/admin/Support';
+import AdminWholesalers from './pages/admin/Wholesalers';
 
 function PrivateRoute({ children }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -162,6 +163,14 @@ function App() {
           element={
             <AdminRoute>
               <AdminSupport />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/wholesalers"
+          element={
+            <AdminRoute>
+              <AdminWholesalers />
             </AdminRoute>
           }
         />

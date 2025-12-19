@@ -59,7 +59,8 @@ export default function Layout({ children }) {
 
   const adminMenuItems = [
     { path: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/admin/users', icon: Users, label: 'Wholesalers' },
+    { path: '/admin/wholesalers', icon: Users, label: 'Wholesalers' },
+    { path: '/admin/users', icon: User, label: 'User Settings' },
     { path: '/admin/leads', icon: FileText, label: 'Leads' },
     { path: '/admin/marketplace', icon: ShoppingCart, label: 'Lead Marketplace' },
     { path: '/admin/analytics', icon: BarChart3, label: 'Analytics' },

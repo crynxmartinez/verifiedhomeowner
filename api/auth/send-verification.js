@@ -39,6 +39,8 @@ async function handler(req, res) {
       data: {
         verificationToken: token,
         verificationExpires: expires,
+        lastEmailSentAt: new Date(),
+        lastEmailType: 'verification',
       }
     });
 

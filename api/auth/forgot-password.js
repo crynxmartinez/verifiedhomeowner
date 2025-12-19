@@ -47,6 +47,8 @@ export default async function handler(req, res) {
       data: {
         resetToken,
         resetTokenExpires,
+        lastEmailSentAt: new Date(),
+        lastEmailType: 'password_reset',
       }
     });
 

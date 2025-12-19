@@ -104,6 +104,15 @@ async function sendMarketplaceNotifications(lead) {
             text,
           });
 
+          // Track email sent
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              lastEmailSentAt: new Date(),
+              lastEmailType: 'marketplace_lead',
+            }
+          });
+
           console.log(`✅ Email sent to ${user.email}`);
         } catch (emailError) {
           console.error(`❌ Failed to send email to ${user.email}:`, emailError.message);
