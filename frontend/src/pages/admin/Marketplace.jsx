@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { adminAPI } from '../../lib/api';
-import { Upload, Plus, Trash2, Search, Loader2 } from 'lucide-react';
+import { Upload, Plus, Trash2, Search, Loader2, Download } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 
 const MOTIVATIONS = [
@@ -379,6 +379,25 @@ export default function Marketplace() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full">
             <h2 className="text-xl font-bold mb-4 dark:text-white">Upload Marketplace Leads CSV</h2>
+            
+            {/* Download Template */}
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-900 dark:text-blue-300">Need a template?</p>
+                  <p className="text-xs text-blue-700 dark:text-blue-400">Download our CSV template with sample data</p>
+                </div>
+                <a
+                  href="/templates/marketplace-leads-template.csv"
+                  download="marketplace-leads-template.csv"
+                  className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+                >
+                  <Download size={16} />
+                  Template
+                </a>
+              </div>
+            </div>
+
             <form onSubmit={handleCSVUpload} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -391,7 +410,7 @@ export default function Marketplace() {
                   className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  CSV should include: owner_name, phone, address, city, state, zip, motivation, timeline, price, max_buyers
+                  Required columns: owner_name, phone, property_address, city, state, zip_code, motivation, timeline, price, max_buyers
                 </p>
               </div>
 
