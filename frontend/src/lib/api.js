@@ -60,11 +60,12 @@ export const userAPI = {
   distributeLeads: () => api.post('/user/leads/distribute'),
   getProfile: () => api.get('/user/profile'),
   updateProfile: (data) => api.patch('/user/profile', data),
+  getTrialStatus: () => api.get('/user/trial-status'),
 };
 
 // Dodo Payments API
 export const dodoAPI = {
-  createCheckout: (plan, userId) => api.post('/dodo/checkout', { plan, userId }),
+  createCheckout: (plan, userId, useTrial = false) => api.post('/dodo/checkout', { plan, userId, useTrial }),
 };
 
 // Legacy Stripe API (deprecated - kept for reference)

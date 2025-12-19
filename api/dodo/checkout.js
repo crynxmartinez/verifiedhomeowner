@@ -15,6 +15,13 @@ export default async function handler(req, res) {
     pro: process.env.DODO_PRODUCT_PRO,
   };
 
+  // Trial Product IDs (3-day free trial)
+  const DODO_TRIAL_PRODUCTS = {
+    basic: 'pdt_0NUQtfVY3PGUDWkPiVIVn',
+    elite: 'pdt_0NUQtc06hwEs5upizxaTm',
+    pro: 'pdt_0NUQtZelRRVBlorQrAnba',
+  };
+
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -29,7 +36,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { plan, userId } = req.body;
+    const { plan, userId, useTrial } = req.body;
 
     // Validate plan
     if (!plan || !DODO_PRODUCTS[plan]) {
@@ -61,9 +68,26 @@ export default async function handler(req, res) {
       });
     }
 
+    // Check if user wants trial and hasn't used it before
+    let productId = DODO_PRODUCTS[plan];
+    let isTrial = false;
+
+    if (useTrial) {
+      // Get user's trial status
+      const userTrialStatus = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { hasUsedTrial: true }
+      });
+
+      if (!userTrialStatus?.hasUsedTrial) {
+        productId = DODO_TRIAL_PRODUCTS[plan];
+        isTrial = true;
+      }
+    }
+
     // Create Dodo subscription with payment link
     const subscription = await dodo.subscriptions.create({
-      product_id: DODO_PRODUCTS[plan],
+      product_id: productId,
       quantity: 1,
       billing: {
         city: 'N/A',
@@ -81,6 +105,7 @@ export default async function handler(req, res) {
       metadata: {
         user_id: userId,
         plan: plan,
+        is_trial: isTrial.toString(),
       },
     });
 

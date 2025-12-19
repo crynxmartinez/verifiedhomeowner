@@ -5,6 +5,7 @@ import useAuthStore from '../../store/authStore';
 import { userAPI, dodoAPI, authAPI } from '../../lib/api';
 import { CheckCircle, TrendingUp, CreditCard, Mail, AlertTriangle, Loader2 } from 'lucide-react';
 import SuccessModal from '../../components/SuccessModal';
+import TrialOfferModal from '../../components/TrialOfferModal';
 
 export default function UpgradePlan() {
   const user = useAuthStore((state) => state.user);
@@ -14,6 +15,9 @@ export default function UpgradePlan() {
   const [sendingVerification, setSendingVerification] = useState(false);
   const [successModal, setSuccessModal] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [trialModal, setTrialModal] = useState(null); // { plan: 'basic' | 'elite' | 'pro' }
+  const [canUseTrial, setCanUseTrial] = useState(false);
+  const [checkingTrial, setCheckingTrial] = useState(true);
 
   // Check if email is verified
   const isEmailVerified = user?.email_verified;
@@ -42,11 +46,25 @@ export default function UpgradePlan() {
     }
   };
 
-  // Refresh user data on page load to get latest email_verified status
+  // Refresh user data and check trial status on page load
   useEffect(() => {
     if (refreshUser) {
       refreshUser();
     }
+    
+    // Check if user can use trial
+    const checkTrialStatus = async () => {
+      try {
+        const response = await userAPI.getTrialStatus();
+        setCanUseTrial(response.data.canUseTrial);
+      } catch (error) {
+        console.error('Failed to check trial status:', error);
+        setCanUseTrial(false);
+      } finally {
+        setCheckingTrial(false);
+      }
+    };
+    checkTrialStatus();
   }, []);
 
   // Handle Dodo checkout redirect
@@ -109,23 +127,16 @@ export default function UpgradePlan() {
   ];
 
   const handleUpgrade = async (planId) => {
-    // For paid plans, redirect to Dodo checkout
+    // For paid plans, check if user can use trial first
     if (planId !== 'free') {
-      setLoading(true);
-      try {
-        const response = await dodoAPI.createCheckout(planId, user?.id);
-        // Redirect to Dodo checkout
-        window.location.href = response.data.url;
-      } catch (error) {
-        console.error('[DODO] Checkout error:', error);
-        setSuccessModal({
-          title: 'Error',
-          message: error.response?.data?.error || 'Failed to start checkout. Please try again.',
-          actionText: 'Close',
-          secondaryText: null
-        });
-        setLoading(false);
+      // If user can use trial, show the trial offer modal
+      if (canUseTrial && !checkingTrial) {
+        setTrialModal({ plan: planId });
+        return;
       }
+      
+      // Otherwise, go directly to checkout
+      await proceedToCheckout(planId, false);
       return;
     }
 
@@ -157,6 +168,39 @@ export default function UpgradePlan() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Proceed to Dodo checkout with or without trial
+  const proceedToCheckout = async (planId, useTrial) => {
+    setLoading(true);
+    setTrialModal(null);
+    try {
+      const response = await dodoAPI.createCheckout(planId, user?.id, useTrial);
+      // Redirect to Dodo checkout
+      window.location.href = response.data.url;
+    } catch (error) {
+      console.error('[DODO] Checkout error:', error);
+      setSuccessModal({
+        title: 'Error',
+        message: error.response?.data?.error || 'Failed to start checkout. Please try again.',
+        actionText: 'Close',
+        secondaryText: null
+      });
+      setLoading(false);
+    }
+  };
+
+  // Handle trial modal selections
+  const handleSelectTrial = () => {
+    if (trialModal) {
+      proceedToCheckout(trialModal.plan, true);
+    }
+  };
+
+  const handleSelectFull = () => {
+    if (trialModal) {
+      proceedToCheckout(trialModal.plan, false);
     }
   };
 
@@ -318,6 +362,17 @@ export default function UpgradePlan() {
           actionLink={successModal.actionLink}
           secondaryText={successModal.secondaryText}
           onClose={() => setSuccessModal(null)}
+        />
+      )}
+
+      {/* Trial Offer Modal */}
+      {trialModal && (
+        <TrialOfferModal
+          plan={trialModal.plan}
+          onSelectTrial={handleSelectTrial}
+          onSelectFull={handleSelectFull}
+          onClose={() => setTrialModal(null)}
+          loading={loading}
         />
       )}
     </Layout>

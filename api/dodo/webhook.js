@@ -24,10 +24,22 @@ const DODO_PRODUCTS = {
   pro: process.env.DODO_PRODUCT_PRO,
 };
 
+// Trial Product IDs (3-day free trial)
+const DODO_TRIAL_PRODUCTS = {
+  basic: 'pdt_0NUQtfVY3PGUDWkPiVIVn',
+  elite: 'pdt_0NUQtc06hwEs5upizxaTm',
+  pro: 'pdt_0NUQtZelRRVBlorQrAnba',
+};
+
 // Map Dodo product IDs back to plan types
 function getPlanFromProductId(productId) {
+  // Check regular products
   for (const [plan, id] of Object.entries(DODO_PRODUCTS)) {
-    if (id === productId) return plan;
+    if (id === productId) return { plan, isTrial: false };
+  }
+  // Check trial products
+  for (const [plan, id] of Object.entries(DODO_TRIAL_PRODUCTS)) {
+    if (id === productId) return { plan, isTrial: true };
   }
   return null;
 }
@@ -122,11 +134,13 @@ async function handleSubscriptionActive(data) {
   console.log('🎉 Subscription activated:', subscription_id);
 
   // Get plan type from product ID
-  const plan = getPlanFromProductId(product_id);
-  if (!plan) {
+  const planInfo = getPlanFromProductId(product_id);
+  if (!planInfo) {
     console.error('Unknown product ID:', product_id);
     return;
   }
+
+  const { plan, isTrial } = planInfo;
 
   // Try to find user by metadata first, then by email
   let userId = metadata?.user_id;
@@ -149,17 +163,26 @@ async function handleSubscriptionActive(data) {
 
   // Update user's plan
   try {
+    const updateData = {
+      planType: plan,
+      dodoSubscriptionId: subscription_id,
+      dodoCustomerId: customer?.customer_id,
+      subscriptionStatus: 'active',
+      subscriptionEndDate: next_billing_date ? new Date(next_billing_date) : null,
+    };
+
+    // If this is a trial subscription, mark trial as used
+    if (isTrial || metadata?.is_trial === 'true') {
+      updateData.hasUsedTrial = true;
+      updateData.trialUsedAt = new Date();
+      console.log(`🎁 Trial activated for user ${userId}`);
+    }
+
     await prisma.user.update({
       where: { id: userId },
-      data: {
-        planType: plan,
-        dodoSubscriptionId: subscription_id,
-        dodoCustomerId: customer?.customer_id,
-        subscriptionStatus: 'active',
-        subscriptionEndDate: next_billing_date ? new Date(next_billing_date) : null,
-      }
+      data: updateData
     });
-    console.log(`✅ User ${userId} upgraded to ${plan} plan`);
+    console.log(`✅ User ${userId} upgraded to ${plan} plan${isTrial ? ' (trial)' : ''}`);
   } catch (error) {
     console.error('Failed to update user plan:', error);
   }

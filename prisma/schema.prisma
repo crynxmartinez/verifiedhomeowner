@@ -38,6 +38,10 @@ model User {
   dodoCustomerId        String?   @map("dodo_customer_id")
   subscriptionEndDate   DateTime? @map("subscription_end_date") @db.Timestamptz
   
+  // Trial Tracking
+  hasUsedTrial          Boolean   @default(false) @map("has_used_trial")
+  trialUsedAt           DateTime? @map("trial_used_at") @db.Timestamptz
+  
   // Marketplace Preferences
   preferredStates       String[]  @default([]) @map("preferred_states")
   marketplaceEmails     Boolean   @default(true) @map("marketplace_emails")
