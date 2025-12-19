@@ -269,6 +269,12 @@ async function handlePlanChanged(data) {
   }
 }
 
+// Temperature-based pricing
+const LEAD_PRICES = {
+  hot: 100,
+  warm: 80,
+};
+
 // Handle one-time payment success (for marketplace leads)
 async function handlePaymentSucceeded(data) {
   const { payment_id, metadata } = data;
@@ -284,11 +290,15 @@ async function handlePaymentSucceeded(data) {
 
   const userId = metadata.user_id;
   const leadId = metadata.lead_id;
+  const temperature = metadata.temperature || 'warm';
 
   if (!userId || !leadId) {
     console.error('Missing user_id or lead_id in metadata');
     return;
   }
+
+  // Get price based on temperature
+  const pricePaid = LEAD_PRICES[temperature] || LEAD_PRICES.warm;
 
   try {
     // Get the marketplace lead
@@ -322,7 +332,7 @@ async function handlePaymentSucceeded(data) {
         data: {
           userId,
           marketplaceLeadId: leadId,
-          pricePaid: lead.price,
+          pricePaid: pricePaid,
           status: 'new',
           action: 'call_now',
         }
@@ -333,7 +343,7 @@ async function handlePaymentSucceeded(data) {
       })
     ]);
 
-    console.log(`✅ Marketplace lead ${leadId} purchased by user ${userId}`);
+    console.log(`✅ Marketplace lead ${leadId} purchased by user ${userId} for $${pricePaid}`);
   } catch (error) {
     console.error('Failed to record marketplace purchase:', error);
   }

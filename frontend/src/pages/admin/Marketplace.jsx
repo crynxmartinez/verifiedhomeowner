@@ -5,9 +5,8 @@ import { Upload, Plus, Trash2, Search, Loader2, Download, Edit2, X, Eye, EyeOff 
 import { useToast } from '../../context/ToastContext';
 
 const TEMPERATURES = [
-  { value: 'hot', label: '🔥 Hot', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
-  { value: 'warm', label: '🌡️ Warm', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' },
-  { value: 'cold', label: '❄️ Cold', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+  { value: 'hot', label: '🔥 Hot ($100)', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', price: 100 },
+  { value: 'warm', label: '🌡️ Warm ($80)', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400', price: 80 },
 ];
 
 const MOTIVATIONS = [
@@ -56,7 +55,6 @@ export default function Marketplace() {
     timeline: TIMELINES[0],
     asking_price: '',
     temperature: 'warm',
-    price: '',
     max_buyers: '0',
   });
   const [csvFile, setCsvFile] = useState(null);
@@ -450,36 +448,18 @@ export default function Marketplace() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Lead Price ($) *
-                  </label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    required
-                    min="0"
-                    step="0.01"
-                    placeholder="Price to buy this lead"
-                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Max Buyers (0 = unlimited)
-                  </label>
-                  <input
-                    type="number"
-                    name="max_buyers"
-                    value={formData.max_buyers}
-                    onChange={handleInputChange}
-                    min="0"
-                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Max Buyers (0 = unlimited)
+                </label>
+                <input
+                  type="number"
+                  name="max_buyers"
+                  value={formData.max_buyers}
+                  onChange={handleInputChange}
+                  min="0"
+                  className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
               </div>
 
               <div className="flex justify-end gap-3 pt-4">
@@ -597,7 +577,7 @@ export default function Marketplace() {
                 Asking
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                Lead Price
+                Price
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                 Sold
@@ -650,7 +630,7 @@ export default function Marketplace() {
                     {lead.asking_price ? `$${parseFloat(lead.asking_price).toLocaleString()}` : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600 dark:text-green-400">
-                    ${parseFloat(lead.price).toFixed(2)}
+                    ${tempConfig.price || 80}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     {lead.times_sold}/{lead.max_buyers === 0 ? '∞' : lead.max_buyers}
@@ -833,30 +813,16 @@ export default function Marketplace() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lead Price ($)</label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={editingLead.price}
-                    onChange={handleEditChange}
-                    min="0"
-                    step="0.01"
-                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Max Buyers</label>
-                  <input
-                    type="number"
-                    name="max_buyers"
-                    value={editingLead.max_buyers}
-                    onChange={handleEditChange}
-                    min="0"
-                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Max Buyers</label>
+                <input
+                  type="number"
+                  name="max_buyers"
+                  value={editingLead.max_buyers}
+                  onChange={handleEditChange}
+                  min="0"
+                  className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
               </div>
 
               <div className="flex items-center gap-2">

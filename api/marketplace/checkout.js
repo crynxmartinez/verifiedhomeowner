@@ -2,6 +2,18 @@ import prisma from '../../lib/prisma.js';
 import { requireAuth } from '../../lib/auth-prisma.js';
 import DodoPayments from 'dodopayments';
 
+// Product IDs based on lead temperature
+const LEAD_PRODUCTS = {
+  hot: {
+    productId: 'pdt_0NUQmivYpVff8hn2FBAGP',
+    price: 100,
+  },
+  warm: {
+    productId: 'pdt_0NUQmwHbasbbNGwZpKWGp',
+    price: 80,
+  },
+};
+
 async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -23,6 +35,10 @@ async function handler(req, res) {
     if (!lead) {
       return res.status(404).json({ error: 'Lead not found' });
     }
+
+    // Determine product based on temperature
+    const temperature = lead.temperature || 'warm';
+    const productConfig = LEAD_PRODUCTS[temperature] || LEAD_PRODUCTS.warm;
 
     // Check if user already purchased this lead
     const existing = await prisma.userMarketplaceLead.findUnique({
@@ -59,7 +75,7 @@ async function handler(req, res) {
       environment: process.env.DODO_PAYMENTS_ENVIRONMENT || 'test_mode',
     });
 
-    // Create checkout session for one-time payment
+    // Create checkout session for one-time payment based on temperature
     const session = await dodo.checkoutSessions.create({
       billing: {
         city: 'N/A',
@@ -74,7 +90,7 @@ async function handler(req, res) {
       },
       product_cart: [
         {
-          product_id: process.env.DODO_PRODUCT_MARKETPLACE_LEAD,
+          product_id: productConfig.productId,
           quantity: 1,
         }
       ],
@@ -83,7 +99,8 @@ async function handler(req, res) {
         user_id: userId,
         lead_id: leadId,
         type: 'marketplace_lead_purchase',
-        price: lead.price.toString(),
+        temperature: temperature,
+        price: productConfig.price.toString(),
       },
     });
 

@@ -6,9 +6,8 @@ import { Filter, DollarSign, Loader2, Flame, Thermometer, Snowflake } from 'luci
 import { useToast } from '../../context/ToastContext';
 
 const TEMPERATURES = {
-  hot: { icon: Flame, label: '🔥 Hot', color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-900/30' },
-  warm: { icon: Thermometer, label: '🌡️ Warm', color: 'text-orange-500', bg: 'bg-orange-100 dark:bg-orange-900/30' },
-  cold: { icon: Snowflake, label: '❄️ Cold', color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30' },
+  hot: { icon: Flame, label: '🔥 Hot', color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-900/30', price: 100 },
+  warm: { icon: Thermometer, label: '🌡️ Warm', color: 'text-orange-500', bg: 'bg-orange-100 dark:bg-orange-900/30', price: 80 },
 };
 
 const MOTIVATIONS = [
@@ -246,7 +245,7 @@ export default function Marketplace() {
                     </button>
                   ) : (
                     <button className="w-full mt-3 px-3 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700">
-                      Buy - ${parseFloat(lead.price).toFixed(2)}
+                      Buy - ${tempConfig.price}
                     </button>
                   )}
                 </div>
@@ -280,7 +279,7 @@ export default function Marketplace() {
                 <div className="border-t dark:border-gray-700 pt-3">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Price:</span>
                   <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                    ${parseFloat(selectedLead.price).toFixed(2)}
+                    ${(TEMPERATURES[selectedLead.temperature] || TEMPERATURES.warm).price}
                   </div>
                 </div>
               </div>
