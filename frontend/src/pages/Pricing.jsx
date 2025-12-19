@@ -22,6 +22,7 @@ export default function Pricing() {
       leads: '1 lead/week',
       features: [
         '1 lead every Monday',
+        '1 state coverage',
         'Lead tracking dashboard',
         'Notes & follow-ups',
         'Basic analytics',
@@ -35,10 +36,10 @@ export default function Pricing() {
       leads: '1 lead/day',
       features: [
         '1 lead delivered daily',
-        'Priority lead distribution',
+        '3 states coverage',
+        'Marketplace access (5/month)',
+        'Hot lead alerts (+4 hours)',
         'Advanced analytics',
-        'Notes & follow-ups',
-        'Hot lead marketplace access',
         'Priority support',
       ],
       popular: true,
@@ -51,11 +52,11 @@ export default function Pricing() {
       leads: '5 leads/day',
       features: [
         '5 leads delivered daily',
-        'Priority lead distribution',
+        '5 states coverage',
+        'Marketplace access (15/month)',
+        'Hot lead alerts (+30 min)',
         'Advanced analytics',
-        'Notes & follow-ups',
-        'Hot lead marketplace access',
-        'Priority support',
+        'Premium support',
       ],
     },
     {
@@ -66,10 +67,10 @@ export default function Pricing() {
       leads: '10 leads/day',
       features: [
         '10 leads delivered daily',
-        'Priority lead distribution',
+        '7 states coverage',
+        'Unlimited marketplace access',
+        'Instant hot lead alerts',
         'Custom analytics',
-        'Notes & follow-ups',
-        'Hot lead marketplace access',
         'VIP support',
       ],
     },
@@ -174,8 +175,110 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* FAQ */}
+      {/* Plan Comparison Table */}
       <section className="py-20 px-4 bg-gray-50">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-4xl font-bold text-gray-900 text-center mb-4">
+            Compare Plans
+          </h2>
+          <p className="text-xl text-gray-600 text-center mb-12">See what's included in each plan</p>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+              <thead>
+                <tr className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+                  <th className="text-left py-4 px-6 font-semibold">Feature</th>
+                  <th className="text-center py-4 px-4 font-semibold">Free</th>
+                  <th className="text-center py-4 px-4 font-semibold">Basic</th>
+                  <th className="text-center py-4 px-4 font-semibold">Elite</th>
+                  <th className="text-center py-4 px-4 font-semibold">Pro</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                <tr className="hover:bg-gray-50">
+                  <td className="py-4 px-6 font-medium text-gray-900">Daily Leads</td>
+                  <td className="text-center py-4 px-4 text-gray-600">1/week</td>
+                  <td className="text-center py-4 px-4 text-gray-600">1/day</td>
+                  <td className="text-center py-4 px-4 text-gray-600">5/day</td>
+                  <td className="text-center py-4 px-4 text-gray-600">10/day</td>
+                </tr>
+                <tr className="hover:bg-gray-50">
+                  <td className="py-4 px-6 font-medium text-gray-900">States Coverage</td>
+                  <td className="text-center py-4 px-4 text-gray-600">1</td>
+                  <td className="text-center py-4 px-4 text-gray-600">3</td>
+                  <td className="text-center py-4 px-4 text-gray-600">5</td>
+                  <td className="text-center py-4 px-4 text-gray-600">7</td>
+                </tr>
+                <tr className="hover:bg-gray-50">
+                  <td className="py-4 px-6 font-medium text-gray-900">Marketplace Purchases</td>
+                  <td className="text-center py-4 px-4 text-gray-400">—</td>
+                  <td className="text-center py-4 px-4 text-gray-600">5/month</td>
+                  <td className="text-center py-4 px-4 text-gray-600">15/month</td>
+                  <td className="text-center py-4 px-4 text-purple-600 font-semibold">Unlimited</td>
+                </tr>
+                <tr className="hover:bg-gray-50">
+                  <td className="py-4 px-6 font-medium text-gray-900">🔥 Hot Lead Alerts</td>
+                  <td className="text-center py-4 px-4 text-gray-400">—</td>
+                  <td className="text-center py-4 px-4 text-gray-600">+4 hours</td>
+                  <td className="text-center py-4 px-4 text-gray-600">+30 min</td>
+                  <td className="text-center py-4 px-4 text-green-600 font-semibold">Instant</td>
+                </tr>
+                <tr className="hover:bg-gray-50">
+                  <td className="py-4 px-6 font-medium text-gray-900">🌡️ Warm Lead Alerts</td>
+                  <td className="text-center py-4 px-4 text-gray-400">—</td>
+                  <td className="text-center py-4 px-4 text-gray-600">+1 hour</td>
+                  <td className="text-center py-4 px-4 text-gray-600">+15 min</td>
+                  <td className="text-center py-4 px-4 text-green-600 font-semibold">Instant</td>
+                </tr>
+                <tr className="hover:bg-gray-50">
+                  <td className="py-4 px-6 font-medium text-gray-900">Lead Tracking</td>
+                  <td className="text-center py-4 px-4 text-green-600">✓</td>
+                  <td className="text-center py-4 px-4 text-green-600">✓</td>
+                  <td className="text-center py-4 px-4 text-green-600">✓</td>
+                  <td className="text-center py-4 px-4 text-green-600">✓</td>
+                </tr>
+                <tr className="hover:bg-gray-50">
+                  <td className="py-4 px-6 font-medium text-gray-900">Analytics</td>
+                  <td className="text-center py-4 px-4 text-gray-600">Basic</td>
+                  <td className="text-center py-4 px-4 text-gray-600">Advanced</td>
+                  <td className="text-center py-4 px-4 text-gray-600">Advanced</td>
+                  <td className="text-center py-4 px-4 text-purple-600 font-semibold">Custom</td>
+                </tr>
+                <tr className="hover:bg-gray-50">
+                  <td className="py-4 px-6 font-medium text-gray-900">Support</td>
+                  <td className="text-center py-4 px-4 text-gray-600">Email</td>
+                  <td className="text-center py-4 px-4 text-gray-600">Priority</td>
+                  <td className="text-center py-4 px-4 text-gray-600">Premium</td>
+                  <td className="text-center py-4 px-4 text-purple-600 font-semibold">VIP</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Marketplace Info */}
+          <div className="mt-12 grid md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-red-500">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl">🔥</span>
+                <h3 className="font-bold text-gray-900">Hot Leads - $100</h3>
+              </div>
+              <p className="text-gray-600 text-sm mb-2">High-motivation sellers ready to close quickly</p>
+              <p className="text-gray-500 text-xs">Limited to 3 buyers per lead</p>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-lg border-l-4 border-orange-500">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-2xl">🌡️</span>
+                <h3 className="font-bold text-gray-900">Warm Leads - $80</h3>
+              </div>
+              <p className="text-gray-600 text-sm mb-2">Motivated sellers with flexible timelines</p>
+              <p className="text-gray-500 text-xs">Limited to 5 buyers per lead</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-20 px-4 bg-white">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-4xl font-bold text-gray-900 text-center mb-4">
             Frequently Asked Questions

@@ -100,14 +100,14 @@ export default function UpgradePlan() {
       name: 'Free',
       price: '$0',
       leads: '1 lead/week',
-      features: ['1 lead every Monday', 'Custom analytics', 'Notes', 'Follow up countdown'],
+      features: ['1 lead every Monday', '1 state coverage', 'Lead tracking', 'Basic analytics'],
     },
     {
       id: 'basic',
       name: 'Basic',
       price: '$29',
       leads: '1 lead/day',
-      features: ['1 lead delivered daily', 'Priority lead distribution', 'Custom analytics', 'Notes', 'Follow up countdown', 'Access to hot lead marketplace', 'Support tab'],
+      features: ['1 lead delivered daily', '3 states coverage', 'Marketplace (5/month)', 'Hot alerts +4 hours', 'Advanced analytics'],
       popular: true,
     },
     {
@@ -115,14 +115,14 @@ export default function UpgradePlan() {
       name: 'Elite',
       price: '$99',
       leads: '5 leads/day',
-      features: ['5 leads delivered daily', 'Priority lead distribution', 'Custom analytics', 'Notes', 'Follow up countdown', 'Access to hot lead marketplace', 'Support tab'],
+      features: ['5 leads delivered daily', '5 states coverage', 'Marketplace (15/month)', 'Hot alerts +30 min', 'Advanced analytics'],
     },
     {
       id: 'pro',
       name: 'Pro',
       price: '$149',
       leads: '10 leads/day',
-      features: ['10 leads delivered daily', 'Priority lead distribution', 'Custom analytics', 'Notes', 'Follow up countdown', 'Access to hot lead marketplace', 'Support tab'],
+      features: ['10 leads delivered daily', '7 states coverage', 'Unlimited marketplace', 'Instant hot alerts', 'Custom analytics', 'VIP support'],
     },
   ];
 
@@ -320,35 +320,74 @@ export default function UpgradePlan() {
               </thead>
               <tbody>
                 <tr className="border-b dark:border-gray-700">
-                  <td className="py-3 px-4 text-gray-900 dark:text-white">Leads per week</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Daily Leads</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">1/week</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">1/day</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">5/day</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">10/day</td>
+                </tr>
+                <tr className="border-b dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">States Coverage</td>
                   <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">1</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">3</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">5</td>
                   <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">7</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">35</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">70</td>
                 </tr>
                 <tr className="border-b dark:border-gray-700">
-                  <td className="py-3 px-4 text-gray-900 dark:text-white">Lead tracking</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">✓</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">✓</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">✓</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">✓</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Marketplace Purchases</td>
+                  <td className="text-center py-3 px-4 text-gray-500 dark:text-gray-500">—</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">5/month</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">15/month</td>
+                  <td className="text-center py-3 px-4 text-purple-600 dark:text-purple-400 font-semibold">Unlimited</td>
                 </tr>
                 <tr className="border-b dark:border-gray-700">
-                  <td className="py-3 px-4 text-gray-900 dark:text-white">Support</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Basic</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Priority</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Premium</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">VIP</td>
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">🔥 Hot Lead Alerts</td>
+                  <td className="text-center py-3 px-4 text-gray-500 dark:text-gray-500">—</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">+4 hours</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">+30 min</td>
+                  <td className="text-center py-3 px-4 text-green-600 dark:text-green-400 font-semibold">Instant</td>
+                </tr>
+                <tr className="border-b dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">🌡️ Warm Lead Alerts</td>
+                  <td className="text-center py-3 px-4 text-gray-500 dark:text-gray-500">—</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">+1 hour</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">+15 min</td>
+                  <td className="text-center py-3 px-4 text-green-600 dark:text-green-400 font-semibold">Instant</td>
                 </tr>
                 <tr className="border-b dark:border-gray-700">
                   <td className="py-3 px-4 text-gray-900 dark:text-white">Analytics</td>
                   <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Basic</td>
                   <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Advanced</td>
                   <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Advanced</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Custom</td>
+                  <td className="text-center py-3 px-4 text-purple-600 dark:text-purple-400 font-semibold">Custom</td>
+                </tr>
+                <tr className="border-b dark:border-gray-700">
+                  <td className="py-3 px-4 text-gray-900 dark:text-white">Support</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Email</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Priority</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Premium</td>
+                  <td className="text-center py-3 px-4 text-purple-600 dark:text-purple-400 font-semibold">VIP</td>
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          {/* Marketplace Info */}
+          <div className="mt-6 grid md:grid-cols-2 gap-4">
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border-l-4 border-red-500">
+              <div className="flex items-center gap-2 mb-2">
+                <span>🔥</span>
+                <span className="font-bold text-gray-900 dark:text-white">Hot Leads - $100</span>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Limited to 3 buyers per lead</p>
+            </div>
+            <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border-l-4 border-orange-500">
+              <div className="flex items-center gap-2 mb-2">
+                <span>🌡️</span>
+                <span className="font-bold text-gray-900 dark:text-white">Warm Leads - $80</span>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Limited to 5 buyers per lead</p>
+            </div>
           </div>
         </div>
       </div>
