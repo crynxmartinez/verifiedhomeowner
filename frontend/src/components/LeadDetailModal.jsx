@@ -346,11 +346,11 @@ export default function LeadDetailModal({ lead, userLead, onClose, onUpdate }) {
                         )}
                       </button>
                       <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lead?.property_address}, ${lead?.city}, ${lead?.state} ${lead?.zip_code}`)}`}
+                        href={`https://www.zillow.com/homes/${encodeURIComponent(`${lead?.property_address}, ${lead?.city}, ${lead?.state} ${lead?.zip_code}`.replace(/\s+/g, '-'))}_rb/`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition"
-                        title="View on Google Maps"
+                        title="View on Zillow"
                       >
                         <ExternalLink className="h-4 w-4 text-gray-400" />
                       </a>
@@ -647,14 +647,14 @@ export default function LeadDetailModal({ lead, userLead, onClose, onUpdate }) {
                   </button>
 
                   <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${lead?.property_address}, ${lead?.city}, ${lead?.state} ${lead?.zip_code}`)}`}
+                    href={`https://www.zillow.com/homes/${encodeURIComponent(`${lead?.property_address}, ${lead?.city}, ${lead?.state} ${lead?.zip_code}`.replace(/\s+/g, '-'))}_rb/`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
                   >
                     <div className="flex items-center gap-3">
                       <ExternalLink className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                      <span className="text-gray-700 dark:text-gray-300 font-medium">View on Google Maps</span>
+                      <span className="text-gray-700 dark:text-gray-300 font-medium">View on Zillow</span>
                     </div>
                     <ChevronRight className="h-5 w-5 text-gray-400" />
                   </a>

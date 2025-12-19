@@ -530,22 +530,13 @@ export default function WholesalerLeads() {
           />
         </td>
         <td className="px-4 py-3">
-          <div className="flex items-center gap-2">
-            {userLead.notes ? (
-              <span className="text-sm text-gray-600 dark:text-gray-400 truncate max-w-[150px]">
-                📝 {userLead.notes.substring(0, 40)}{userLead.notes.length > 40 ? '...' : ''}
-              </span>
-            ) : (
-              <span className="text-sm text-gray-400 dark:text-gray-500">No notes</span>
-            )}
-            <button
-              onClick={() => setSelectedLead(userLead)}
-              className="p-1.5 rounded bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 transition flex-shrink-0"
-              title="View details"
-            >
-              <Eye size={14} className="text-blue-600 dark:text-blue-400" />
-            </button>
-          </div>
+          <button
+            onClick={() => setSelectedLead(userLead)}
+            className="p-2 rounded bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 transition"
+            title="View details"
+          >
+            <Eye size={16} className="text-blue-600 dark:text-blue-400" />
+          </button>
         </td>
       </tr>
     );
@@ -807,7 +798,7 @@ export default function WholesalerLeads() {
                       Tags
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                      Notes
+                      
                     </th>
                   </tr>
                 </thead>
@@ -896,7 +887,7 @@ export default function WholesalerLeads() {
                       Tags
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
-                      Notes
+                      
                     </th>
                   </tr>
                 </thead>
