@@ -29,6 +29,10 @@ model User {
   verificationToken     String?   @map("verification_token")
   verificationExpires   DateTime? @map("verification_expires") @db.Timestamptz
   
+  // Password Reset
+  resetToken            String?   @map("reset_token")
+  resetTokenExpires     DateTime? @map("reset_token_expires") @db.Timestamptz
+  
   // Dodo Payments
   dodoSubscriptionId    String?   @map("dodo_subscription_id")
   dodoCustomerId        String?   @map("dodo_customer_id")
@@ -46,6 +50,9 @@ model User {
   @@index([email])
   @@index([role])
   @@index([planType])
+  @@index([createdAt(sort: Desc)])
+  @@index([verificationToken])
+  @@index([resetToken])
   @@map("users")
 }
 
@@ -127,6 +134,8 @@ model UserLead {
   @@index([userId])
   @@index([status])
   @@index([action])
+  @@index([assignedAt(sort: Desc)])
+  @@index([followUpDate])
   @@map("user_leads")
 }
 
@@ -172,6 +181,8 @@ model MarketplaceLead {
   @@index([state])
   @@index([motivation])
   @@index([timeline])
+  @@index([createdAt(sort: Desc)])
+  @@index([price])
   @@map("marketplace_leads")
 }
 
@@ -202,6 +213,7 @@ model UserMarketplaceLead {
   @@unique([userId, marketplaceLeadId])
   @@index([userId])
   @@index([status])
+  @@index([purchasedAt(sort: Desc)])
   @@map("user_marketplace_leads")
 }
 

@@ -42,6 +42,8 @@ export const authAPI = {
   getProfile: () => api.get('/auth/profile'),
   sendVerification: () => api.post('/auth/send-verification'),
   verifyEmail: (token) => api.get(`/auth/verify-email?token=${token}`),
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
 };
 
 // Leads API
@@ -49,12 +51,15 @@ export const leadsAPI = {
   getLeads: () => api.get('/leads'),
   getStats: () => api.get('/leads/stats'),
   updateLead: (id, source, data) => api.patch(`/leads/update?id=${id}&source=${source}`, data),
+  exportCSV: (source) => api.get(`/leads/export?source=${source || 'all'}`, { responseType: 'blob' }),
 };
 
 // User API
 export const userAPI = {
   updatePlan: (plan_type) => api.patch('/user/plan', { plan_type }),
   distributeLeads: () => api.post('/user/leads/distribute'),
+  getProfile: () => api.get('/user/profile'),
+  updateProfile: (data) => api.patch('/user/profile', data),
 };
 
 // Dodo Payments API

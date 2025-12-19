@@ -16,7 +16,8 @@ import {
   Sun,
   MessageCircle,
   Menu,
-  X
+  X,
+  User
 } from 'lucide-react';
 
 export default function Layout({ children }) {
@@ -70,6 +71,7 @@ export default function Layout({ children }) {
     { path: '/leads', icon: FileText, label: 'My Leads' },
     { path: '/marketplace', icon: ShoppingCart, label: 'Lead Marketplace' },
     { path: '/upgrade', icon: TrendingUp, label: 'Upgrade Plan' },
+    { path: '/profile', icon: User, label: 'Profile' },
     { path: '/support', icon: MessageCircle, label: 'Contact Support' },
   ];
 

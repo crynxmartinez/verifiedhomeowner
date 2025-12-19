@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
-import { Phone, Clock, DollarSign, Package, Copy, Check, Expand, X, ChevronLeft, ChevronRight, Search, SlidersHorizontal } from 'lucide-react';
+import { Phone, Clock, DollarSign, Package, Copy, Check, Expand, X, ChevronLeft, ChevronRight, Search, SlidersHorizontal, Download } from 'lucide-react';
 import TagInput from '../../components/TagInput';
 import FilterPanel from '../../components/FilterPanel';
 
@@ -25,6 +25,7 @@ export default function WholesalerLeads() {
   // Filter state
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [filters, setFilters] = useState({
     source: 'all',        // all, subscription, purchased
     city: 'all',          // all, or specific city
@@ -47,6 +48,29 @@ export default function WholesalerLeads() {
       console.error('Failed to fetch leads:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportCSV = async () => {
+    setExporting(true);
+    try {
+      const response = await leadsAPI.exportCSV(filters.source !== 'all' ? filters.source : null);
+      
+      // Create blob and download
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `leads_export_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Failed to export leads:', error);
+      alert('Failed to export leads');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -677,6 +701,16 @@ export default function WholesalerLeads() {
                 {activeFilterCount}
               </span>
             )}
+          </button>
+
+          {/* Export Button */}
+          <button
+            onClick={handleExportCSV}
+            disabled={exporting || leads.length === 0}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+          >
+            <Download size={18} />
+            <span>{exporting ? 'Exporting...' : 'Export CSV'}</span>
           </button>
         </div>
 

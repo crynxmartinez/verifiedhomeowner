@@ -5,14 +5,38 @@ import { distributeLeadsToUser } from '../../lib/distributeLeads-prisma.js';
 async function handler(req, res) {
   if (req.method === 'GET') {
     try {
-      // Get all wholesalers
-      const users = await prisma.user.findMany({
-        where: { role: 'wholesaler' },
-        orderBy: { createdAt: 'desc' }
-      });
+      // Pagination parameters
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
+      const skip = (page - 1) * limit;
+      const search = req.query.search?.toLowerCase();
+      const planFilter = req.query.plan;
 
-      // Get aggregated stats for all users in one query
+      // Build where clause
+      const where = { role: 'wholesaler' };
+      if (planFilter) where.planType = planFilter;
+      if (search) {
+        where.OR = [
+          { email: { contains: search, mode: 'insensitive' } },
+          { name: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      // Get paginated wholesalers with count
+      const [users, totalUsers] = await Promise.all([
+        prisma.user.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        prisma.user.count({ where })
+      ]);
+
+      // Get aggregated stats for fetched users only (optimization)
+      const userIds = users.map(u => u.id);
       const leadStats = await prisma.userLead.findMany({
+        where: { userId: { in: userIds } },
         select: { userId: true, status: true }
       });
 
@@ -49,7 +73,19 @@ async function handler(req, res) {
         };
       });
 
-      res.status(200).json({ users: usersWithStats });
+      // Calculate pagination metadata
+      const totalPages = Math.ceil(totalUsers / limit);
+
+      res.status(200).json({ 
+        users: usersWithStats,
+        pagination: {
+          page,
+          limit,
+          total: totalUsers,
+          totalPages,
+          hasMore: page < totalPages,
+        }
+      });
     } catch (error) {
       console.error('Fetch users error:', error);
       res.status(500).json({ error: 'Failed to fetch users' });

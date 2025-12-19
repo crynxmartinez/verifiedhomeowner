@@ -14,6 +14,8 @@ import Refund from './pages/Refund';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 // Wholesaler pages
 import WholesalerDashboard from './pages/wholesaler/Dashboard';
@@ -21,6 +23,7 @@ import WholesalerLeads from './pages/wholesaler/Leads';
 import WholesalerMarketplace from './pages/wholesaler/Marketplace';
 import UpgradePlan from './pages/wholesaler/UpgradePlan';
 import WholesalerSupport from './pages/wholesaler/Support';
+import WholesalerProfile from './pages/wholesaler/Profile';
 
 // Admin pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -60,6 +63,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Wholesaler routes */}
         <Route
@@ -99,6 +104,14 @@ function App() {
           element={
             <PrivateRoute>
               <WholesalerSupport />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <WholesalerProfile />
             </PrivateRoute>
           }
         />

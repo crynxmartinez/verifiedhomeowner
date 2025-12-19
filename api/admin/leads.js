@@ -63,11 +63,37 @@ function isBusinessName(name) {
 
 async function handler(req, res) {
   if (req.method === 'GET') {
-    // Get all leads
+    // Get leads with pagination
     try {
-      const leads = await prisma.lead.findMany({
-        orderBy: { sequenceNumber: 'asc' }
-      });
+      // Pagination parameters
+      const page = Math.max(1, parseInt(req.query.page) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
+      const skip = (page - 1) * limit;
+      const search = req.query.search?.toLowerCase();
+      const stateFilter = req.query.state;
+
+      // Build where clause
+      const where = {};
+      if (stateFilter) where.state = stateFilter;
+      if (search) {
+        where.OR = [
+          { fullName: { contains: search, mode: 'insensitive' } },
+          { propertyAddress: { contains: search, mode: 'insensitive' } },
+          { city: { contains: search, mode: 'insensitive' } },
+          { phone: { contains: search, mode: 'insensitive' } },
+        ];
+      }
+
+      // Get paginated leads with count
+      const [leads, totalLeads] = await Promise.all([
+        prisma.lead.findMany({
+          where,
+          orderBy: { sequenceNumber: 'asc' },
+          skip,
+          take: limit,
+        }),
+        prisma.lead.count({ where })
+      ]);
 
       // Format for frontend
       const formattedLeads = leads.map(lead => ({
@@ -89,7 +115,19 @@ async function handler(req, res) {
         created_at: lead.createdAt,
       }));
 
-      res.status(200).json({ leads: formattedLeads });
+      // Calculate pagination metadata
+      const totalPages = Math.ceil(totalLeads / limit);
+
+      res.status(200).json({ 
+        leads: formattedLeads,
+        pagination: {
+          page,
+          limit,
+          total: totalLeads,
+          totalPages,
+          hasMore: page < totalPages,
+        }
+      });
     } catch (error) {
       console.error('Fetch leads error:', error);
       res.status(500).json({ error: 'Failed to fetch leads' });

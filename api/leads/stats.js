@@ -7,23 +7,57 @@ async function handler(req, res) {
   }
 
   try {
-    const leads = await prisma.userLead.findMany({
-      where: { userId: req.user.id },
-      select: { status: true, action: true, createdAt: true }
-    });
-
     // Calculate today's start (midnight UTC)
     const todayStart = new Date();
     todayStart.setUTCHours(0, 0, 0, 0);
 
+    // Use parallel database queries for better performance
+    const [
+      total,
+      statusCounts,
+      actionCounts,
+      newToday
+    ] = await Promise.all([
+      // Total count
+      prisma.userLead.count({
+        where: { userId: req.user.id }
+      }),
+      // Group by status
+      prisma.userLead.groupBy({
+        by: ['status'],
+        where: { userId: req.user.id },
+        _count: { status: true }
+      }),
+      // Group by action
+      prisma.userLead.groupBy({
+        by: ['action'],
+        where: { userId: req.user.id },
+        _count: { action: true }
+      }),
+      // New today count
+      prisma.userLead.count({
+        where: {
+          userId: req.user.id,
+          createdAt: { gte: todayStart }
+        }
+      })
+    ]);
+
+    // Convert groupBy results to object
+    const statusMap = {};
+    statusCounts.forEach(s => { statusMap[s.status] = s._count.status; });
+    
+    const actionMap = {};
+    actionCounts.forEach(a => { actionMap[a.action] = a._count.action; });
+
     const stats = {
-      total: leads?.length || 0,
-      new: leads?.filter(l => l.status === 'new').length || 0,
-      followUp: leads?.filter(l => l.status === 'follow_up').length || 0,
-      notInterested: leads?.filter(l => l.status === 'not_interested').length || 0,
-      callNow: leads?.filter(l => l.action === 'call_now').length || 0,
-      pending: leads?.filter(l => l.action === 'pending').length || 0,
-      newToday: leads?.filter(l => new Date(l.createdAt) >= todayStart).length || 0,
+      total,
+      new: statusMap['new'] || 0,
+      followUp: statusMap['follow_up'] || 0,
+      notInterested: statusMap['not_interested'] || 0,
+      callNow: actionMap['call_now'] || 0,
+      pending: actionMap['pending'] || 0,
+      newToday,
     };
 
     res.status(200).json({ stats });

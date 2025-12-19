@@ -7,31 +7,62 @@ async function handler(req, res) {
   }
 
   try {
+    // Pagination parameters
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
+    const skip = (page - 1) * limit;
+    const status = req.query.status; // Optional filter by status
+    const source = req.query.source; // Optional filter: 'subscription', 'purchased', or 'all'
+
     let subscriptionLeads = [];
     let marketplaceLeads = [];
+    let totalSubscription = 0;
+    let totalMarketplace = 0;
 
-    // Get user's subscription leads
-    try {
-      subscriptionLeads = await prisma.userLead.findMany({
-        where: { userId: req.user.id },
-        include: { lead: true },
-        orderBy: { assignedAt: 'desc' }
-      });
-    } catch (subErr) {
-      console.error('Failed to fetch subscription leads:', subErr);
-      subscriptionLeads = [];
+    // Build where clause for subscription leads
+    const subWhere = { userId: req.user.id };
+    if (status) subWhere.status = status;
+
+    // Build where clause for marketplace leads
+    const mktWhere = { userId: req.user.id };
+    if (status) mktWhere.status = status;
+
+    // Get user's subscription leads (if not filtering to purchased only)
+    if (source !== 'purchased') {
+      try {
+        [subscriptionLeads, totalSubscription] = await Promise.all([
+          prisma.userLead.findMany({
+            where: subWhere,
+            include: { lead: true },
+            orderBy: { assignedAt: 'desc' },
+            skip: source === 'subscription' ? skip : 0,
+            take: source === 'subscription' ? limit : undefined,
+          }),
+          prisma.userLead.count({ where: subWhere })
+        ]);
+      } catch (subErr) {
+        console.error('Failed to fetch subscription leads:', subErr);
+        subscriptionLeads = [];
+      }
     }
 
-    // Get user's purchased marketplace leads
-    try {
-      marketplaceLeads = await prisma.userMarketplaceLead.findMany({
-        where: { userId: req.user.id },
-        include: { marketplaceLead: true },
-        orderBy: { purchasedAt: 'desc' }
-      });
-    } catch (mktErr) {
-      console.error('Failed to fetch marketplace leads:', mktErr);
-      marketplaceLeads = [];
+    // Get user's purchased marketplace leads (if not filtering to subscription only)
+    if (source !== 'subscription') {
+      try {
+        [marketplaceLeads, totalMarketplace] = await Promise.all([
+          prisma.userMarketplaceLead.findMany({
+            where: mktWhere,
+            include: { marketplaceLead: true },
+            orderBy: { purchasedAt: 'desc' },
+            skip: source === 'purchased' ? skip : 0,
+            take: source === 'purchased' ? limit : undefined,
+          }),
+          prisma.userMarketplaceLead.count({ where: mktWhere })
+        ]);
+      } catch (mktErr) {
+        console.error('Failed to fetch marketplace leads:', mktErr);
+        marketplaceLeads = [];
+      }
     }
 
     // Format subscription leads
@@ -107,10 +138,28 @@ async function handler(req, res) {
     }));
 
     // Combine both types
-    const allLeads = [...formattedSubLeads, ...formattedMktLeads]
+    let allLeads = [...formattedSubLeads, ...formattedMktLeads]
       .sort((a, b) => new Date(b.assigned_at) - new Date(a.assigned_at));
 
-    res.status(200).json({ leads: allLeads });
+    // Apply pagination for combined results (when no specific source filter)
+    const totalLeads = totalSubscription + totalMarketplace;
+    if (!source || source === 'all') {
+      allLeads = allLeads.slice(skip, skip + limit);
+    }
+
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(totalLeads / limit);
+
+    res.status(200).json({ 
+      leads: allLeads,
+      pagination: {
+        page,
+        limit,
+        total: totalLeads,
+        totalPages,
+        hasMore: page < totalPages,
+      }
+    });
   } catch (error) {
     console.error('Leads fetch error:', error);
     console.error('Error details:', {
