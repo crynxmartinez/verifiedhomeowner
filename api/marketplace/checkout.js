@@ -1,6 +1,7 @@
 import prisma from '../../lib/prisma.js';
 import { requireAuth } from '../../lib/auth-prisma.js';
 import DodoPayments from 'dodopayments';
+import { getPlanConfig, canPurchaseFromMarketplace, hasMarketplaceAccess } from '../../lib/planConfig.js';
 
 // Product IDs based on lead temperature
 const LEAD_PRODUCTS = {
@@ -27,6 +28,46 @@ async function handler(req, res) {
   }
 
   try {
+    // Get user details and plan
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, name: true, planType: true }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if user has marketplace access
+    if (!hasMarketplaceAccess(user.planType)) {
+      return res.status(403).json({ 
+        error: 'Marketplace access requires a paid plan',
+        upgradeRequired: true 
+      });
+    }
+
+    // Check monthly purchase limit
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const purchasesThisMonth = await prisma.userMarketplaceLead.count({
+      where: {
+        userId,
+        purchasedAt: { gte: startOfMonth }
+      }
+    });
+
+    if (!canPurchaseFromMarketplace(user.planType, purchasesThisMonth)) {
+      const config = getPlanConfig(user.planType);
+      return res.status(403).json({ 
+        error: `Monthly purchase limit reached (${config.marketplacePurchasesPerMonth}/month). Upgrade for more!`,
+        limitReached: true,
+        currentPurchases: purchasesThisMonth,
+        limit: config.marketplacePurchasesPerMonth
+      });
+    }
+
     // Get the marketplace lead
     const lead = await prisma.marketplaceLead.findUnique({
       where: { id: leadId }
@@ -57,16 +98,6 @@ async function handler(req, res) {
     // Check if max_buyers reached
     if (lead.maxBuyers > 0 && lead.timesSold >= lead.maxBuyers) {
       return res.status(400).json({ error: 'This lead is no longer available' });
-    }
-
-    // Get user details
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { email: true, name: true }
-    });
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
     }
 
     // Initialize DodoPayments

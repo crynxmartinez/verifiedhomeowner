@@ -59,6 +59,7 @@ model User {
   userLeads             UserLead[]
   userMarketplaceLeads  UserMarketplaceLead[]
   supportTickets        SupportTicket[]
+  notificationQueue     MarketplaceNotificationQueue[]
 
   @@index([email])
   @@index([role])
@@ -193,6 +194,7 @@ model MarketplaceLead {
 
   // Relations
   userMarketplaceLeads UserMarketplaceLead[]
+  notificationQueue    MarketplaceNotificationQueue[]
 
   @@index([state])
   @@index([motivation])
@@ -328,4 +330,28 @@ model EmailLog {
   @@index([templateName])
   @@index([sentAt(sort: Desc)])
   @@map("email_logs")
+}
+
+// ============================================================================
+// MARKETPLACE NOTIFICATION QUEUE (for delayed notifications by plan tier)
+// ============================================================================
+
+model MarketplaceNotificationQueue {
+  id                String    @id @default(uuid()) @db.Uuid
+  userId            String    @map("user_id") @db.Uuid
+  marketplaceLeadId String    @map("marketplace_lead_id") @db.Uuid
+  scheduledFor      DateTime  @map("scheduled_for") @db.Timestamptz
+  status            String    @default("pending") @db.VarChar(50) // pending, sent, cancelled
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  sentAt            DateTime? @map("sent_at") @db.Timestamptz
+
+  // Relations
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  marketplaceLead   MarketplaceLead @relation(fields: [marketplaceLeadId], references: [id], onDelete: Cascade)
+
+  @@index([scheduledFor])
+  @@index([status])
+  @@index([userId])
+  @@index([marketplaceLeadId])
+  @@map("marketplace_notification_queue")
 }

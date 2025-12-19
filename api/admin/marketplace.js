@@ -3,67 +3,56 @@ import { requireAdmin } from '../../lib/auth-prisma.js';
 import Papa from 'papaparse';
 import { Resend } from 'resend';
 import { getMarketplaceLeadEmailTemplate } from '../../lib/emailTemplates.js';
+import { getPlanConfig, getNotificationDelay } from '../../lib/planConfig.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Send notification emails to eligible users
+// Send notification emails to eligible users (with plan-based delays)
 async function sendMarketplaceNotifications(lead) {
   try {
     // Trim whitespace from state
     const state = (lead.state || '').trim().toUpperCase();
-    console.log(`📧 Starting marketplace notifications for lead in state: "${state}"`);
+    const temperature = lead.temperature || 'warm';
+    console.log(`📧 Starting marketplace notifications for ${temperature} lead in state: "${state}"`);
     
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    // Debug: Check all wholesalers and their settings
-    const allWholesalers = await prisma.user.findMany({
-      where: { role: 'wholesaler' },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        emailVerified: true,
-        marketplaceEmails: true,
-        lastLoginAt: true,
-        preferredStates: true,
-      }
-    });
-    
-    console.log(`📊 Total wholesalers: ${allWholesalers.length}`);
-    allWholesalers.forEach(u => {
-      console.log(`  - ${u.email}: verified=${u.emailVerified}, mktEmails=${u.marketplaceEmails}, lastLogin=${u.lastLoginAt}, states=${JSON.stringify(u.preferredStates)}`);
-    });
 
     // Find users who:
     // 1. Have this state in their preferred states
     // 2. Are email verified
     // 3. Have logged in within the last 30 days (or recently created account)
     // 4. Have marketplace emails enabled
+    // 5. Have a paid plan (free users don't get marketplace access)
     const eligibleUsers = await prisma.user.findMany({
       where: {
         role: 'wholesaler',
         emailVerified: true,
         marketplaceEmails: true,
         preferredStates: { has: state },
+        planType: { in: ['basic', 'elite', 'pro'] }, // Only paid plans get marketplace notifications
         OR: [
           { lastLoginAt: { gte: thirtyDaysAgo } },
-          { lastLoginAt: null, createdAt: { gte: thirtyDaysAgo } }, // New users who haven't logged in yet
+          { lastLoginAt: null, createdAt: { gte: thirtyDaysAgo } },
         ]
       },
       select: {
         id: true,
         email: true,
         name: true,
+        planType: true,
       }
     });
     
     console.log(`✅ Eligible users (matched criteria): ${eligibleUsers.length}`, eligibleUsers.map(u => u.email));
 
-    // Also find users who have purchased leads from this state before
+    // Also find users who have purchased leads from this state before (with paid plans)
     const usersWithPurchasesInState = await prisma.userMarketplaceLead.findMany({
       where: {
-        marketplaceLead: { state: state }
+        marketplaceLead: { state: state },
+        user: {
+          planType: { in: ['basic', 'elite', 'pro'] }
+        }
       },
       select: {
         userId: true,
@@ -72,6 +61,7 @@ async function sendMarketplaceNotifications(lead) {
             id: true,
             email: true,
             name: true,
+            planType: true,
             emailVerified: true,
             marketplaceEmails: true,
             lastLoginAt: true,
@@ -95,73 +85,122 @@ async function sendMarketplaceNotifications(lead) {
         user.lastLoginAt >= thirtyDaysAgo &&
         !allEligibleUsers.has(user.id)
       ) {
-        allEligibleUsers.set(user.id, { id: user.id, email: user.email, name: user.name });
+        allEligibleUsers.set(user.id, { id: user.id, email: user.email, name: user.name, planType: user.planType });
       }
     });
 
     const usersToNotify = Array.from(allEligibleUsers.values());
     
-    console.log(`📧 Sending marketplace notifications to ${usersToNotify.length} users for lead in ${state}`);
+    console.log(`📧 Queuing marketplace notifications to ${usersToNotify.length} users for ${temperature} lead in ${state}`);
 
-    // Send emails in parallel (batch of 10 at a time to avoid rate limits)
-    const batchSize = 10;
-    for (let i = 0; i < usersToNotify.length; i += batchSize) {
-      const batch = usersToNotify.slice(i, i + batchSize);
+    // Group users by their notification delay
+    const now = new Date();
+    const usersByDelay = new Map(); // delay in minutes -> users[]
+    
+    usersToNotify.forEach(user => {
+      const delayMinutes = getNotificationDelay(user.planType, temperature);
+      if (delayMinutes === null) return; // No access
       
-      await Promise.all(batch.map(async (user) => {
-        try {
-          // Get temperature-based pricing
-          const temperature = lead.temperature || 'warm';
-          const tempPrices = { hot: 100, warm: 80 };
-          const tempEmojis = { hot: '🔥', warm: '🌡️' };
-          const tempLabels = { hot: 'Hot', warm: 'Warm' };
-          const price = tempPrices[temperature] || 80;
+      if (!usersByDelay.has(delayMinutes)) {
+        usersByDelay.set(delayMinutes, []);
+      }
+      usersByDelay.get(delayMinutes).push(user);
+    });
 
-          const { html, text } = getMarketplaceLeadEmailTemplate({
-            lead: {
-              city: lead.city || 'Unknown',
-              state: state,
-              motivation: lead.motivation,
-              timeline: lead.timeline,
-              price: price,
-              temperature: temperature,
-              temperatureLabel: tempLabels[temperature] || 'Warm',
-            },
-            recipientName: user.name?.split(' ')[0] || 'there',
-            unsubscribeUrl: `${process.env.FRONTEND_URL || 'https://verifiedhomeowner.com'}/profile`,
-          });
-
-          const emoji = tempEmojis[temperature] || '🌡️';
-          const label = tempLabels[temperature] || 'Warm';
-
-          await resend.emails.send({
-            from: process.env.EMAIL_FROM || 'Verified Homeowner <noreply@verifiedhomeowner.com>',
-            to: user.email,
-            subject: `${emoji} New ${label} Lead in ${state} - ${lead.motivation}`,
-            html,
-            text,
-          });
-
-          // Track email sent
-          await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              lastEmailSentAt: new Date(),
-              lastEmailType: 'marketplace_lead',
-            }
-          });
-
-          console.log(`✅ Email sent to ${user.email}`);
-        } catch (emailError) {
-          console.error(`❌ Failed to send email to ${user.email}:`, emailError.message);
-        }
-      }));
+    // Process each delay group
+    for (const [delayMinutes, users] of usersByDelay) {
+      const scheduledFor = new Date(now.getTime() + delayMinutes * 60 * 1000);
+      
+      if (delayMinutes === 0) {
+        // Send immediately for Pro users
+        console.log(`⚡ Sending immediate notifications to ${users.length} Pro users`);
+        await sendImmediateNotifications(users, lead, state, temperature);
+      } else {
+        // Queue for later
+        console.log(`⏰ Queuing ${users.length} notifications for ${delayMinutes} minutes delay`);
+        await queueNotifications(users, lead.id, scheduledFor);
+      }
     }
 
-    return usersToNotify.length;
+    console.log(`✅ Marketplace notifications processed for lead in ${state}`);
   } catch (error) {
-    console.error('Failed to send marketplace notifications:', error);
-    return 0;
+    console.error('❌ Failed to process marketplace notifications:', error);
+  }
+}
+
+// Send notifications immediately (for Pro users)
+async function sendImmediateNotifications(users, lead, state, temperature) {
+  const tempPrices = { hot: 100, warm: 80 };
+  const tempEmojis = { hot: '🔥', warm: '🌡️' };
+  const tempLabels = { hot: 'Hot', warm: 'Warm' };
+  const price = tempPrices[temperature] || 80;
+
+  const batchSize = 10;
+  for (let i = 0; i < users.length; i += batchSize) {
+    const batch = users.slice(i, i + batchSize);
+    
+    await Promise.all(batch.map(async (user) => {
+      try {
+        const { html, text } = getMarketplaceLeadEmailTemplate({
+          lead: {
+            city: lead.city || 'Unknown',
+            state: state,
+            motivation: lead.motivation,
+            timeline: lead.timeline,
+            price: price,
+            temperature: temperature,
+            temperatureLabel: tempLabels[temperature] || 'Warm',
+          },
+          recipientName: user.name?.split(' ')[0] || 'there',
+          unsubscribeUrl: `${process.env.FRONTEND_URL || 'https://verifiedhomeowner.com'}/profile`,
+        });
+
+        const emoji = tempEmojis[temperature] || '🌡️';
+        const label = tempLabels[temperature] || 'Warm';
+
+        await resend.emails.send({
+          from: process.env.EMAIL_FROM || 'Verified Homeowner <noreply@verifiedhomeowner.com>',
+          to: user.email,
+          subject: `${emoji} New ${label} Lead in ${state} - ${lead.motivation}`,
+          html,
+          text,
+        });
+
+        // Track email sent
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            lastEmailSentAt: new Date(),
+            lastEmailType: 'marketplace_lead',
+          }
+        });
+
+        console.log(`✅ Email sent to ${user.email}`);
+      } catch (emailError) {
+        console.error(`❌ Failed to send email to ${user.email}:`, emailError.message);
+      }
+    }));
+  }
+}
+
+// Queue notifications for delayed sending
+async function queueNotifications(users, leadId, scheduledFor) {
+  try {
+    const queueEntries = users.map(user => ({
+      userId: user.id,
+      marketplaceLeadId: leadId,
+      scheduledFor: scheduledFor,
+      status: 'pending',
+    }));
+
+    await prisma.marketplaceNotificationQueue.createMany({
+      data: queueEntries,
+      skipDuplicates: true,
+    });
+
+    console.log(`📝 Queued ${users.length} notifications for ${scheduledFor.toISOString()}`);
+  } catch (error) {
+    console.error('Failed to queue notifications:', error);
   }
 }
 
