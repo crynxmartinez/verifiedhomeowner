@@ -99,6 +99,10 @@ export default async function handler(req, res) {
         console.log('ℹ️ Subscription updated:', data.subscription_id);
         break;
 
+      case 'payment.succeeded':
+        await handlePaymentSucceeded(data);
+        break;
+
       default:
         console.log(`ℹ️ Unhandled event type: ${eventType}`);
     }
@@ -262,5 +266,75 @@ async function handlePlanChanged(data) {
     console.log(`✅ Plan changed to ${plan}`);
   } catch (error) {
     console.error('Failed to update plan change:', error);
+  }
+}
+
+// Handle one-time payment success (for marketplace leads)
+async function handlePaymentSucceeded(data) {
+  const { payment_id, metadata } = data;
+  
+  console.log('💰 Payment succeeded:', payment_id);
+  console.log('📋 Payment metadata:', metadata);
+
+  // Check if this is a marketplace lead purchase
+  if (metadata?.type !== 'marketplace_lead_purchase') {
+    console.log('ℹ️ Not a marketplace lead purchase, skipping');
+    return;
+  }
+
+  const userId = metadata.user_id;
+  const leadId = metadata.lead_id;
+
+  if (!userId || !leadId) {
+    console.error('Missing user_id or lead_id in metadata');
+    return;
+  }
+
+  try {
+    // Get the marketplace lead
+    const lead = await prisma.marketplaceLead.findUnique({
+      where: { id: leadId }
+    });
+
+    if (!lead) {
+      console.error('Lead not found:', leadId);
+      return;
+    }
+
+    // Check if user already purchased this lead (avoid duplicates)
+    const existing = await prisma.userMarketplaceLead.findUnique({
+      where: {
+        userId_marketplaceLeadId: {
+          userId,
+          marketplaceLeadId: leadId
+        }
+      }
+    });
+
+    if (existing) {
+      console.log('ℹ️ User already owns this lead, skipping');
+      return;
+    }
+
+    // Create purchase record and increment times_sold in a transaction
+    await prisma.$transaction([
+      prisma.userMarketplaceLead.create({
+        data: {
+          userId,
+          marketplaceLeadId: leadId,
+          pricePaid: lead.price,
+          status: 'new',
+          action: 'call_now',
+        }
+      }),
+      prisma.marketplaceLead.update({
+        where: { id: leadId },
+        data: { timesSold: { increment: 1 } }
+      })
+    ]);
+
+    console.log(`✅ Marketplace lead ${leadId} purchased by user ${userId}`);
+  } catch (error) {
+    console.error('Failed to record marketplace purchase:', error);
   }
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { marketplaceAPI } from '../../lib/api';
 import { Filter, DollarSign, Loader2, Flame, Thermometer, Snowflake } from 'lucide-react';
@@ -56,6 +57,17 @@ export default function Marketplace() {
   });
   const [selectedLead, setSelectedLead] = useState(null);
   const [purchasing, setPurchasing] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Handle successful purchase redirect
+  useEffect(() => {
+    const purchase = searchParams.get('purchase');
+    if (purchase === 'success') {
+      toast.success('Lead purchased successfully! Check "My Leads" to view it.');
+      // Clear the query params
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams, toast]);
 
   useEffect(() => {
     fetchLeads();
@@ -87,14 +99,16 @@ export default function Marketplace() {
 
     try {
       setPurchasing(true);
-      await marketplaceAPI.purchaseLead(selectedLead.id);
-      toast.success('Lead purchased successfully! Check "My Leads" to view it.');
-      setSelectedLead(null);
-      fetchLeads(); // Refresh to remove purchased lead
+      // Create checkout session and redirect to payment
+      const response = await marketplaceAPI.createCheckout(selectedLead.id);
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      } else {
+        throw new Error('No payment URL received');
+      }
     } catch (error) {
-      console.error('Failed to purchase lead:', error);
-      toast.error(error.response?.data?.error || 'Failed to purchase lead');
-    } finally {
+      console.error('Failed to create checkout:', error);
+      toast.error(error.response?.data?.error || 'Failed to initiate payment');
       setPurchasing(false);
     }
   };

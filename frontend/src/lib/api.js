@@ -74,8 +74,9 @@ export const dodoAPI = {
 
 // Marketplace API
 export const marketplaceAPI = {
-  getLeads: (filters) => api.get('/marketplace', { params: filters }),
+  getLeads: (params) => api.get('/marketplace', { params }),
   purchaseLead: (leadId) => api.post('/marketplace/purchase', { leadId }),
+  createCheckout: (leadId) => api.post('/marketplace/checkout', { leadId }),
 };
 
 // Admin API
