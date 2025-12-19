@@ -286,6 +286,58 @@ Verified Homeowner
 Manage preferences: {{unsubscribe_url}}`,
     variables: ['name', 'month', 'leads_this_month', 'leads_count', 'plan', 'login_url', 'unsubscribe_url'],
   },
+  {
+    name: 'subscription_expiring',
+    displayName: 'Subscription Expiring',
+    subject: 'Your subscription expires soon ⏰',
+    htmlContent: `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: #f59e0b; padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+    <h1 style="color: white; margin: 0; font-size: 28px;">Your Subscription Expires Soon ⏰</h1>
+  </div>
+  <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+    <p style="font-size: 18px;">Hey {{name}}!</p>
+    <p>Your <strong>{{plan}}</strong> subscription is expiring soon. Don't lose access to your leads!</p>
+    <p><strong>What you'll lose:</strong></p>
+    <ul style="padding-left: 20px;">
+      <li style="margin-bottom: 10px;">❌ Monthly lead deliveries</li>
+      <li style="margin-bottom: 10px;">❌ Priority marketplace access</li>
+      <li style="margin-bottom: 10px;">❌ All your saved leads</li>
+    </ul>
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="{{upgrade_url}}" style="background: #f59e0b; color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Renew Now →</a>
+    </div>
+    <p style="color: #666; font-size: 14px;">Questions about your subscription? Reply to this email.</p>
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+    <p style="font-size: 12px; color: #999; text-align: center;">
+      Verified Homeowner | <a href="{{unsubscribe_url}}" style="color: #999;">Manage preferences</a>
+    </p>
+  </div>
+</body>
+</html>`,
+    textContent: `Hey {{name}}!
+
+Your {{plan}} subscription is expiring soon. Don't lose access to your leads!
+
+What you'll lose:
+- Monthly lead deliveries
+- Priority marketplace access
+- All your saved leads
+
+Renew now: {{upgrade_url}}
+
+Questions about your subscription? Reply to this email.
+
+---
+Verified Homeowner
+Manage preferences: {{unsubscribe_url}}`,
+    variables: ['name', 'plan', 'upgrade_url', 'unsubscribe_url'],
+  },
 ];
 
 const defaultAutomations = [
@@ -348,6 +400,16 @@ const defaultAutomations = [
     repeatIntervalHours: 0,
     maxSends: 0,
     isActive: false,
+  },
+  {
+    name: 'Subscription Expiring',
+    description: 'Reminder 7 days before subscription expires',
+    templateName: 'subscription_expiring',
+    trigger: 'before_expiry',
+    delayHours: 168,
+    repeatIntervalHours: 0,
+    maxSends: 1,
+    isActive: true,
   },
 ];
 

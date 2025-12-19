@@ -26,6 +26,7 @@ const TRIGGERS = [
   { id: 'on_free_plan', name: 'On Free Plan', description: 'User is still on free plan' },
   { id: 'inactive_7d', name: 'Inactive 7 Days', description: 'User has not logged in for 7+ days' },
   { id: 'inactive_30d', name: 'Inactive 30 Days', description: 'User has not logged in for 30+ days' },
+  { id: 'before_expiry', name: 'Before Subscription Expiry', description: 'X hours before subscription expires' },
   { id: 'monthly', name: 'Monthly Digest', description: 'Sent on 1st of each month' },
 ];
 
@@ -154,6 +155,19 @@ export default function Email() {
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to delete template');
+    }
+  };
+
+  const toggleTemplateStatus = async (template) => {
+    try {
+      await adminAPI.updateEmailTemplate({ 
+        id: template.id, 
+        is_active: !template.is_active 
+      });
+      toast.success(`Template ${template.is_active ? 'deactivated' : 'activated'}`);
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to update template status');
     }
   };
 
@@ -417,13 +431,13 @@ export default function Email() {
                           {template.automations_count} automation{template.automations_count !== 1 ? 's' : ''}
                         </td>
                         <td className="px-4 py-4">
-                          <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                            template.is_active 
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                              : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                          }`}>
-                            {template.is_active ? 'Active' : 'Inactive'}
-                          </span>
+                          <button
+                            onClick={() => toggleTemplateStatus(template)}
+                            className={`${template.is_active ? 'text-green-500' : 'text-gray-400'}`}
+                            title={template.is_active ? 'Click to deactivate' : 'Click to activate'}
+                          >
+                            {template.is_active ? <ToggleRight size={28} /> : <ToggleLeft size={28} />}
+                          </button>
                         </td>
                         <td className="px-4 py-4">
                           <div className="flex justify-end gap-2">

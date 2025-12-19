@@ -161,6 +161,33 @@ async function getEligibleUsers(trigger, automation) {
       break;
     }
 
+    case 'before_expiry': {
+      // Users whose subscription expires within X hours (delay_hours)
+      const expiryWindow = new Date(now.getTime() + delayMs);
+      const windowStart = new Date(now.getTime());
+      
+      users = await prisma.user.findMany({
+        where: {
+          role: 'wholesaler',
+          emailVerified: true,
+          planType: { not: 'free' },
+          subscriptionEndDate: {
+            gte: windowStart,
+            lte: expiryWindow,
+          },
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          planType: true,
+          subscriptionEndDate: true,
+          createdAt: true,
+        }
+      });
+      break;
+    }
+
     default:
       console.log(`Unknown trigger: ${trigger}`);
       return [];
