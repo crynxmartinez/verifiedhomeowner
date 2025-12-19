@@ -265,6 +265,19 @@ enum TicketStatus {
 }
 
 // ============================================================================
+// ADMIN SETTINGS
+// ============================================================================
+
+model AdminSettings {
+  id        String   @id @default("default")
+  supportNotificationEmail String? @map("support_notification_email") @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("admin_settings")
+}
+
+// ============================================================================
 // EMAIL AUTOMATION SYSTEM
 // ============================================================================
 

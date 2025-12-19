@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { MessageCircle, CheckCircle, Clock, Trash2, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { MessageCircle, CheckCircle, Clock, Trash2, X, ChevronDown, ChevronUp, Mail, Settings, Save, Loader2 } from 'lucide-react';
 import api from '../../lib/api';
 import Layout from '../../components/Layout';
+import toast from 'react-hot-toast';
 
 export default function Support() {
   const [tickets, setTickets] = useState([]);
@@ -9,9 +10,13 @@ export default function Support() {
   const [error, setError] = useState('');
   const [expandedTicket, setExpandedTicket] = useState(null);
   const [filter, setFilter] = useState('all'); // all, open, resolved
+  const [showSettings, setShowSettings] = useState(false);
+  const [notificationEmail, setNotificationEmail] = useState('');
+  const [savingSettings, setSavingSettings] = useState(false);
 
   useEffect(() => {
     fetchTickets();
+    fetchSettings();
   }, []);
 
   const fetchTickets = async () => {
@@ -23,6 +28,28 @@ export default function Support() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSettings = async () => {
+    try {
+      const response = await api.get('/admin/settings');
+      setNotificationEmail(response.data.supportNotificationEmail || '');
+    } catch (err) {
+      console.error('Failed to fetch settings:', err);
+    }
+  };
+
+  const saveSettings = async () => {
+    setSavingSettings(true);
+    try {
+      await api.patch('/admin/settings', { supportNotificationEmail: notificationEmail });
+      toast.success('Notification email saved!');
+      setShowSettings(false);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to save settings');
+    } finally {
+      setSavingSettings(false);
     }
   };
 
@@ -94,12 +121,78 @@ export default function Support() {
   return (
     <Layout>
       <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Support Tickets</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Manage support requests from wholesalers
-        </p>
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Support Tickets</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Manage support requests from wholesalers
+          </p>
+        </div>
+        <button
+          onClick={() => setShowSettings(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+        >
+          <Settings className="h-4 w-4" />
+          Settings
+        </button>
       </div>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Notification Settings</h2>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <Mail className="h-4 w-4 inline mr-2" />
+                  Notification Email
+                </label>
+                <input
+                  type="email"
+                  value={notificationEmail}
+                  onChange={(e) => setNotificationEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  You'll receive an email notification whenever a new support ticket is submitted.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveSettings}
+                  disabled={savingSettings}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {savingSettings ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
