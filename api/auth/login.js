@@ -1,7 +1,8 @@
 import prisma from '../../lib/prisma.js';
 import { generateToken, comparePassword } from '../../lib/auth-prisma.js';
+import { rateLimitLogin } from '../../lib/rateLimit.js';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -43,3 +44,6 @@ export default async function handler(req, res) {
     res.status(500).json({ error: 'Login failed' });
   }
 }
+
+// Apply rate limiting: 5 attempts per 15 minutes per IP
+export default rateLimitLogin(handler);

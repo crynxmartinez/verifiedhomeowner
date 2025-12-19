@@ -1,7 +1,21 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
-import { UserPlus, Eye, EyeOff, ArrowLeft, CheckCircle } from 'lucide-react';
+import { UserPlus, Eye, EyeOff, ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
+
+// Password requirement check component
+function PasswordCheck({ passed, text }) {
+  return (
+    <div className={`flex items-center text-xs ${passed ? 'text-green-600' : 'text-gray-400'}`}>
+      {passed ? (
+        <CheckCircle className="h-3 w-3 mr-1.5" />
+      ) : (
+        <XCircle className="h-3 w-3 mr-1.5" />
+      )}
+      {text}
+    </div>
+  );
+}
 
 export default function Register() {
   const navigate = useNavigate();
@@ -17,6 +31,19 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // Password strength validation
+  const passwordChecks = useMemo(() => {
+    const password = formData.password;
+    return {
+      minLength: password.length >= 8,
+      hasUppercase: /[A-Z]/.test(password),
+      hasLowercase: /[a-z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+    };
+  }, [formData.password]);
+
+  const isPasswordValid = Object.values(passwordChecks).every(Boolean);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -30,8 +57,8 @@ export default function Register() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (!isPasswordValid) {
+      setError('Password does not meet requirements');
       return;
     }
 
@@ -45,7 +72,12 @@ export default function Register() {
       });
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed');
+      // Handle validation errors from backend
+      if (err.response?.data?.details) {
+        setError(err.response.data.details.join('. '));
+      } else {
+        setError(err.response?.data?.error || 'Registration failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -137,6 +169,15 @@ export default function Register() {
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
+            {/* Password Requirements */}
+            {formData.password && (
+              <div className="mt-2 space-y-1">
+                <PasswordCheck passed={passwordChecks.minLength} text="At least 8 characters" />
+                <PasswordCheck passed={passwordChecks.hasUppercase} text="At least 1 uppercase letter" />
+                <PasswordCheck passed={passwordChecks.hasLowercase} text="At least 1 lowercase letter" />
+                <PasswordCheck passed={passwordChecks.hasNumber} text="At least 1 number" />
+              </div>
+            )}
           </div>
 
           <div>

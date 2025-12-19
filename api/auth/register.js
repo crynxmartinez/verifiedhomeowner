@@ -1,8 +1,10 @@
 import prisma from '../../lib/prisma.js';
 import { generateToken, hashPassword } from '../../lib/auth-prisma.js';
 import { distributeLeadsToUser } from '../../lib/distributeLeads-prisma.js';
+import { rateLimitRegister } from '../../lib/rateLimit.js';
+import { validateRegistration } from '../../lib/validation.js';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -12,6 +14,15 @@ export default async function handler(req, res) {
 
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'All fields required' });
+    }
+
+    // Validate all fields (email, password strength, name)
+    const validation = validateRegistration(email, password, name);
+    if (!validation.valid) {
+      return res.status(400).json({ 
+        error: 'Validation failed', 
+        details: validation.errors 
+      });
     }
 
     // Check if email already exists
@@ -64,3 +75,6 @@ export default async function handler(req, res) {
     res.status(500).json({ error: 'Registration failed' });
   }
 }
+
+// Apply rate limiting: 3 attempts per hour per IP
+export default rateLimitRegister(handler);
