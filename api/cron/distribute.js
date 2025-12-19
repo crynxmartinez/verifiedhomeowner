@@ -1,5 +1,5 @@
 import prisma from '../../lib/prisma.js';
-import { PLAN_CONFIGS } from '../../lib/plans.js';
+import { PLAN_CONFIG } from '../../lib/planConfig.js';
 
 export default async function handler(req, res) {
   // Verify this is a cron request
@@ -39,16 +39,16 @@ export default async function handler(req, res) {
 
     // Process each user
     for (const user of users) {
-      const planConfig = PLAN_CONFIGS[user.planType] || PLAN_CONFIGS.free;
+      const planConfig = PLAN_CONFIG[user.planType] || PLAN_CONFIG.free;
       let leadsToAssign = 0;
 
       // Determine how many leads to assign based on plan
-      if (planConfig.leadsPerDay) {
-        leadsToAssign = planConfig.leadsPerDay;
-      } else if (planConfig.leadsPerWeek) {
+      if (planConfig.dailyLeads) {
+        leadsToAssign = planConfig.dailyLeads;
+      } else if (planConfig.weeklyLeads) {
         // Free plan: only on Mondays
         if (today === 1) {
-          leadsToAssign = planConfig.leadsPerWeek;
+          leadsToAssign = planConfig.weeklyLeads;
         }
       }
 

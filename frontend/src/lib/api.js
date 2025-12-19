@@ -1,3 +1,12 @@
+/**
+ * API Client
+ * 
+ * Centralized API client using Axios for all backend communication.
+ * Automatically handles JWT token injection and 401 redirects.
+ * 
+ * Exports: authAPI, leadsAPI, userAPI, dodoAPI, marketplaceAPI, adminAPI
+ */
+
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';

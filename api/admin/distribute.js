@@ -1,6 +1,6 @@
 import prisma from '../../lib/prisma.js';
 import { requireAdmin } from '../../lib/auth-prisma.js';
-import { PLAN_CONFIGS } from '../../lib/plans.js';
+import { PLAN_CONFIG } from '../../lib/planConfig.js';
 
 async function handler(req, res) {
   if (req.method !== 'POST') {
