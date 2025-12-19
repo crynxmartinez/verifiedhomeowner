@@ -9,8 +9,29 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // Send notification emails to eligible users
 async function sendMarketplaceNotifications(lead) {
   try {
+    console.log(`📧 Starting marketplace notifications for lead in state: "${lead.state}"`);
+    
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Debug: Check all wholesalers and their settings
+    const allWholesalers = await prisma.user.findMany({
+      where: { role: 'wholesaler' },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        emailVerified: true,
+        marketplaceEmails: true,
+        lastLoginAt: true,
+        preferredStates: true,
+      }
+    });
+    
+    console.log(`📊 Total wholesalers: ${allWholesalers.length}`);
+    allWholesalers.forEach(u => {
+      console.log(`  - ${u.email}: verified=${u.emailVerified}, mktEmails=${u.marketplaceEmails}, lastLogin=${u.lastLoginAt}, states=${JSON.stringify(u.preferredStates)}`);
+    });
 
     // Find users who:
     // 1. Have this state in their preferred states OR have purchased leads from this state
@@ -33,6 +54,8 @@ async function sendMarketplaceNotifications(lead) {
         name: true,
       }
     });
+    
+    console.log(`✅ Eligible users (matched criteria): ${eligibleUsers.length}`);
 
     // Also find users who have purchased leads from this state before
     const usersWithPurchasesInState = await prisma.userMarketplaceLead.findMany({
