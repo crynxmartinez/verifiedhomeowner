@@ -1145,8 +1145,8 @@ export default function AdminLeads() {
                             {users
                               .filter((u) =>
                                 !userSearch || 
-                                u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-                                u.email.toLowerCase().includes(userSearch.toLowerCase())
+                                (u.name && u.name.toLowerCase().includes(userSearch.toLowerCase())) ||
+                                (u.email && u.email.toLowerCase().includes(userSearch.toLowerCase()))
                               )
                               .map((user) => (
                                 <button
@@ -1154,24 +1154,24 @@ export default function AdminLeads() {
                                   type="button"
                                   onClick={() => {
                                     setSelectedUser(user.id);
-                                    setUserSearch(user.name);
+                                    setUserSearch(user.name || user.email);
                                     setShowUserDropdown(false);
                                   }}
                                   className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 flex flex-col ${
                                     selectedUser === user.id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                                   }`}
                                 >
-                                  <span className="font-medium text-gray-900 dark:text-white">{user.name}</span>
+                                  <span className="font-medium text-gray-900 dark:text-white">{user.name || 'Unknown'}</span>
                                   <span className="text-sm text-gray-500 dark:text-gray-400">{user.email}</span>
                                   <span className="text-xs text-gray-400 dark:text-gray-500">
-                                    {user.plan_type.toUpperCase()} - {user.lead_count || 0} leads
+                                    {(user.plan_type || 'free').toUpperCase()} - {user.lead_count || 0} leads
                                   </span>
                                 </button>
                               ))}
                             {users.filter((u) =>
                               !userSearch || 
-                              u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-                              u.email.toLowerCase().includes(userSearch.toLowerCase())
+                              (u.name && u.name.toLowerCase().includes(userSearch.toLowerCase())) ||
+                              (u.email && u.email.toLowerCase().includes(userSearch.toLowerCase()))
                             ).length === 0 && (
                               <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">
                                 No wholesalers found
