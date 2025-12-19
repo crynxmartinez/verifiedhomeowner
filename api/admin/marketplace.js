@@ -34,18 +34,19 @@ async function sendMarketplaceNotifications(lead) {
     });
 
     // Find users who:
-    // 1. Have this state in their preferred states OR have purchased leads from this state
+    // 1. Have this state in their preferred states
     // 2. Are email verified
-    // 3. Have logged in within the last 30 days
+    // 3. Have logged in within the last 30 days (or recently created account)
     // 4. Have marketplace emails enabled
     const eligibleUsers = await prisma.user.findMany({
       where: {
         role: 'wholesaler',
         emailVerified: true,
         marketplaceEmails: true,
-        lastLoginAt: { gte: thirtyDaysAgo },
+        preferredStates: { has: lead.state },
         OR: [
-          { preferredStates: { has: lead.state } },
+          { lastLoginAt: { gte: thirtyDaysAgo } },
+          { lastLoginAt: null, createdAt: { gte: thirtyDaysAgo } }, // New users who haven't logged in yet
         ]
       },
       select: {
@@ -55,7 +56,7 @@ async function sendMarketplaceNotifications(lead) {
       }
     });
     
-    console.log(`✅ Eligible users (matched criteria): ${eligibleUsers.length}`);
+    console.log(`✅ Eligible users (matched criteria): ${eligibleUsers.length}`, eligibleUsers.map(u => u.email));
 
     // Also find users who have purchased leads from this state before
     const usersWithPurchasesInState = await prisma.userMarketplaceLead.findMany({
