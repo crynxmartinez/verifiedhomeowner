@@ -33,6 +33,7 @@ import AdminMarketplace from './pages/admin/Marketplace';
 import AdminAnalytics from './pages/admin/Analytics';
 import AdminSupport from './pages/admin/Support';
 import AdminWholesalers from './pages/admin/Wholesalers';
+import AdminEmail from './pages/admin/Email';
 
 function PrivateRoute({ children }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -171,6 +172,14 @@ function App() {
           element={
             <AdminRoute>
               <AdminWholesalers />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/email"
+          element={
+            <AdminRoute>
+              <AdminEmail />
             </AdminRoute>
           }
         />

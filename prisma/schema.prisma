@@ -254,3 +254,71 @@ enum TicketStatus {
   open
   resolved
 }
+
+// ============================================================================
+// EMAIL AUTOMATION SYSTEM
+// ============================================================================
+
+model EmailTemplate {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(100)
+  displayName String   @map("display_name") @db.VarChar(255)
+  subject     String   @db.VarChar(500)
+  htmlContent String   @map("html_content") @db.Text
+  textContent String   @map("text_content") @db.Text
+  variables   String[] @default([])
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  automations EmailAutomation[]
+
+  @@index([name])
+  @@index([isActive])
+  @@map("email_templates")
+}
+
+model EmailAutomation {
+  id                  String    @id @default(uuid()) @db.Uuid
+  name                String    @db.VarChar(255)
+  description         String?   @db.VarChar(500)
+  templateId          String    @map("template_id") @db.Uuid
+  trigger             String    @db.VarChar(100)
+  delayHours          Int       @default(0) @map("delay_hours")
+  repeatIntervalHours Int       @default(0) @map("repeat_interval_hours")
+  maxSends            Int       @default(1) @map("max_sends")
+  isActive            Boolean   @default(true) @map("is_active")
+  totalSent           Int       @default(0) @map("total_sent")
+  lastRunAt           DateTime? @map("last_run_at") @db.Timestamptz
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  template            EmailTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  emailLogs           EmailLog[]
+
+  @@index([trigger])
+  @@index([isActive])
+  @@map("email_automations")
+}
+
+model EmailLog {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  automationId   String?   @map("automation_id") @db.Uuid
+  templateName   String    @map("template_name") @db.VarChar(100)
+  subject        String    @db.VarChar(500)
+  recipientEmail String    @map("recipient_email") @db.VarChar(255)
+  status         String    @default("sent") @db.VarChar(50)
+  sentAt         DateTime  @default(now()) @map("sent_at") @db.Timestamptz
+
+  // Relations
+  automation     EmailAutomation? @relation(fields: [automationId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([automationId])
+  @@index([templateName])
+  @@index([sentAt(sort: Desc)])
+  @@map("email_logs")
+}

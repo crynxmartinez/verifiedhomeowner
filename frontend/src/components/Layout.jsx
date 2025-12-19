@@ -17,7 +17,8 @@ import {
   MessageCircle,
   Menu,
   X,
-  User
+  User,
+  Mail
 } from 'lucide-react';
 
 export default function Layout({ children }) {
@@ -63,6 +64,7 @@ export default function Layout({ children }) {
     { path: '/admin/users', icon: User, label: 'User Settings' },
     { path: '/admin/leads', icon: FileText, label: 'Leads' },
     { path: '/admin/marketplace', icon: ShoppingCart, label: 'Lead Marketplace' },
+    { path: '/admin/email', icon: Mail, label: 'Email' },
     { path: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
     { path: '/admin/support', icon: MessageCircle, label: 'Support', badge: unreadCount },
   ];

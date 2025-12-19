@@ -98,4 +98,15 @@ export const adminAPI = {
   deleteMarketplaceLead: (leadId) => api.delete('/admin/marketplace', { data: { leadId } }),
   // Wholesalers admin
   getWholesalers: () => api.get('/admin/wholesalers'),
+  // Email templates admin
+  getEmailTemplates: () => api.get('/admin/email-templates'),
+  createEmailTemplate: (data) => api.post('/admin/email-templates', data),
+  updateEmailTemplate: (data) => api.patch('/admin/email-templates', data),
+  deleteEmailTemplate: (id) => api.delete('/admin/email-templates', { data: { id } }),
+  sendTestEmail: (template_id, email) => api.post('/admin/email-templates/test', { template_id, email }),
+  // Email automations admin
+  getEmailAutomations: () => api.get('/admin/email-automations'),
+  createEmailAutomation: (data) => api.post('/admin/email-automations', data),
+  updateEmailAutomation: (data) => api.patch('/admin/email-automations', data),
+  deleteEmailAutomation: (id) => api.delete('/admin/email-automations', { data: { id } }),
 };
