@@ -356,10 +356,10 @@ export default function UpgradePlan() {
                 </tr>
                 <tr className="border-b dark:border-gray-700">
                   <td className="py-3 px-4 text-gray-900 dark:text-white">Analytics</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Basic</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Advanced</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">Advanced</td>
-                  <td className="text-center py-3 px-4 text-purple-600 dark:text-purple-400 font-semibold">Custom</td>
+                  <td className="text-center py-3 px-4 text-gray-500 dark:text-gray-500">—</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">7 days</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">30 days</td>
+                  <td className="text-center py-3 px-4 text-purple-600 dark:text-purple-400 font-semibold">90 days + Export</td>
                 </tr>
                 <tr className="border-b dark:border-gray-700">
                   <td className="py-3 px-4 text-gray-900 dark:text-white">Support</td>

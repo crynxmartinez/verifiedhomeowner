@@ -239,10 +239,10 @@ export default function Pricing() {
                 </tr>
                 <tr className="hover:bg-gray-50">
                   <td className="py-4 px-6 font-medium text-gray-900">Analytics</td>
-                  <td className="text-center py-4 px-4 text-gray-600">Basic</td>
-                  <td className="text-center py-4 px-4 text-gray-600">Advanced</td>
-                  <td className="text-center py-4 px-4 text-gray-600">Advanced</td>
-                  <td className="text-center py-4 px-4 text-purple-600 font-semibold">Custom</td>
+                  <td className="text-center py-4 px-4 text-gray-400">—</td>
+                  <td className="text-center py-4 px-4 text-gray-600">7 days</td>
+                  <td className="text-center py-4 px-4 text-gray-600">30 days</td>
+                  <td className="text-center py-4 px-4 text-purple-600 font-semibold">90 days + Export</td>
                 </tr>
                 <tr className="hover:bg-gray-50">
                   <td className="py-4 px-6 font-medium text-gray-900">Support</td>
