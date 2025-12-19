@@ -15,10 +15,19 @@ async function handler(req, res) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    // Format user for frontend (snake_case)
+    const formattedUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      plan_type: user.planType,
+      subscription_status: user.subscriptionStatus,
+      email_verified: user.emailVerified,
+      created_at: user.createdAt,
+    };
 
-    res.status(200).json({ user: userWithoutPassword });
+    res.status(200).json({ user: formattedUser });
   } catch (error) {
     console.error('Profile error:', error);
     res.status(500).json({ error: 'Failed to fetch profile' });
