@@ -5,8 +5,8 @@ import { Upload, Plus, Trash2, Search, Loader2, Download, Edit2, X, Eye, EyeOff 
 import { useToast } from '../../context/ToastContext';
 
 const TEMPERATURES = [
-  { value: 'hot', label: '🔥 Hot ($100)', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', price: 100 },
-  { value: 'warm', label: '🌡️ Warm ($80)', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400', price: 80 },
+  { value: 'hot', label: '🔥 Hot ($100)', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', price: 100, maxBuyers: 3 },
+  { value: 'warm', label: '🌡️ Warm ($80)', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400', price: 80, maxBuyers: 5 },
 ];
 
 const MOTIVATIONS = [
@@ -55,7 +55,7 @@ export default function Marketplace() {
     timeline: TIMELINES[0],
     asking_price: '',
     temperature: 'warm',
-    max_buyers: '0',
+    max_buyers: '5',
   });
   const [csvFile, setCsvFile] = useState(null);
   const [uploadMessage, setUploadMessage] = useState('');
@@ -95,16 +95,28 @@ export default function Marketplace() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Auto-set max_buyers when temperature changes
+    if (name === 'temperature') {
+      const tempConfig = TEMPERATURES.find(t => t.value === value);
+      setFormData(prev => ({ 
+        ...prev, 
+        [name]: value,
+        max_buyers: tempConfig?.maxBuyers?.toString() || '5'
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const tempConfig = TEMPERATURES.find(t => t.value === formData.temperature) || TEMPERATURES[1];
       const leadData = {
         ...formData,
-        price: parseFloat(formData.price),
-        max_buyers: parseInt(formData.max_buyers),
+        price: tempConfig.price,
+        max_buyers: parseInt(formData.max_buyers) || tempConfig.maxBuyers,
       };
       
       await adminAPI.createMarketplaceLead(leadData);
@@ -124,8 +136,7 @@ export default function Marketplace() {
         timeline: TIMELINES[0],
         asking_price: '',
         temperature: 'warm',
-        price: '',
-        max_buyers: '0',
+        max_buyers: '5',
       });
       fetchLeads();
     } catch (error) {
@@ -160,10 +171,21 @@ export default function Marketplace() {
 
   const handleEditChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setEditingLead(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    
+    // Auto-set max_buyers when temperature changes
+    if (name === 'temperature') {
+      const tempConfig = TEMPERATURES.find(t => t.value === value);
+      setEditingLead(prev => ({
+        ...prev,
+        [name]: value,
+        max_buyers: tempConfig?.maxBuyers || 5
+      }));
+    } else {
+      setEditingLead(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
   };
 
   const handleSaveEdit = async () => {
