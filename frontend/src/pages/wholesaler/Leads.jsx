@@ -465,9 +465,11 @@ export default function WholesalerLeads() {
     return (
       <tr key={userLead.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
         <td className="px-4 py-3">
-          <div className="flex items-center gap-2">
-            {getSourceIcon(userLead.source)}
-            <div>
+          <div className="flex items-start gap-2">
+            <div className="flex-shrink-0 mt-0.5">
+              {getSourceIcon(userLead.source)}
+            </div>
+            <div className="min-w-0">
               <div className="font-medium dark:text-white">{displayName}</div>
               <div className="flex items-center gap-1 mt-1">
                 <a
