@@ -9,7 +9,9 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // Send notification emails to eligible users
 async function sendMarketplaceNotifications(lead) {
   try {
-    console.log(`📧 Starting marketplace notifications for lead in state: "${lead.state}"`);
+    // Trim whitespace from state
+    const state = (lead.state || '').trim().toUpperCase();
+    console.log(`📧 Starting marketplace notifications for lead in state: "${state}"`);
     
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -43,7 +45,7 @@ async function sendMarketplaceNotifications(lead) {
         role: 'wholesaler',
         emailVerified: true,
         marketplaceEmails: true,
-        preferredStates: { has: lead.state },
+        preferredStates: { has: state },
         OR: [
           { lastLoginAt: { gte: thirtyDaysAgo } },
           { lastLoginAt: null, createdAt: { gte: thirtyDaysAgo } }, // New users who haven't logged in yet
@@ -61,7 +63,7 @@ async function sendMarketplaceNotifications(lead) {
     // Also find users who have purchased leads from this state before
     const usersWithPurchasesInState = await prisma.userMarketplaceLead.findMany({
       where: {
-        marketplaceLead: { state: lead.state }
+        marketplaceLead: { state: state }
       },
       select: {
         userId: true,
@@ -99,7 +101,7 @@ async function sendMarketplaceNotifications(lead) {
 
     const usersToNotify = Array.from(allEligibleUsers.values());
     
-    console.log(`📧 Sending marketplace notifications to ${usersToNotify.length} users for lead in ${lead.state}`);
+    console.log(`📧 Sending marketplace notifications to ${usersToNotify.length} users for lead in ${state}`);
 
     // Send emails in parallel (batch of 10 at a time to avoid rate limits)
     const batchSize = 10;
@@ -111,7 +113,7 @@ async function sendMarketplaceNotifications(lead) {
           const { html, text } = getMarketplaceLeadEmailTemplate({
             lead: {
               city: lead.city || 'Unknown',
-              state: lead.state,
+              state: state,
               motivation: lead.motivation,
               timeline: lead.timeline,
               price: lead.price,
@@ -123,7 +125,7 @@ async function sendMarketplaceNotifications(lead) {
           await resend.emails.send({
             from: process.env.EMAIL_FROM || 'Verified Homeowner <noreply@verifiedhomeowner.com>',
             to: user.email,
-            subject: `🔥 New Hot Lead in ${lead.state} - ${lead.motivation}`,
+            subject: `🔥 New Hot Lead in ${state} - ${lead.motivation}`,
             html,
             text,
           });
