@@ -360,16 +360,16 @@ export default function Wholesalers() {
                     <tr key={w.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-2.5 h-2.5 rounded-full ${ACTIVITY_COLORS[w.activity_status]}`} title={w.activity_status} />
+                          <div className={`w-2.5 h-2.5 rounded-full ${ACTIVITY_COLORS[w.activity_status] || ACTIVITY_COLORS.inactive}`} title={w.activity_status || 'inactive'} />
                           <div>
-                            <p className="font-medium text-gray-900 dark:text-white">{w.name}</p>
+                            <p className="font-medium text-gray-900 dark:text-white">{w.name || 'Unknown'}</p>
                             <p className="text-sm text-gray-500 dark:text-gray-400">{w.email}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium uppercase ${PLAN_COLORS[w.plan_type]}`}>
-                          {w.plan_type}
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium uppercase ${PLAN_COLORS[w.plan_type] || PLAN_COLORS.free}`}>
+                          {w.plan_type || 'free'}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">
