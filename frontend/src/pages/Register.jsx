@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
-import { UserPlus, Eye, EyeOff, ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
+import { UserPlus, Eye, EyeOff, ArrowLeft, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
 // Password requirement check component
 function PasswordCheck({ passed, text }) {
@@ -207,8 +207,9 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-xl font-semibold hover:from-orange-600 hover:to-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-orange-500/30"
+            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-xl font-semibold hover:from-orange-600 hover:to-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-orange-500/30 flex items-center justify-center gap-2"
           >
+            {loading && <Loader2 className="h-5 w-5 animate-spin" />}
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>

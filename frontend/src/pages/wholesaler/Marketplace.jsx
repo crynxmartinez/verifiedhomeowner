@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { marketplaceAPI } from '../../lib/api';
-import { Filter, DollarSign } from 'lucide-react';
+import { Filter, DollarSign, Loader2 } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 const MOTIVATIONS = [
   'All',
@@ -39,6 +40,7 @@ const US_STATES = [
 ];
 
 export default function Marketplace() {
+  const toast = useToast();
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -80,12 +82,12 @@ export default function Marketplace() {
     try {
       setPurchasing(true);
       await marketplaceAPI.purchaseLead(selectedLead.id);
-      alert('Lead purchased successfully! Check "My Leads" to view it.');
+      toast.success('Lead purchased successfully! Check "My Leads" to view it.');
       setSelectedLead(null);
       fetchLeads(); // Refresh to remove purchased lead
     } catch (error) {
       console.error('Failed to purchase lead:', error);
-      alert(error.response?.data?.error || 'Failed to purchase lead');
+      toast.error(error.response?.data?.error || 'Failed to purchase lead');
     } finally {
       setPurchasing(false);
     }
@@ -253,8 +255,9 @@ export default function Marketplace() {
                 <button
                   onClick={handlePurchase}
                   disabled={purchasing}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
                 >
+                  {purchasing && <Loader2 className="h-4 w-4 animate-spin" />}
                   {purchasing ? 'Processing...' : 'Confirm Purchase'}
                 </button>
               </div>

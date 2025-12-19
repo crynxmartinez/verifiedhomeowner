@@ -3,6 +3,7 @@ import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
 import { FileText, Phone, Clock, XCircle } from 'lucide-react';
 import NewLeadsPopup from '../../components/NewLeadsPopup';
+import { SkeletonStats } from '../../components/Skeleton';
 
 export default function WholesalerDashboard() {
   const [stats, setStats] = useState(null);
@@ -54,8 +55,30 @@ export default function WholesalerDashboard() {
   if (loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500 dark:text-gray-400">Loading...</div>
+        <div className="space-y-8">
+          <div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-40 animate-pulse"></div>
+            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-64 mt-2 animate-pulse"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonStats key={i} />
+            ))}
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 animate-pulse">
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-4"></div>
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i}>
+                  <div className="flex justify-between mb-2">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-8"></div>
+                  </div>
+                  <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </Layout>
     );

@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
-import { Phone, Clock, DollarSign, Package, Copy, Check, Expand, X, ChevronLeft, ChevronRight, Search, SlidersHorizontal, Download } from 'lucide-react';
+import { Phone, Clock, DollarSign, Package, Copy, Check, Expand, X, ChevronLeft, ChevronRight, Search, SlidersHorizontal, Download, Loader2 } from 'lucide-react';
 import TagInput from '../../components/TagInput';
 import FilterPanel from '../../components/FilterPanel';
+import { useToast } from '../../context/ToastContext';
+import { SkeletonLeadCard } from '../../components/Skeleton';
 
 export default function WholesalerLeads() {
+  const toast = useToast();
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingLeads, setSavingLeads] = useState(new Set());
@@ -68,7 +71,7 @@ export default function WholesalerLeads() {
       document.body.removeChild(a);
     } catch (error) {
       console.error('Failed to export leads:', error);
-      alert('Failed to export leads');
+      toast.error('Failed to export leads');
     } finally {
       setExporting(false);
     }
@@ -90,7 +93,7 @@ export default function WholesalerLeads() {
       await fetchLeads(); // Refresh to get updated data
     } catch (error) {
       console.error('Failed to update status:', error);
-      alert('Failed to update status');
+      toast.error('Failed to update status');
     } finally {
       setSavingLeads(prev => {
         const next = new Set(prev);
@@ -122,7 +125,7 @@ export default function WholesalerLeads() {
         );
       } catch (error) {
         console.error('Failed to update notes:', error);
-        alert('Failed to update notes');
+        toast.error('Failed to update notes');
       } finally {
         setSavingLeads(prev => {
           const next = new Set(prev);
@@ -143,7 +146,7 @@ export default function WholesalerLeads() {
     } catch (error) {
       console.error('Failed to update countdown:', error);
       console.error('Error response:', error.response?.data);
-      alert(`Failed to update countdown: ${error.response?.data?.details || error.message}`);
+      toast.error(`Failed to update countdown: ${error.response?.data?.details || error.message}`);
     } finally {
       setSavingLeads(prev => {
         const next = new Set(prev);
@@ -605,8 +608,25 @@ export default function WholesalerLeads() {
   if (loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-gray-500 dark:text-gray-400">Loading leads...</div>
+        <div className="space-y-6">
+          <div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-32 animate-pulse"></div>
+            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-56 mt-2 animate-pulse"></div>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-24 animate-pulse"></div>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <SkeletonLeadCard key={i} />
+              ))}
+            </div>
+            <div className="space-y-4">
+              <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-24 animate-pulse"></div>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <SkeletonLeadCard key={i} />
+              ))}
+            </div>
+          </div>
         </div>
       </Layout>
     );
@@ -709,7 +729,7 @@ export default function WholesalerLeads() {
             disabled={exporting || leads.length === 0}
             className="flex items-center justify-center gap-2 px-4 py-2.5 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
           >
-            <Download size={18} />
+            {exporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
             <span>{exporting ? 'Exporting...' : 'Export CSV'}</span>
           </button>
         </div>

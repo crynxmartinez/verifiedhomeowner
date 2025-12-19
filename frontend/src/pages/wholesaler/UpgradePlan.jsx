@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import useAuthStore from '../../store/authStore';
 import { userAPI, dodoAPI, authAPI } from '../../lib/api';
-import { CheckCircle, TrendingUp, CreditCard, Mail, AlertTriangle } from 'lucide-react';
+import { CheckCircle, TrendingUp, CreditCard, Mail, AlertTriangle, Loader2 } from 'lucide-react';
 import SuccessModal from '../../components/SuccessModal';
 
 export default function UpgradePlan() {
@@ -185,7 +185,7 @@ export default function UpgradePlan() {
                   disabled={sendingVerification}
                   className="mt-3 inline-flex items-center px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition disabled:opacity-50"
                 >
-                  <Mail className="h-4 w-4 mr-2" />
+                  {sendingVerification ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
                   {sendingVerification ? 'Sending...' : 'Resend Verification Email'}
                 </button>
               </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
-import { LogIn, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { LogIn, Eye, EyeOff, ArrowLeft, Loader2 } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -94,8 +94,9 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-lg flex items-center justify-center gap-2"
           >
+            {loading && <Loader2 className="h-5 w-5 animate-spin" />}
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>

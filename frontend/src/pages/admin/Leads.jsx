@@ -4,8 +4,10 @@ import { adminAPI } from '../../lib/api';
 import { Upload, Plus, X, FileText, Search, ArrowRight, Trash2, Loader2 } from 'lucide-react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
+import { useToast } from '../../context/ToastContext';
 
 export default function AdminLeads() {
+  const toast = useToast();
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -94,10 +96,10 @@ export default function AdminLeads() {
         mailing_zip: '',
       });
       fetchLeads();
-      alert('Lead created successfully!');
+      toast.success('Lead created successfully!');
     } catch (error) {
       console.error('Failed to create lead:', error);
-      alert('Failed to create lead');
+      toast.error('Failed to create lead');
     } finally {
       setUploading(false);
     }
@@ -113,7 +115,7 @@ export default function AdminLeads() {
     const isValidFile = validTypes.includes(file.type) || fileName.endsWith('.csv') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
 
     if (!isValidFile) {
-      alert('Please upload a CSV or Excel file');
+      toast.error('Please upload a CSV or Excel file');
       return;
     }
 
@@ -140,7 +142,7 @@ export default function AdminLeads() {
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
           
           if (jsonData.length === 0) {
-            alert('The Excel file is empty');
+            toast.error('The Excel file is empty');
             return;
           }
           
@@ -165,7 +167,7 @@ export default function AdminLeads() {
           }
           
           if (rows.length === 0) {
-            alert('No data found in Excel file');
+            toast.error('No data found in Excel file');
             return;
           }
           
@@ -183,7 +185,7 @@ export default function AdminLeads() {
           setShowMappingStep(true);
         } catch (error) {
           console.error('Excel parsing error:', error);
-          alert('Failed to parse Excel file: ' + error.message);
+          toast.error('Failed to parse Excel file: ' + error.message);
         }
       };
       reader.readAsBinaryString(file);
@@ -194,7 +196,7 @@ export default function AdminLeads() {
         skipEmptyLines: true,
         complete: (results) => {
           if (results.data.length === 0) {
-            alert('The file is empty or invalid');
+            toast.error('The file is empty or invalid');
             return;
           }
 
@@ -215,7 +217,7 @@ export default function AdminLeads() {
         },
         error: (error) => {
           console.error('CSV parsing error:', error);
-          alert('Failed to parse CSV file');
+          toast.error('Failed to parse CSV file');
         }
       });
     }
@@ -285,7 +287,7 @@ export default function AdminLeads() {
       );
 
       if (validData.length === 0) {
-        alert('No valid data found. Please ensure you map at least one name field (First Name, Last Name, or Full Name) or Property Address.');
+        toast.error('No valid data found. Please ensure you map at least one name field (First Name, Last Name, or Full Name) or Property Address.');
         setUploading(false);
         setUploadProgress(0);
         return;
@@ -350,11 +352,11 @@ export default function AdminLeads() {
 
   const handleDistribute = async () => {
     if (!distributeCount || distributeCount < 1) {
-      alert('Please enter a valid number of leads');
+      toast.error('Please enter a valid number of leads');
       return;
     }
     if (!allUsers && !selectedUser) {
-      alert('Please select a user or check "All Users"');
+      toast.error('Please select a user or check "All Users"');
       return;
     }
     try {
@@ -372,11 +374,11 @@ export default function AdminLeads() {
       setShowUserDropdown(false);
       setDistributeCount(1); // Reset count
       
-      alert(response.data.message || `Successfully distributed ${distributeCount} lead(s)`);
+      toast.success(response.data.message || `Successfully distributed ${distributeCount} lead(s)`);
       fetchLeads(); // Refresh leads list
     } catch (error) {
       console.error('Failed to distribute:', error);
-      alert(error.response?.data?.error || 'Failed to distribute leads');
+      toast.error(error.response?.data?.error || 'Failed to distribute leads');
     }
   };
 
@@ -386,16 +388,16 @@ export default function AdminLeads() {
     try {
       await adminAPI.deleteLead(leadId);
       fetchLeads();
-      alert('Lead deleted successfully');
+      toast.success('Lead deleted successfully');
     } catch (error) {
       console.error('Failed to delete lead:', error);
-      alert('Failed to delete lead');
+      toast.error('Failed to delete lead');
     }
   };
 
   const handleBulkDelete = async () => {
     if (selectedLeads.length === 0) {
-      alert('Please select leads to delete');
+      toast.error('Please select leads to delete');
       return;
     }
     
@@ -406,10 +408,10 @@ export default function AdminLeads() {
       setSelectedLeads([]);
       setSelectAll(false);
       fetchLeads();
-      alert(`${selectedLeads.length} lead(s) deleted successfully`);
+      toast.success(`${selectedLeads.length} lead(s) deleted successfully`);
     } catch (error) {
       console.error('Failed to delete leads:', error);
-      alert('Failed to delete leads');
+      toast.error('Failed to delete leads');
     }
   };
 

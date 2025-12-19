@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { adminAPI } from '../../lib/api';
-import { Upload, Plus, Trash2, Search } from 'lucide-react';
+import { Upload, Plus, Trash2, Search, Loader2 } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 const MOTIVATIONS = [
   'Code Violation',
@@ -29,6 +30,7 @@ const TIMELINES = [
 ];
 
 export default function Marketplace() {
+  const toast = useToast();
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -117,14 +119,14 @@ export default function Marketplace() {
       fetchLeads();
     } catch (error) {
       console.error('Failed to create marketplace lead:', error);
-      alert('Failed to create lead');
+      toast.error('Failed to create lead');
     }
   };
 
   const handleCSVUpload = async (e) => {
     e.preventDefault();
     if (!csvFile) {
-      alert('Please select a CSV file');
+      toast.error('Please select a CSV file');
       return;
     }
 
@@ -142,7 +144,7 @@ export default function Marketplace() {
       reader.readAsText(csvFile);
     } catch (error) {
       console.error('Failed to upload CSV:', error);
-      alert('Failed to upload CSV');
+      toast.error('Failed to upload CSV');
     }
   };
 
@@ -156,7 +158,7 @@ export default function Marketplace() {
       fetchLeads();
     } catch (error) {
       console.error('Failed to delete lead:', error);
-      alert('Failed to delete lead');
+      toast.error('Failed to delete lead');
     }
   };
 

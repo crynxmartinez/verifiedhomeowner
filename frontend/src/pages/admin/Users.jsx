@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { adminAPI } from '../../lib/api';
 import { Edit2, Save, X, ArrowUpDown, Search } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 export default function AdminUsers() {
+  const toast = useToast();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
@@ -56,17 +58,17 @@ export default function AdminUsers() {
   const handleSaveModal = async () => {
     // Validation
     if (!formData.name || !formData.email) {
-      alert('Name and email are required');
+      toast.error('Name and email are required');
       return;
     }
     
     if (formData.password && formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
     
     if (formData.password && formData.password.length < 6) {
-      alert('Password must be at least 6 characters');
+      toast.error('Password must be at least 6 characters');
       return;
     }
     
@@ -87,10 +89,10 @@ export default function AdminUsers() {
       setShowEditModal(false);
       setEditingUser(null);
       fetchUsers();
-      alert('Wholesaler updated successfully');
+      toast.success('Wholesaler updated successfully');
     } catch (error) {
       console.error('Failed to update user:', error);
-      alert(error.response?.data?.error || 'Failed to update wholesaler');
+      toast.error(error.response?.data?.error || 'Failed to update wholesaler');
     } finally {
       setSaving(false);
     }
