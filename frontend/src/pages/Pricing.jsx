@@ -25,7 +25,6 @@ export default function Pricing() {
         '1 state coverage',
         'Lead tracking dashboard',
         'Notes & follow-ups',
-        'Basic analytics',
       ],
     },
     {
@@ -37,9 +36,9 @@ export default function Pricing() {
       features: [
         '1 lead delivered daily',
         '3 states coverage',
-        'Marketplace access (5/month)',
+        'Marketplace (5/month)',
         'Hot lead alerts (+4 hours)',
-        'Advanced analytics',
+        '7-day analytics',
         'Priority support',
       ],
       popular: true,
@@ -53,9 +52,9 @@ export default function Pricing() {
       features: [
         '5 leads delivered daily',
         '5 states coverage',
-        'Marketplace access (15/month)',
+        'Marketplace (15/month)',
         'Hot lead alerts (+30 min)',
-        'Advanced analytics',
+        '30-day analytics',
         'Premium support',
       ],
     },
@@ -68,9 +67,9 @@ export default function Pricing() {
       features: [
         '10 leads delivered daily',
         '7 states coverage',
-        'Unlimited marketplace access',
+        'Unlimited marketplace',
         'Instant hot lead alerts',
-        'Custom analytics',
+        '90-day analytics + Export',
         'VIP support',
       ],
     },
