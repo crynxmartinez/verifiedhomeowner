@@ -46,6 +46,7 @@ export default function AdminLeads() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLeads, setSelectedLeads] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
+  const [distributing, setDistributing] = useState(false);
 
   useEffect(() => {
     fetchLeads();
@@ -359,6 +360,7 @@ export default function AdminLeads() {
       toast.error('Please select a user or check "All Users"');
       return;
     }
+    setDistributing(true);
     try {
       // Call distribute API with selected user or all users and lead count
       const params = {
@@ -379,6 +381,8 @@ export default function AdminLeads() {
     } catch (error) {
       console.error('Failed to distribute:', error);
       toast.error(error.response?.data?.error || 'Failed to distribute leads');
+    } finally {
+      setDistributing(false);
     }
   };
 
@@ -1200,9 +1204,17 @@ export default function AdminLeads() {
                   </button>
                   <button
                     onClick={handleDistribute}
-                    className="px-4 py-2 bg-purple-600 dark:bg-purple-500 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600"
+                    disabled={distributing}
+                    className="px-4 py-2 bg-purple-600 dark:bg-purple-500 text-white rounded-lg hover:bg-purple-700 dark:hover:bg-purple-600 disabled:opacity-50 flex items-center gap-2"
                   >
-                    Distribute
+                    {distributing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Distributing...
+                      </>
+                    ) : (
+                      'Distribute'
+                    )}
                   </button>
                 </div>
               </div>
