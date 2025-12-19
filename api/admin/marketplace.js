@@ -1,6 +1,122 @@
 import prisma from '../../lib/prisma.js';
 import { requireAdmin } from '../../lib/auth-prisma.js';
 import Papa from 'papaparse';
+import { Resend } from 'resend';
+import { getMarketplaceLeadEmailTemplate } from '../../lib/emailTemplates.js';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Send notification emails to eligible users
+async function sendMarketplaceNotifications(lead) {
+  try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    // Find users who:
+    // 1. Have this state in their preferred states OR have purchased leads from this state
+    // 2. Are email verified
+    // 3. Have logged in within the last 30 days
+    // 4. Have marketplace emails enabled
+    const eligibleUsers = await prisma.user.findMany({
+      where: {
+        role: 'wholesaler',
+        emailVerified: true,
+        marketplaceEmails: true,
+        lastLoginAt: { gte: thirtyDaysAgo },
+        OR: [
+          { preferredStates: { has: lead.state } },
+        ]
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      }
+    });
+
+    // Also find users who have purchased leads from this state before
+    const usersWithPurchasesInState = await prisma.userMarketplaceLead.findMany({
+      where: {
+        marketplaceLead: { state: lead.state }
+      },
+      select: {
+        userId: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            emailVerified: true,
+            marketplaceEmails: true,
+            lastLoginAt: true,
+          }
+        }
+      }
+    });
+
+    // Combine and deduplicate users
+    const allEligibleUsers = new Map();
+    
+    eligibleUsers.forEach(user => {
+      allEligibleUsers.set(user.id, user);
+    });
+    
+    usersWithPurchasesInState.forEach(({ user }) => {
+      if (
+        user.emailVerified && 
+        user.marketplaceEmails && 
+        user.lastLoginAt && 
+        user.lastLoginAt >= thirtyDaysAgo &&
+        !allEligibleUsers.has(user.id)
+      ) {
+        allEligibleUsers.set(user.id, { id: user.id, email: user.email, name: user.name });
+      }
+    });
+
+    const usersToNotify = Array.from(allEligibleUsers.values());
+    
+    console.log(`📧 Sending marketplace notifications to ${usersToNotify.length} users for lead in ${lead.state}`);
+
+    // Send emails in parallel (batch of 10 at a time to avoid rate limits)
+    const batchSize = 10;
+    for (let i = 0; i < usersToNotify.length; i += batchSize) {
+      const batch = usersToNotify.slice(i, i + batchSize);
+      
+      await Promise.all(batch.map(async (user) => {
+        try {
+          const { html, text } = getMarketplaceLeadEmailTemplate({
+            lead: {
+              city: lead.city || 'Unknown',
+              state: lead.state,
+              motivation: lead.motivation,
+              timeline: lead.timeline,
+              price: lead.price,
+            },
+            recipientName: user.name?.split(' ')[0] || 'there',
+            unsubscribeUrl: `${process.env.FRONTEND_URL || 'https://verifiedhomeowner.com'}/profile`,
+          });
+
+          await resend.emails.send({
+            from: process.env.EMAIL_FROM || 'Verified Homeowner <noreply@verifiedhomeowner.com>',
+            to: user.email,
+            subject: `🔥 New Hot Lead in ${lead.state} - ${lead.motivation}`,
+            html,
+            text,
+          });
+
+          console.log(`✅ Email sent to ${user.email}`);
+        } catch (emailError) {
+          console.error(`❌ Failed to send email to ${user.email}:`, emailError.message);
+        }
+      }));
+    }
+
+    return usersToNotify.length;
+  } catch (error) {
+    console.error('Failed to send marketplace notifications:', error);
+    return 0;
+  }
+}
 
 async function handler(req, res) {
   if (req.method === 'GET') {
@@ -60,6 +176,17 @@ async function handler(req, res) {
             price: parseFloat(singleLead.price) || 0,
             maxBuyers: parseInt(singleLead.max_buyers) || 0,
           }
+        });
+
+        // Send notification emails to eligible users (don't await to avoid blocking response)
+        sendMarketplaceNotifications({
+          city: singleLead.city,
+          state: singleLead.state,
+          motivation: singleLead.motivation,
+          timeline: singleLead.timeline,
+          price: parseFloat(singleLead.price) || 0,
+        }).then(count => {
+          console.log(`📧 Sent ${count} marketplace notification emails`);
         });
 
         return res.status(201).json({ lead: data });

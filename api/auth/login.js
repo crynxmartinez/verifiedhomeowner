@@ -32,16 +32,41 @@ async function handler(req, res) {
     // Generate JWT token
     const token = generateToken(user.id);
 
+    // Update last login timestamp
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastLoginAt: new Date() }
+    });
+
+    // Fetch updated user data with new fields
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        planType: true,
+        subscriptionStatus: true,
+        emailVerified: true,
+        preferredStates: true,
+        marketplaceEmails: true,
+        createdAt: true,
+      }
+    });
+
     // Format user for frontend (snake_case)
     const formattedUser = {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      plan_type: user.planType,
-      subscription_status: user.subscriptionStatus,
-      email_verified: user.emailVerified,
-      created_at: user.createdAt,
+      id: updatedUser.id,
+      email: updatedUser.email,
+      name: updatedUser.name,
+      role: updatedUser.role,
+      plan_type: updatedUser.planType,
+      subscription_status: updatedUser.subscriptionStatus,
+      email_verified: updatedUser.emailVerified,
+      preferred_states: updatedUser.preferredStates || [],
+      marketplace_emails: updatedUser.marketplaceEmails !== false,
+      created_at: updatedUser.createdAt,
     };
 
     res.status(200).json({

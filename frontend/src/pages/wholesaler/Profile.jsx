@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import useAuthStore from '../../store/authStore';
 import { userAPI, authAPI } from '../../lib/api';
-import { User, Mail, Lock, CheckCircle, XCircle, Loader2, Eye, EyeOff, AlertTriangle } from 'lucide-react';
+import { User, Mail, Lock, CheckCircle, XCircle, Loader2, Eye, EyeOff, AlertTriangle, MapPin, Bell, X } from 'lucide-react';
 
 function PasswordCheck({ password }) {
   const checks = [
@@ -45,13 +45,39 @@ export default function Profile() {
   const [sendingVerification, setSendingVerification] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  
+  // Target Markets
+  const [preferredStates, setPreferredStates] = useState([]);
+  const [marketplaceEmails, setMarketplaceEmails] = useState(true);
+  const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
       setName(user.name || '');
       setEmail(user.email || '');
+      setPreferredStates(user.preferred_states || []);
+      setMarketplaceEmails(user.marketplace_emails !== false);
     }
   }, [user]);
+
+  const US_STATES = [
+    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+  ];
+
+  const addState = (state) => {
+    if (preferredStates.length < 3 && !preferredStates.includes(state)) {
+      setPreferredStates([...preferredStates, state]);
+    }
+    setStateDropdownOpen(false);
+  };
+
+  const removeState = (state) => {
+    setPreferredStates(preferredStates.filter(s => s !== state));
+  };
 
   const isPasswordValid = (pwd) => {
     return (
@@ -90,6 +116,10 @@ export default function Profile() {
         updateData.currentPassword = currentPassword;
         updateData.newPassword = newPassword;
       }
+      
+      // Always include marketplace preferences
+      updateData.preferredStates = preferredStates;
+      updateData.marketplaceEmails = marketplaceEmails;
 
       if (Object.keys(updateData).length === 0) {
         setError('No changes to save');
@@ -105,6 +135,8 @@ export default function Profile() {
         name: response.data.user.name,
         email: response.data.user.email,
         email_verified: response.data.user.emailVerified,
+        preferred_states: response.data.user.preferredStates || preferredStates,
+        marketplace_emails: response.data.user.marketplaceEmails !== false,
       });
 
       // Clear password fields
@@ -293,6 +325,95 @@ export default function Profile() {
                 {confirmPassword && newPassword !== confirmPassword && (
                   <p className="text-red-500 text-sm mt-1">Passwords do not match</p>
                 )}
+              </div>
+            </div>
+          </div>
+
+          {/* Target Markets */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
+              <MapPin className="h-5 w-5 mr-2 text-purple-600" />
+              Target Markets
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Select up to 3 states where you're actively looking for deals. We'll notify you instantly when hot leads become available in your markets.
+            </p>
+
+            <div className="space-y-4">
+              {/* Selected States */}
+              <div className="flex flex-wrap gap-2">
+                {preferredStates.map((state) => (
+                  <span
+                    key={state}
+                    className="inline-flex items-center px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium"
+                  >
+                    {state}
+                    <button
+                      type="button"
+                      onClick={() => removeState(state)}
+                      className="ml-2 hover:text-purple-900 dark:hover:text-purple-100"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </span>
+                ))}
+                
+                {preferredStates.length < 3 && (
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setStateDropdownOpen(!stateDropdownOpen)}
+                      className="inline-flex items-center px-3 py-1.5 border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 rounded-full text-sm hover:border-purple-500 hover:text-purple-600 dark:hover:border-purple-500 dark:hover:text-purple-400 transition"
+                    >
+                      + Add State
+                    </button>
+                    
+                    {stateDropdownOpen && (
+                      <div className="absolute top-full left-0 mt-2 w-48 max-h-60 overflow-y-auto bg-white dark:bg-gray-700 rounded-lg shadow-lg border dark:border-gray-600 z-10">
+                        {US_STATES.filter(s => !preferredStates.includes(s)).map((state) => (
+                          <button
+                            key={state}
+                            type="button"
+                            onClick={() => addState(state)}
+                            className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                          >
+                            {state}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              {preferredStates.length === 0 && (
+                <p className="text-sm text-amber-600 dark:text-amber-400">
+                  No states selected. Add your target markets to receive lead notifications.
+                </p>
+              )}
+
+              {/* Email Notifications Toggle */}
+              <div className="flex items-center justify-between pt-4 border-t dark:border-gray-700">
+                <div className="flex items-center">
+                  <Bell className="h-5 w-5 text-gray-500 dark:text-gray-400 mr-3" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Marketplace Notifications</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Get emails when new leads match your markets</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMarketplaceEmails(!marketplaceEmails)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    marketplaceEmails ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      marketplaceEmails ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
               </div>
             </div>
           </div>

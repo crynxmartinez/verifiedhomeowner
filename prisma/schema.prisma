@@ -38,6 +38,11 @@ model User {
   dodoCustomerId        String?   @map("dodo_customer_id")
   subscriptionEndDate   DateTime? @map("subscription_end_date") @db.Timestamptz
   
+  // Marketplace Preferences
+  preferredStates       String[]  @default([]) @map("preferred_states")
+  marketplaceEmails     Boolean   @default(true) @map("marketplace_emails")
+  lastLoginAt           DateTime? @map("last_login_at") @db.Timestamptz
+  
   // Timestamps
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")

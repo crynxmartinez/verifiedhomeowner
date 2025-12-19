@@ -24,6 +24,8 @@ async function handler(req, res) {
       plan_type: user.planType,
       subscription_status: user.subscriptionStatus,
       email_verified: user.emailVerified,
+      preferred_states: user.preferredStates || [],
+      marketplace_emails: user.marketplaceEmails !== false,
       created_at: user.createdAt,
     };
 

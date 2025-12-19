@@ -32,7 +32,7 @@ async function handler(req, res) {
   } else if (req.method === 'PATCH') {
     // Update user profile
     try {
-      const { name, email, currentPassword, newPassword } = req.body;
+      const { name, email, currentPassword, newPassword, preferredStates, marketplaceEmails } = req.body;
       const updateData = {};
       const errors = [];
 
@@ -70,6 +70,21 @@ async function handler(req, res) {
         }
       }
 
+      // Validate and update marketplace preferences
+      if (preferredStates !== undefined) {
+        if (!Array.isArray(preferredStates)) {
+          errors.push('Preferred states must be an array');
+        } else if (preferredStates.length > 3) {
+          errors.push('Maximum 3 preferred states allowed');
+        } else {
+          updateData.preferredStates = preferredStates;
+        }
+      }
+
+      if (marketplaceEmails !== undefined) {
+        updateData.marketplaceEmails = Boolean(marketplaceEmails);
+      }
+
       // Validate and update password
       if (newPassword) {
         if (!currentPassword) {
@@ -101,8 +116,8 @@ async function handler(req, res) {
         return res.status(400).json({ error: 'Validation failed', details: errors });
       }
 
-      // Check if there's anything to update
-      if (Object.keys(updateData).length === 0) {
+      // Check if there's anything to update (allow marketplace preferences even if nothing else changed)
+      if (Object.keys(updateData).length === 0 && preferredStates === undefined && marketplaceEmails === undefined) {
         return res.status(400).json({ error: 'No changes to update' });
       }
 
@@ -118,6 +133,8 @@ async function handler(req, res) {
           planType: true,
           subscriptionStatus: true,
           emailVerified: true,
+          preferredStates: true,
+          marketplaceEmails: true,
           createdAt: true,
         }
       });
