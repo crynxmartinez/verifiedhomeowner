@@ -368,3 +368,39 @@ model MarketplaceNotificationQueue {
   @@index([marketplaceLeadId])
   @@map("marketplace_notification_queue")
 }
+
+// ============================================================================
+// BLOG SYSTEM
+// ============================================================================
+
+model BlogPost {
+  id            String      @id @default(uuid()) @db.Uuid
+  slug          String      @unique @db.VarChar(255)
+  title         String      @db.VarChar(500)
+  excerpt       String?     @db.VarChar(1000)
+  content       String      @db.Text
+  bannerImage   String?     @map("banner_image") @db.VarChar(1000)
+  category      String?     @db.VarChar(100)
+  tags          String[]    @default([])
+  status        BlogStatus  @default(draft)
+  authorId      String      @map("author_id") @db.Uuid
+  scheduledAt   DateTime?   @map("scheduled_at") @db.Timestamptz
+  publishedAt   DateTime?   @map("published_at") @db.Timestamptz
+  viewCount     Int         @default(0) @map("view_count")
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([slug])
+  @@index([status])
+  @@index([category])
+  @@index([scheduledAt])
+  @@index([publishedAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@map("blog_posts")
+}
+
+enum BlogStatus {
+  draft
+  scheduled
+  published
+}

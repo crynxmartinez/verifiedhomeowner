@@ -18,7 +18,8 @@ import {
   Menu,
   X,
   User,
-  Mail
+  Mail,
+  BookOpen
 } from 'lucide-react';
 
 export default function Layout({ children }) {
@@ -63,6 +64,7 @@ export default function Layout({ children }) {
     { path: '/admin/wholesalers', icon: Users, label: 'Wholesalers' },
     { path: '/admin/leads', icon: FileText, label: 'Leads' },
     { path: '/admin/marketplace', icon: ShoppingCart, label: 'Lead Marketplace' },
+    { path: '/admin/blog', icon: BookOpen, label: 'Blog' },
     { path: '/admin/email', icon: Mail, label: 'Email' },
     { path: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
     { path: '/admin/support', icon: MessageCircle, label: 'Support', badge: unreadCount },

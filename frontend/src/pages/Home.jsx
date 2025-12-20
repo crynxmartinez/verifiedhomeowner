@@ -5,8 +5,9 @@ import Navbar from '../components/Navbar';
 import { 
   TrendingUp, Users, Zap, CheckCircle, Phone, Target, 
   Clock, Shield, ChevronDown, ChevronUp, MapPin, Home as HomeIcon,
-  DollarSign, BarChart3, Headphones, Star, ArrowRight
+  DollarSign, BarChart3, Headphones, Star, ArrowRight, FileText, Calendar
 } from 'lucide-react';
+import axios from 'axios';
 
 const PEXELS_API_KEY = import.meta.env.VITE_PEXELS_API_KEY;
 
@@ -19,9 +20,21 @@ export default function Home() {
     cta: ''
   });
   const [openFaq, setOpenFaq] = useState(null);
+  const [blogPosts, setBlogPosts] = useState([]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Fetch latest blog posts
+    const fetchBlogPosts = async () => {
+      try {
+        const { data } = await axios.get('/api/blog?limit=3');
+        setBlogPosts(data.posts || []);
+      } catch (e) {
+        console.error('Failed to fetch blog posts:', e);
+      }
+    };
+    fetchBlogPosts();
     
     const fetchImage = async (query, key, isArray = false, index = 0) => {
       if (!PEXELS_API_KEY) return;
@@ -391,6 +404,68 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Blog Section */}
+      {blogPosts.length > 0 && (
+        <section className="py-24 bg-gray-50">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">Latest from Our Blog</h2>
+              <p className="text-xl text-gray-600">Tips, insights, and success stories for wholesalers</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-8">
+              {blogPosts.map(post => (
+                <Link
+                  key={post.id}
+                  to={`/blog/${post.slug}`}
+                  className="group"
+                >
+                  <article className="bg-white rounded-2xl overflow-hidden border border-gray-200 hover:border-blue-300 hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+                    <div className="h-48 overflow-hidden bg-gray-100">
+                      {post.bannerImage ? (
+                        <img
+                          src={post.bannerImage}
+                          alt={post.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                          <FileText className="w-12 h-12 text-blue-400" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-6 flex-1 flex flex-col">
+                      {post.category && (
+                        <span className="text-blue-600 text-sm font-medium mb-2">{post.category}</span>
+                      )}
+                      <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition">
+                        {post.title}
+                      </h3>
+                      {post.excerpt && (
+                        <p className="text-gray-600 line-clamp-2 mb-4 flex-1">{post.excerpt}</p>
+                      )}
+                      <div className="flex items-center text-sm text-gray-500 mt-auto pt-4 border-t border-gray-100">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        {new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </div>
+                    </div>
+                  </article>
+                </Link>
+              ))}
+            </div>
+            <div className="text-center mt-10">
+              <Link
+                to="/blog"
+                className="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold text-lg"
+              >
+                View All Articles
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Final CTA */}
       <section className="py-24 relative overflow-hidden">

@@ -33,6 +33,13 @@ import AdminAnalytics from './pages/admin/Analytics';
 import AdminSupport from './pages/admin/Support';
 import AdminWholesalers from './pages/admin/Wholesalers';
 import AdminEmail from './pages/admin/Email';
+import AdminBlog from './pages/admin/Blog';
+import AdminBlogEditor from './pages/admin/BlogEditor';
+
+// Public Blog pages
+import BlogList from './pages/BlogList';
+import BlogPost from './pages/BlogPost';
+import HowItWorks from './pages/HowItWorks';
 
 function PrivateRoute({ children }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -61,6 +68,9 @@ function App() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/refund" element={<Refund />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/blog" element={<BlogList />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
@@ -171,6 +181,30 @@ function App() {
           element={
             <AdminRoute>
               <AdminEmail />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/blog"
+          element={
+            <AdminRoute>
+              <AdminBlog />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/blog/new"
+          element={
+            <AdminRoute>
+              <AdminBlogEditor />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/blog/edit/:id"
+          element={
+            <AdminRoute>
+              <AdminBlogEditor />
             </AdminRoute>
           }
         />
