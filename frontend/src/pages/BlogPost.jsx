@@ -27,7 +27,9 @@ export default function BlogPost() {
     try {
       setLoading(true);
       setError(null);
+      console.log('Fetching blog post with slug:', slug);
       const { data } = await axios.get(`/api/blog/${slug}`);
+      console.log('Blog post data:', data);
       setPost(data.post);
       setRelatedPosts(data.relatedPosts || []);
     } catch (error) {
