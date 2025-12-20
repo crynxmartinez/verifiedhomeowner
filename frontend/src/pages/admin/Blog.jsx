@@ -5,7 +5,7 @@ import {
   Plus, Search, Edit2, Trash2, Eye, Calendar, Clock,
   FileText, Filter, MoreVertical, ExternalLink
 } from 'lucide-react';
-import { adminAPI } from '../../lib/api';
+import api from '../../lib/api';
 
 export default function AdminBlog() {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ export default function AdminBlog() {
       if (filters.status !== 'all') params.append('status', filters.status);
       if (filters.search) params.append('search', filters.search);
 
-      const { data } = await adminAPI.get(`/blog?${params}`);
+      const { data } = await api.get(`/admin/blog?${params}`);
       setPosts(data.posts);
       setStats(data.stats);
       setPagination(prev => ({
@@ -56,7 +56,7 @@ export default function AdminBlog() {
     if (!deleteModal.post) return;
     try {
       setDeleting(true);
-      await adminAPI.delete('/blog', { data: { id: deleteModal.post.id } });
+      await api.delete('/admin/blog', { data: { id: deleteModal.post.id } });
       setDeleteModal({ open: false, post: null });
       fetchPosts();
     } catch (error) {

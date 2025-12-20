@@ -7,7 +7,7 @@ import {
   ArrowLeft, Save, Send, Clock, Image, X, Eye, Calendar,
   FileText, Tag, Loader2
 } from 'lucide-react';
-import { adminAPI } from '../../lib/api';
+import api from '../../lib/api';
 
 const CATEGORIES = [
   'Tips & Tricks',
@@ -72,7 +72,7 @@ export default function BlogEditor() {
   const fetchPost = async () => {
     try {
       setLoading(true);
-      const { data } = await adminAPI.get(`/blog/${id}`);
+      const { data } = await api.get(`/admin/blog/${id}`);
       const fetchedPost = data.post;
       setPost({
         title: fetchedPost.title || '',
@@ -117,9 +117,9 @@ export default function BlogEditor() {
 
       if (isEditing) {
         payload.id = id;
-        await adminAPI.patch('/blog', payload);
+        await api.patch('/admin/blog', payload);
       } else {
-        await adminAPI.post('/blog', payload);
+        await api.post('/admin/blog', payload);
       }
 
       navigate('/admin/blog');
@@ -157,9 +157,9 @@ export default function BlogEditor() {
 
       if (isEditing) {
         payload.id = id;
-        await adminAPI.patch('/blog', payload);
+        await api.patch('/admin/blog', payload);
       } else {
-        await adminAPI.post('/blog', payload);
+        await api.post('/admin/blog', payload);
       }
 
       navigate('/admin/blog');
