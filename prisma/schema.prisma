@@ -375,12 +375,12 @@ model MarketplaceNotificationQueue {
 
 model BlogPost {
   id            String      @id @default(uuid()) @db.Uuid
-  slug          String      @unique @db.VarChar(255)
-  title         String      @db.VarChar(500)
-  excerpt       String?     @db.VarChar(1000)
+  slug          String      @unique @db.VarChar(500)
+  title         String      @db.Text
+  excerpt       String?     @db.Text
   content       String      @db.Text
-  bannerImage   String?     @map("banner_image") @db.VarChar(1000)
-  category      String?     @db.VarChar(100)
+  bannerImage   String?     @map("banner_image") @db.Text
+  category      String?     @db.VarChar(200)
   tags          String[]    @default([])
   status        BlogStatus  @default(draft)
   authorId      String      @map("author_id") @db.Uuid
