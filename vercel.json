@@ -21,6 +21,18 @@
   ],
   "rewrites": [
     {
+      "source": "/api/blog/:slug",
+      "destination": "/api/blog/[slug]"
+    },
+    {
+      "source": "/api/admin/blog/:id",
+      "destination": "/api/admin/blog/[id]"
+    },
+    {
+      "source": "/api/support/:id",
+      "destination": "/api/support/[id]"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/:path*"
     },
