@@ -1,10 +1,42 @@
 import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-400">
-      {/* Main Footer */}
-      <div className="max-w-7xl mx-auto px-4 py-16">
+    <>
+      {/* CTA Section */}
+      <section className="py-24 relative overflow-hidden bg-gray-900">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"></div>
+        
+        <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+            Ready to Get Verified Homeowner Leads?
+          </h2>
+          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+            Join hundreds of real estate professionals who close more deals with verified homeowner data.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link
+              to="/register"
+              className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition shadow-lg shadow-orange-500/30 flex items-center justify-center"
+            >
+              Start Free Plan
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+            <Link
+              to="/pricing"
+              className="bg-white/10 backdrop-blur-sm border border-white/30 text-white px-10 py-4 rounded-xl text-lg font-semibold hover:bg-white/20 transition"
+            >
+              View Pricing
+            </Link>
+          </div>
+          <p className="mt-6 text-gray-400 text-sm">No credit card required. Start with our free plan.</p>
+        </div>
+      </section>
+
+      <footer className="bg-gray-950 text-gray-400 border-t border-gray-800">
+        {/* Main Footer */}
+        <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="grid md:grid-cols-4 gap-8 mb-12">
           {/* Brand */}
           <div>
@@ -57,5 +89,6 @@ export default function Footer() {
         </div>
       </div>
     </footer>
+    </>
   );
 }

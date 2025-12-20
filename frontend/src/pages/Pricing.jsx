@@ -310,26 +310,6 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 px-4 bg-gradient-to-br from-gray-900 to-gray-800">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-white mb-4">
-            Ready to Get Started?
-          </h2>
-          <p className="text-gray-300 mb-8 text-lg">
-            Join hundreds of wholesalers who are closing more deals with verified homeowner leads.
-          </p>
-          <Link
-            to="/register"
-            className="inline-flex items-center bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-orange-600 hover:to-orange-700 transition shadow-lg shadow-orange-500/30"
-          >
-            Start Free Plan
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
-          <p className="mt-4 text-gray-400 text-sm">No credit card required</p>
-        </div>
-      </section>
-
       <Footer />
     </div>
   );

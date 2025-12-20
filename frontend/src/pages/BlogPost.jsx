@@ -300,25 +300,6 @@ export default function BlogPost() {
         </section>
       )}
 
-      {/* CTA */}
-      <section className="py-16 px-4 bg-gradient-to-r from-blue-700 to-blue-600">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Ready to Get Verified Homeowner Leads?
-          </h2>
-          <p className="text-blue-100 mb-8">
-            Join hundreds of wholesalers who close more deals with our verified leads.
-          </p>
-          <Link
-            to="/register"
-            className="inline-flex items-center bg-orange-500 text-white px-8 py-3 rounded-xl font-semibold hover:bg-orange-600 transition shadow-lg"
-          >
-            Start Free Trial
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Link>
-        </div>
-      </section>
-
       <Footer />
     </div>
   );
