@@ -105,14 +105,14 @@ export default function BlogPost() {
     );
   }
 
-  if (error) {
+  if (error || !post) {
     return (
       <div className="min-h-screen bg-white">
         <Navbar />
         <div className="pt-24 pb-16 px-4">
           <div className="max-w-3xl mx-auto text-center py-16">
             <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">{error}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">{error || 'Post not found'}</h1>
             <p className="text-gray-600 mb-6">
               The blog post you're looking for doesn't exist or has been removed.
             </p>
@@ -125,6 +125,7 @@ export default function BlogPost() {
             </Link>
           </div>
         </div>
+        <Footer />
       </div>
     );
   }
