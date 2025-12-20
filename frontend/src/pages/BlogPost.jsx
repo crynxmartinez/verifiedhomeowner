@@ -27,24 +27,15 @@ export default function BlogPost() {
     try {
       setLoading(true);
       setError(null);
-      console.log('Fetching blog post with slug:', slug);
       const { data } = await axios.get(`/api/blog?slug=${encodeURIComponent(slug)}`);
-      console.log('Blog post data:', data);
       setPost(data.post);
       setRelatedPosts(data.relatedPosts || []);
     } catch (error) {
       console.error('Failed to fetch post:', error);
-      console.error('Error response:', error.response);
-      console.error('Error status:', error.response?.status);
-      console.error('Error data:', error.response?.data);
       if (error.response?.status === 404) {
         setError('Post not found');
-      } else if (error.response?.status === 400) {
-        setError('Invalid request: ' + (error.response?.data?.error || 'Bad request'));
-      } else if (error.response?.status === 500) {
-        setError('Server error: ' + (error.response?.data?.error || 'Internal server error'));
       } else {
-        setError('Failed to load post: ' + (error.message || 'Unknown error'));
+        setError('Failed to load post');
       }
     } finally {
       setLoading(false);
