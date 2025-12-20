@@ -135,14 +135,14 @@ export default function BlogPost() {
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
-        <title>{post.title} - Verified Homeowner Blog</title>
-        <meta name="description" content={post.excerpt || post.title} />
-        <meta property="og:title" content={post.title} />
-        <meta property="og:description" content={post.excerpt || post.title} />
-        {post.bannerImage && <meta property="og:image" content={post.bannerImage} />}
+        <title>{post?.title || 'Blog Post'} - Verified Homeowner Blog</title>
+        <meta name="description" content={post?.excerpt || post?.title || ''} />
+        <meta property="og:title" content={post?.title || ''} />
+        <meta property="og:description" content={post?.excerpt || post?.title || ''} />
+        {post?.bannerImage && <meta property="og:image" content={post.bannerImage} />}
         <meta property="og:type" content="article" />
-        <meta property="article:published_time" content={post.publishedAt} />
-        {post.category && <meta property="article:section" content={post.category} />}
+        <meta property="article:published_time" content={post?.publishedAt || ''} />
+        {post?.category && <meta property="article:section" content={post.category} />}
       </Helmet>
 
       <Navbar />
@@ -161,7 +161,7 @@ export default function BlogPost() {
           </Link>
 
           {/* Category */}
-          {post.category && (
+          {post?.category && (
             <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-4">
               {post.category}
             </span>
@@ -169,23 +169,23 @@ export default function BlogPost() {
 
           {/* Title */}
           <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-            {post.title}
+            {post?.title}
           </h1>
 
           {/* Meta */}
           <div className="flex flex-wrap items-center gap-4 text-gray-500 mb-6">
             <span className="flex items-center">
               <Calendar className="w-4 h-4 mr-2" />
-              {formatDate(post.publishedAt)}
+              {post?.publishedAt ? formatDate(post.publishedAt) : ''}
             </span>
             <span className="flex items-center">
               <Clock className="w-4 h-4 mr-2" />
-              {calculateReadTime(post.content)} min read
+              {calculateReadTime(post?.content)} min read
             </span>
           </div>
 
           {/* Tags */}
-          {post.tags && post.tags.length > 0 && (
+          {post?.tags && post.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-6">
               {post.tags.map(tag => (
                 <span
@@ -201,11 +201,11 @@ export default function BlogPost() {
         </header>
 
         {/* Banner Image */}
-        {post.bannerImage && (
+        {post?.bannerImage && (
           <div className="max-w-4xl mx-auto px-4 mb-12">
             <img
               src={post.bannerImage}
-              alt={post.title}
+              alt={post?.title || ''}
               className="w-full h-auto rounded-2xl shadow-lg"
             />
           </div>
@@ -215,7 +215,7 @@ export default function BlogPost() {
         <div className="max-w-3xl mx-auto px-4">
           <div 
             className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 prose-strong:text-gray-900 prose-img:rounded-xl"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: post?.content || '' }}
           />
         </div>
 
