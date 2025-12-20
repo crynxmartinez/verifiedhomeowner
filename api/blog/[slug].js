@@ -13,9 +13,12 @@ export default async function handler(req, res) {
   }
 
   try {
+    console.log('Blog API request - query:', JSON.stringify(req.query));
     const { slug } = req.query;
+    console.log('Blog API - extracted slug:', slug);
 
     if (!slug) {
+      console.log('Blog API - slug is empty/undefined');
       return res.status(400).json({ error: 'Slug is required' });
     }
 
