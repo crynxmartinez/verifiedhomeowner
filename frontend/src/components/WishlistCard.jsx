@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ChevronUp, ChevronDown, User, Clock } from 'lucide-react';
+import { ChevronUp, User, Clock, MessageCircle, ChevronDown } from 'lucide-react';
+import CommentSection from './CommentSection';
 
 const STATUS_STYLES = {
   open: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400',
@@ -110,7 +111,25 @@ export default function WishlistCard({ request, onVote }) {
               <Clock className="h-3.5 w-3.5" />
               {formatTimeAgo(request.createdAt)}
             </span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded(!expanded);
+              }}
+              className="flex items-center gap-1 text-blue-500 hover:text-blue-600 transition ml-auto"
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+              Comments
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+            </button>
           </div>
+
+          {/* Comments Section */}
+          {expanded && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <CommentSection featureRequestId={request.id} />
+            </div>
+          )}
         </div>
       </div>
     </div>
