@@ -1,6 +1,91 @@
 import prisma from '../../lib/prisma.js';
 import { requireAdmin } from '../../lib/auth-prisma.js';
 import Papa from 'papaparse';
+import { fetchPropertyDataForAddress } from '../zillow/property.js';
+
+// Delay helper for rate limiting
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Enrich a single lead with Zillow property data
+ */
+async function enrichLeadWithPropertyData(leadId, address) {
+  if (!address) return null;
+  
+  try {
+    const propertyData = await fetchPropertyDataForAddress(address);
+    
+    if (propertyData) {
+      await prisma.lead.update({
+        where: { id: leadId },
+        data: {
+          zpid: propertyData.zpid,
+          zestimate: propertyData.zestimate,
+          bedrooms: propertyData.bedrooms,
+          bathrooms: propertyData.bathrooms,
+          livingArea: propertyData.livingArea,
+          lotSize: propertyData.lotSize,
+          yearBuilt: propertyData.yearBuilt,
+          homeType: propertyData.homeType,
+          lastSalePrice: propertyData.lastSalePrice,
+          lastSaleDate: propertyData.lastSaleDate,
+          propertyPhoto: propertyData.propertyPhoto,
+          priceHistory: propertyData.priceHistory,
+          zestimateHistory: propertyData.zestimateHistory,
+          propertyDataFetchedAt: propertyData.propertyDataFetchedAt,
+        }
+      });
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error(`Failed to enrich lead ${leadId}:`, error.message);
+    return false;
+  }
+}
+
+/**
+ * Enrich multiple leads with property data (with rate limiting)
+ */
+async function enrichLeadsWithPropertyData(leads) {
+  let enrichedCount = 0;
+  let failedCount = 0;
+  
+  for (const lead of leads) {
+    const fullAddress = buildFullAddress(lead);
+    if (fullAddress) {
+      const success = await enrichLeadWithPropertyData(lead.id, fullAddress);
+      if (success) {
+        enrichedCount++;
+      } else {
+        failedCount++;
+      }
+      // Rate limiting: 150ms delay between API calls
+      await delay(150);
+    }
+  }
+  
+  return { enrichedCount, failedCount };
+}
+
+/**
+ * Build full address string from lead data
+ */
+function buildFullAddress(lead) {
+  const parts = [];
+  if (lead.propertyAddress) parts.push(lead.propertyAddress);
+  if (lead.city) parts.push(lead.city);
+  if (lead.state) {
+    if (lead.zipCode) {
+      parts.push(`${lead.state} ${lead.zipCode}`);
+    } else {
+      parts.push(lead.state);
+    }
+  } else if (lead.zipCode) {
+    parts.push(lead.zipCode);
+  }
+  return parts.length >= 2 ? parts.join(', ') : null;
+}
 
 // Detect if a name is a business/company rather than a person
 function isBusinessName(name) {
@@ -323,11 +408,36 @@ async function handler(req, res) {
           }
         }
 
+        // Enrich newly inserted leads with Zillow property data
+        let enrichedCount = 0;
+        let enrichFailedCount = 0;
+        
+        if (leadsToInsert.length > 0 && process.env.RAPIDAPI_KEY) {
+          // Get the newly created leads to enrich them
+          const newLeads = await prisma.lead.findMany({
+            where: {
+              sequenceNumber: {
+                gte: leadsToInsert[0].sequenceNumber,
+                lte: leadsToInsert[leadsToInsert.length - 1].sequenceNumber
+              }
+            },
+            select: { id: true, propertyAddress: true, city: true, state: true, zipCode: true }
+          });
+          
+          console.log(`[Lead Enrichment] Starting enrichment for ${newLeads.length} leads...`);
+          const enrichResult = await enrichLeadsWithPropertyData(newLeads);
+          enrichedCount = enrichResult.enrichedCount;
+          enrichFailedCount = enrichResult.failedCount;
+          console.log(`[Lead Enrichment] Completed: ${enrichedCount} enriched, ${enrichFailedCount} failed`);
+        }
+
         return res.status(201).json({ 
-          message: `${leadsToInsert.length} new leads uploaded, ${updatedCount} existing leads updated${skippedBusinessCount > 0 ? `, ${skippedBusinessCount} businesses skipped` : ''}`,
+          message: `${leadsToInsert.length} new leads uploaded, ${updatedCount} existing leads updated${skippedBusinessCount > 0 ? `, ${skippedBusinessCount} businesses skipped` : ''}${enrichedCount > 0 ? `, ${enrichedCount} enriched with property data` : ''}`,
           newCount: leadsToInsert.length,
           updatedCount: updatedCount,
           skippedBusinessCount: skippedBusinessCount,
+          enrichedCount: enrichedCount,
+          enrichFailedCount: enrichFailedCount,
           totalProcessed: leadsToInsert.length + updatedCount,
           totalRows: mappedData.length
         });

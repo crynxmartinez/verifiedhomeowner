@@ -103,6 +103,21 @@ async function handler(req, res) {
           mailing_state: ul.lead.mailingState,
           mailing_zip: ul.lead.mailingZip,
           motivation: ul.motivation || null,
+          // Property data from Zillow
+          zpid: ul.lead.zpid,
+          zestimate: ul.lead.zestimate ? parseFloat(ul.lead.zestimate) : null,
+          bedrooms: ul.lead.bedrooms,
+          bathrooms: ul.lead.bathrooms ? parseFloat(ul.lead.bathrooms) : null,
+          living_area: ul.lead.livingArea,
+          lot_size: ul.lead.lotSize,
+          year_built: ul.lead.yearBuilt,
+          home_type: ul.lead.homeType,
+          last_sale_price: ul.lead.lastSalePrice ? parseFloat(ul.lead.lastSalePrice) : null,
+          last_sale_date: ul.lead.lastSaleDate,
+          property_photo: ul.lead.propertyPhoto,
+          price_history: ul.lead.priceHistory,
+          zestimate_history: ul.lead.zestimateHistory,
+          property_data_fetched_at: ul.lead.propertyDataFetchedAt,
         }
       };
     }).filter(Boolean);

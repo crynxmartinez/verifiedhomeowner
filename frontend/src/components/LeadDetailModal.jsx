@@ -19,13 +19,20 @@ import {
   Loader2,
   Save,
   Flame,
-  Thermometer
+  Thermometer,
+  DollarSign,
+  Bed,
+  Bath,
+  Ruler,
+  Building
 } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { leadsAPI } from '../lib/api';
 import { useToast } from '../context/ToastContext';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: User },
+  { id: 'property', label: 'Property', icon: Home },
   { id: 'activity', label: 'Activity', icon: Activity },
   { id: 'notes', label: 'Notes', icon: MessageSquare },
   { id: 'actions', label: 'Actions', icon: Zap },
@@ -444,6 +451,209 @@ export default function LeadDetailModal({ lead, userLead, onClose, onUpdate }) {
                   )}
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Property Tab */}
+          {activeTab === 'property' && (
+            <div className="space-y-6">
+              {/* Check if property data exists */}
+              {!lead?.zestimate && !lead?.bedrooms && !lead?.year_built ? (
+                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <Home className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                  <p className="font-medium">Property data not available</p>
+                  <p className="text-sm mt-1">Data will be fetched when leads are uploaded</p>
+                </div>
+              ) : (
+                <>
+                  {/* Zestimate Value */}
+                  {lead?.zestimate && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                        Estimated Value
+                      </h3>
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                            <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-green-700 dark:text-green-400">
+                              ${lead.zestimate.toLocaleString()}
+                            </p>
+                            <p className="text-sm text-green-600 dark:text-green-500">Zestimate</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Property Details */}
+                  {(lead?.bedrooms || lead?.bathrooms || lead?.living_area || lead?.year_built || lead?.home_type) && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                        Property Details
+                      </h3>
+                      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          {lead?.bedrooms && (
+                            <div className="flex items-center gap-3">
+                              <Bed className="h-5 w-5 text-blue-500" />
+                              <div>
+                                <p className="text-lg font-semibold text-gray-900 dark:text-white">{lead.bedrooms}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Bedrooms</p>
+                              </div>
+                            </div>
+                          )}
+                          {lead?.bathrooms && (
+                            <div className="flex items-center gap-3">
+                              <Bath className="h-5 w-5 text-blue-500" />
+                              <div>
+                                <p className="text-lg font-semibold text-gray-900 dark:text-white">{lead.bathrooms}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Bathrooms</p>
+                              </div>
+                            </div>
+                          )}
+                          {lead?.living_area && (
+                            <div className="flex items-center gap-3">
+                              <Ruler className="h-5 w-5 text-blue-500" />
+                              <div>
+                                <p className="text-lg font-semibold text-gray-900 dark:text-white">{lead.living_area.toLocaleString()}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Sq Ft</p>
+                              </div>
+                            </div>
+                          )}
+                          {lead?.year_built && (
+                            <div className="flex items-center gap-3">
+                              <Calendar className="h-5 w-5 text-blue-500" />
+                              <div>
+                                <p className="text-lg font-semibold text-gray-900 dark:text-white">{lead.year_built}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Year Built</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        {lead?.home_type && (
+                          <div className="mt-4 pt-4 border-t dark:border-gray-600 flex items-center gap-2">
+                            <Building className="h-4 w-4 text-gray-400" />
+                            <span className="text-sm text-gray-600 dark:text-gray-300">
+                              {lead.home_type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Zestimate History Chart */}
+                  {lead?.zestimate_history && lead.zestimate_history.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                        Value Trend
+                      </h3>
+                      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
+                        <ResponsiveContainer width="100%" height={200}>
+                          <LineChart
+                            data={lead.zestimate_history
+                              .sort((a, b) => a.x - b.x)
+                              .slice(-12)
+                              .map(item => ({
+                                date: new Date(item.x).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+                                value: item.y,
+                              }))}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                            <XAxis 
+                              dataKey="date" 
+                              tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                              axisLine={{ stroke: '#4B5563' }}
+                            />
+                            <YAxis 
+                              tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                              tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                              axisLine={{ stroke: '#4B5563' }}
+                              width={60}
+                            />
+                            <Tooltip 
+                              formatter={(value) => [`$${value.toLocaleString()}`, 'Zestimate']}
+                              contentStyle={{ 
+                                backgroundColor: '#1F2937', 
+                                border: 'none', 
+                                borderRadius: '8px',
+                                color: '#F9FAFB'
+                              }}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="value" 
+                              stroke="#10B981" 
+                              strokeWidth={2} 
+                              dot={false}
+                              activeDot={{ r: 4, fill: '#10B981' }}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Price History */}
+                  {lead?.price_history && lead.price_history.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                        Sale History
+                      </h3>
+                      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl overflow-hidden">
+                        <div className="divide-y dark:divide-gray-600">
+                          {lead.price_history.slice(0, 5).map((item, index) => (
+                            <div key={index} className="px-4 py-3 flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                                  <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                    {item.event || 'Sale'}
+                                  </p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    {item.date ? new Date(item.date).toLocaleDateString('en-US', { 
+                                      month: 'short', 
+                                      day: 'numeric', 
+                                      year: 'numeric' 
+                                    }) : '—'}
+                                  </p>
+                                </div>
+                              </div>
+                              {item.price && (
+                                <span className="font-semibold text-gray-900 dark:text-white">
+                                  ${item.price.toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Property Photo */}
+                  {lead?.property_photo && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                        Property Photo
+                      </h3>
+                      <div className="rounded-xl overflow-hidden">
+                        <img 
+                          src={lead.property_photo} 
+                          alt="Property" 
+                          className="w-full h-48 object-cover"
+                          onError={(e) => e.target.style.display = 'none'}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
 
