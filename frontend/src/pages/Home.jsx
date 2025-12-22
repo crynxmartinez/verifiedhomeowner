@@ -298,6 +298,59 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ========== SEE WHAT'S INSIDE (DASHBOARD PREVIEW) ========== */}
+      <section className="py-16 md:py-24 bg-slate-50">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-4">
+            <p className="text-orange-500 font-medium">"Open your dashboard. Start dialing."</p>
+          </div>
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">See What's Inside</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Every verified homeowner lead delivered to your dashboard, ready to call.
+            </p>
+          </div>
+          
+          {/* Dashboard Screenshot */}
+          <div className="relative">
+            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
+              <img 
+                src="https://storage.googleapis.com/msgsndr/xzA6eU8kOYmBuwFdr3CF/media/694915d4aca6ab114d0cc76a.png" 
+                alt="VerifiedHomeowner Dashboard - My Leads view showing verified homeowner contacts with phone numbers and Texas property addresses"
+                className="w-full h-auto"
+                loading="lazy"
+              />
+            </div>
+            
+            {/* Feature Callouts */}
+            <div className="mt-8 grid grid-cols-2 md:grid-cols-5 gap-4">
+              {[
+                { icon: '👤', label: 'Contact Name' },
+                { icon: '📞', label: 'Verified Phone' },
+                { icon: '🏠', label: 'Texas Address' },
+                { icon: '📊', label: 'Status Tracking' },
+                { icon: '⚡', label: 'One-Click Actions' },
+              ].map((item, i) => (
+                <div key={i} className="bg-white rounded-xl p-3 border border-gray-200 text-center">
+                  <span className="text-xl mb-1 block">{item.icon}</span>
+                  <span className="text-sm font-medium text-gray-700">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="text-center mt-10">
+            <Link
+              to="/register"
+              className="inline-flex items-center bg-gradient-to-r from-orange-500 to-orange-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-orange-600 hover:to-orange-700 transition shadow-lg shadow-orange-500/20"
+            >
+              Start Free Trial
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ========== VERIFICATION STANDARDS ========== */}
       <section className="py-16 md:py-20 bg-white">
         <div className="max-w-4xl mx-auto px-4">
