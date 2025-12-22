@@ -163,7 +163,7 @@ export default function Home() {
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Quality-First Rollout (Texas Only)</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              We're Texas-only by design. Scaling too fast kills lead quality — so we're protecting verification standards before expanding.
+              Starting in Texas. Scaling too fast kills lead quality — so we're protecting verification standards before expanding.
             </p>
           </div>
           
