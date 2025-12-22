@@ -638,6 +638,9 @@ export default function AdminLeads() {
                     Property Address
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                    Price
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Mailing Address
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
@@ -648,7 +651,7 @@ export default function AdminLeads() {
               <tbody>
                 {filteredLeads.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan="8" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                       No leads found. Upload some leads to get started.
                     </td>
                   </tr>
@@ -696,6 +699,15 @@ export default function AdminLeads() {
                           <div className="text-sm text-gray-500 dark:text-gray-400">
                             {lead.city}, {lead.state} {lead.zip_code}
                           </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          {lead.zestimate ? (
+                            <span className="font-semibold text-green-600 dark:text-green-400">
+                              ${lead.zestimate.toLocaleString()}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 dark:text-gray-500 text-sm">—</span>
+                          )}
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-gray-900 dark:text-white">{lead.mailing_address}</div>
