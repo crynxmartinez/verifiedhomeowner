@@ -239,8 +239,8 @@ export default function UpgradePlan() {
   };
 
   // Check if user has an active paid subscription that can be cancelled
-  const canCancelSubscription = user?.has_active_subscription && 
-    user?.plan_type !== 'free' && 
+  // Show cancel button if user has a paid plan (even if no dodoSubscriptionId - for manual upgrades)
+  const canCancelSubscription = user?.plan_type !== 'free' && 
     user?.subscription_status !== 'cancelled';
 
   // Check if subscription is cancelled but still active
