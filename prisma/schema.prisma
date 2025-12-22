@@ -63,6 +63,7 @@ model User {
   featureRequests      FeatureRequest[]
   featureVotes         FeatureVote[]
   featureComments      FeatureComment[]
+  activities           UserActivity[]
 
   @@index([email])
   @@index([role])
@@ -478,4 +479,26 @@ model FeatureComment {
   @@index([parentId])
   @@index([createdAt(sort: Desc)])
   @@map("feature_comments")
+}
+
+// ============================================================================
+// USER ACTIVITY TRACKING
+// ============================================================================
+
+model UserActivity {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  eventType String   @map("event_type") @db.VarChar(50)
+  eventData Json?    @map("event_data")
+  pagePath  String?  @map("page_path") @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt(sort: Desc)])
+  @@index([userId, eventType])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("user_activities")
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import useAuthStore from '../../store/authStore';
-import { userAPI, authAPI } from '../../lib/api';
+import api, { userAPI, authAPI } from '../../lib/api';
 import { User, Mail, Lock, CheckCircle, XCircle, Loader2, Eye, EyeOff, AlertTriangle, MapPin, Bell, X } from 'lucide-react';
 
 function PasswordCheck({ password }) {
@@ -128,6 +128,14 @@ export default function Profile() {
       }
 
       const response = await userAPI.updateProfile(updateData);
+      
+      // Track state preference update if states changed
+      const statesChanged = JSON.stringify(preferredStates) !== JSON.stringify(user.preferred_states || []);
+      if (statesChanged) {
+        try {
+          await api.post('/analytics/track', { eventType: 'state_preference_update', eventData: { states: preferredStates } });
+        } catch (e) { /* ignore */ }
+      }
       
       // Update local user state
       setUser({

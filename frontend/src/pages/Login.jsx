@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { LogIn, Eye, EyeOff, ArrowLeft, Loader2 } from 'lucide-react';
+import api from '../lib/api';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -19,6 +20,10 @@ export default function Login() {
 
     try {
       const user = await login({ email, password });
+      // Track login event
+      try {
+        await api.post('/analytics/track', { eventType: 'login', eventData: { timestamp: new Date().toISOString() } });
+      } catch (e) { /* ignore tracking errors */ }
       navigate(user.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');

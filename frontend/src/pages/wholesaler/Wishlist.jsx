@@ -43,6 +43,11 @@ export default function Wishlist() {
     try {
       const { data } = await api.post('/wishlist/vote', { featureRequestId: requestId });
       
+      // Track vote event
+      try {
+        await api.post('/analytics/track', { eventType: 'wishlist_vote', eventData: { featureId: requestId } });
+      } catch (e) { /* ignore */ }
+      
       setRequests(prev =>
         prev.map(req =>
           req.id === requestId

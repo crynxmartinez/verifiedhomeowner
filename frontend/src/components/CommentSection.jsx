@@ -41,6 +41,10 @@ export default function CommentSection({ featureRequestId }) {
         featureRequestId,
         content: newComment.trim(),
       });
+      // Track comment event
+      try {
+        await api.post('/analytics/track', { eventType: 'wishlist_comment', eventData: { featureId: featureRequestId } });
+      } catch (e) { /* ignore */ }
       setComments(prev => [...prev, data.comment]);
       setTotalCount(prev => prev + 1);
       setNewComment('');
