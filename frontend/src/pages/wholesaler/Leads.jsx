@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
-import { Phone, Clock, DollarSign, Package, Copy, Check, X, ChevronLeft, ChevronRight, Search, SlidersHorizontal, Download, Loader2, Eye } from 'lucide-react';
+import useAuthStore from '../../store/authStore';
+import { Phone, Clock, DollarSign, Package, Copy, Check, X, ChevronLeft, ChevronRight, Search, SlidersHorizontal, Download, Loader2, Eye, Lock } from 'lucide-react';
 import TagInput from '../../components/TagInput';
 import FilterPanel from '../../components/FilterPanel';
 import LeadDetailModal from '../../components/LeadDetailModal';
@@ -10,6 +11,8 @@ import { SkeletonLeadCard } from '../../components/Skeleton';
 
 export default function WholesalerLeads() {
   const toast = useToast();
+  const user = useAuthStore((state) => state.user);
+  const isProPlan = user?.plan_type === 'pro';
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingLeads, setSavingLeads] = useState(new Set());
@@ -660,15 +663,26 @@ export default function WholesalerLeads() {
             )}
           </button>
 
-          {/* Export Button */}
-          <button
-            onClick={handleExportCSV}
-            disabled={exporting || leads.length === 0}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
-          >
-            {exporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-            <span>{exporting ? 'Exporting...' : 'Export CSV'}</span>
-          </button>
+          {/* Export Button - Pro Plan Only */}
+          <div className="relative group">
+            <button
+              onClick={isProPlan ? handleExportCSV : undefined}
+              disabled={!isProPlan || exporting || leads.length === 0}
+              className={`flex items-center justify-center gap-2 px-4 py-2.5 border dark:border-gray-600 rounded-lg transition-colors disabled:opacity-50 ${
+                isProPlan 
+                  ? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700' 
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              {!isProPlan ? <Lock size={18} /> : exporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+              <span>{exporting ? 'Exporting...' : 'Export CSV'}</span>
+            </button>
+            {!isProPlan && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                Pro plan required
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Active Filter Chips */}
