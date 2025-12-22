@@ -52,6 +52,7 @@ export default function AdminLeads() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editModalTab, setEditModalTab] = useState('edit');
+  const [enriching, setEnriching] = useState(false);
 
   useEffect(() => {
     fetchLeads();
@@ -485,6 +486,21 @@ export default function AdminLeads() {
     }
   };
 
+  // Handle enrich leads
+  const handleEnrichLeads = async () => {
+    setEnriching(true);
+    try {
+      const { data } = await adminAPI.enrichLeads(null, 20);
+      toast.success(data.message);
+      fetchLeads();
+    } catch (error) {
+      console.error('Failed to enrich leads:', error);
+      toast.error(error.response?.data?.error || 'Failed to enrich leads');
+    } finally {
+      setEnriching(false);
+    }
+  };
+
   // Filter leads based on search query
   const filteredLeads = leads.filter(lead => {
     if (!searchQuery) return true;
@@ -542,6 +558,14 @@ export default function AdminLeads() {
             >
               <FileText className="h-4 w-4" />
               <span>Distribute Now</span>
+            </button>
+            <button
+              onClick={handleEnrichLeads}
+              disabled={enriching}
+              className="flex items-center space-x-2 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition disabled:opacity-50"
+            >
+              {enriching ? <Loader2 className="h-4 w-4 animate-spin" /> : <DollarSign className="h-4 w-4" />}
+              <span>{enriching ? 'Enriching...' : 'Enrich Prices'}</span>
             </button>
           </div>
         </div>

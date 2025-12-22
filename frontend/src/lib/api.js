@@ -123,4 +123,6 @@ export const adminAPI = {
   createEmailAutomation: (data) => api.post('/admin/email-automations', data),
   updateEmailAutomation: (data) => api.patch('/admin/email-automations', data),
   deleteEmailAutomation: (id) => api.delete('/admin/email-automations', { data: { id } }),
+  // Lead enrichment
+  enrichLeads: (leadIds, limit) => api.post('/admin/enrich-leads', { leadIds, limit }),
 };
