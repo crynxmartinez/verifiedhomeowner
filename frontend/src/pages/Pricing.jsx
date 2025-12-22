@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { CheckCircle, Shield, ChevronDown, ChevronUp, ArrowRight, Star } from 'lucide-react';
+import { CheckCircle, Shield, ChevronDown, ChevronUp, ArrowRight, MapPin, Phone, RefreshCw, BadgeCheck } from 'lucide-react';
 import useAuthStore from '../store/authStore';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -77,11 +77,12 @@ export default function Pricing() {
   ];
 
   const faqs = [
-    { q: 'How do I get my leads?', a: 'Leads are automatically delivered to your dashboard daily (or weekly for Free plan). You\'ll see them in your "My Leads" section with all contact information.' },
-    { q: 'Can I cancel anytime?', a: 'Yes! You can cancel your subscription at any time. Your access continues until the end of your current billing period.' },
-    { q: 'What payment methods do you accept?', a: 'We accept all major credit cards (Visa, MasterCard, American Express) through our secure payment system.' },
-    { q: 'Are there any contracts?', a: 'No contracts! All plans are month-to-month. Upgrade, downgrade, or cancel whenever you want.' },
-    { q: 'What kind of leads do you provide?', a: 'We provide verified homeowner leads with property information, contact details, and motivation indicators to help you close more deals.' },
+    { q: 'How does the 3-day free trial work?', a: 'Start a free trial on any paid plan (Basic, Elite, or Pro). Card required to activate, but you pay $0 during the trial. Cancel anytime before the trial ends and you won\'t be charged.' },
+    { q: 'What does "phone verified" mean?', a: 'Our team actively validates the best working number for each homeowner through direct confirmation. We don\'t just pull data — we verify it connects to the actual property owner.' },
+    { q: 'What is ownership matched?', a: 'We cross-reference public records to confirm the contact is the actual property owner at that address. No renters, no outdated info.' },
+    { q: 'Where are leads available?', a: 'We currently serve Texas only. This is by design — limiting our territory allows us to maintain strict verification standards.' },
+    { q: 'What qualifies for replacement?', a: 'If a phone number is disconnected, wrong, or doesn\'t reach the property owner, you qualify for a replacement lead.' },
+    { q: 'Can I cancel anytime?', a: 'Yes! Cancel from your dashboard anytime — no calls, no hassle. Your access continues until the end of your billing period.' },
   ];
 
   return (
@@ -89,21 +90,25 @@ export default function Pricing() {
       <Navbar />
 
       {/* Hero */}
-      <section className="pt-24 pb-16 px-4 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 relative overflow-hidden">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl"></div>
+      <section className="pt-24 pb-16 px-4 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl"></div>
         
-        <div className="max-w-7xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-6">
-            <Star className="h-4 w-4 text-yellow-400 mr-2" />
-            <span className="text-white/90 text-sm">Start with our Free Plan</span>
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <div className="inline-flex items-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2 mb-6">
+            <MapPin className="h-4 w-4 text-orange-400 mr-2" />
+            <span className="text-white/80 text-sm">Texas-Only • Quality-First</span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
             Simple, Transparent Pricing
           </h1>
-          <p className="text-xl text-blue-200 max-w-2xl mx-auto mb-8">
-            Choose the plan that fits your business. No hidden fees, no contracts.
+          <p className="text-xl text-blue-200 max-w-2xl mx-auto mb-4">
+            Ownership-matched, phone-verified homeowner leads for Texas wholesalers.
           </p>
+          <p className="text-white/90 font-medium mb-2">
+            Try any plan free for 3 days. <span className="text-orange-400">$0 during trial.</span> Cancel anytime.
+          </p>
+          <p className="text-xs text-blue-200/50">Card required to activate trial.</p>
         </div>
       </section>
 
@@ -162,15 +167,39 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* Secure Payment */}
-      <section className="py-12 px-4 bg-gradient-to-r from-blue-700 to-blue-600">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="flex items-center justify-center space-x-3 mb-4">
-            <Shield className="h-8 w-8 text-white" />
-            <h2 className="text-2xl font-bold text-white">Secure Payment</h2>
+      {/* Verification Standards */}
+      <section className="py-12 px-4 bg-slate-50">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <p className="text-orange-500 font-medium text-sm mb-2">"If the number isn't verified, it's not a lead."</p>
+            <h2 className="text-2xl font-bold text-gray-900">Every Lead Meets Our Standards</h2>
           </div>
-          <p className="text-blue-100">
-            All payments are processed securely. Your payment information is never stored on our servers.
+          <div className="grid md:grid-cols-4 gap-4">
+            {[
+              { icon: BadgeCheck, title: 'Ownership Matched', desc: 'Public record verified', color: 'text-blue-600' },
+              { icon: Phone, title: 'Phone Verified', desc: 'Direct confirmation', color: 'text-green-600' },
+              { icon: ArrowRight, title: 'Daily Delivery', desc: 'Fresh to your dashboard', color: 'text-orange-500' },
+              { icon: RefreshCw, title: 'Replacement Policy', desc: 'Invalid? We replace it', color: 'text-purple-600' },
+            ].map((item, i) => (
+              <div key={i} className="bg-white rounded-xl p-4 border border-gray-200 text-center">
+                <item.icon className={`h-8 w-8 ${item.color} mx-auto mb-2`} />
+                <h3 className="font-bold text-gray-900 text-sm">{item.title}</h3>
+                <p className="text-gray-500 text-xs">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Secure Payment */}
+      <section className="py-10 px-4 bg-gradient-to-r from-blue-700 to-blue-600">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="flex items-center justify-center space-x-3 mb-3">
+            <Shield className="h-7 w-7 text-white" />
+            <h2 className="text-xl font-bold text-white">Secure Payment</h2>
+          </div>
+          <p className="text-blue-100 text-sm">
+            All payments processed securely. Cancel anytime from your dashboard.
           </p>
         </div>
       </section>
@@ -197,10 +226,10 @@ export default function Pricing() {
               <tbody className="divide-y divide-gray-100">
                 <tr className="hover:bg-gray-50">
                   <td className="py-4 px-6 font-medium text-gray-900">Daily Leads</td>
-                  <td className="text-center py-4 px-4 text-gray-600">1/week</td>
                   <td className="text-center py-4 px-4 text-gray-600">1/day</td>
                   <td className="text-center py-4 px-4 text-gray-600">5/day</td>
                   <td className="text-center py-4 px-4 text-gray-600">10/day</td>
+                  <td className="text-center py-4 px-4 text-blue-600 font-semibold">20/day</td>
                 </tr>
                 <tr className="hover:bg-gray-50">
                   <td className="py-4 px-6 font-medium text-gray-900">States Coverage</td>
