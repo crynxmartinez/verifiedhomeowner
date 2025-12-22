@@ -36,6 +36,7 @@ import AdminWholesalers from './pages/admin/Wholesalers';
 import AdminEmail from './pages/admin/Email';
 import AdminBlog from './pages/admin/Blog';
 import AdminBlogEditor from './pages/admin/BlogEditor';
+import AdminWishlist from './pages/admin/Wishlist';
 
 // Public Blog pages
 import BlogList from './pages/BlogList';
@@ -190,6 +191,14 @@ function App() {
           element={
             <AdminRoute>
               <AdminEmail />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/wishlist"
+          element={
+            <AdminRoute>
+              <AdminWishlist />
             </AdminRoute>
           }
         />
