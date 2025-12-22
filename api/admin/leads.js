@@ -198,6 +198,21 @@ async function handler(req, res) {
         mailing_zip: lead.mailingZip,
         sequence_number: lead.sequenceNumber,
         created_at: lead.createdAt,
+        // Property data from Zillow
+        zpid: lead.zpid,
+        zestimate: lead.zestimate ? parseFloat(lead.zestimate) : null,
+        bedrooms: lead.bedrooms,
+        bathrooms: lead.bathrooms ? parseFloat(lead.bathrooms) : null,
+        living_area: lead.livingArea,
+        lot_size: lead.lotSize,
+        year_built: lead.yearBuilt,
+        home_type: lead.homeType,
+        last_sale_price: lead.lastSalePrice ? parseFloat(lead.lastSalePrice) : null,
+        last_sale_date: lead.lastSaleDate,
+        property_photo: lead.propertyPhoto,
+        price_history: lead.priceHistory,
+        zestimate_history: lead.zestimateHistory,
+        property_data_fetched_at: lead.propertyDataFetchedAt,
       }));
 
       // Calculate pagination metadata

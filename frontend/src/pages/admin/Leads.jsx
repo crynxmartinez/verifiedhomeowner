@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { adminAPI } from '../../lib/api';
-import { Upload, Plus, X, FileText, Search, ArrowRight, Trash2, Loader2, Edit2 } from 'lucide-react';
+import { Upload, Plus, X, FileText, Search, ArrowRight, Trash2, Loader2, Edit2, Home, DollarSign, Bed, Bath, Ruler, Calendar, Building } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { useToast } from '../../context/ToastContext';
@@ -50,6 +51,7 @@ export default function AdminLeads() {
   const [editingLead, setEditingLead] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editModalTab, setEditModalTab] = useState('edit');
 
   useEffect(() => {
     fetchLeads();
@@ -1286,111 +1288,96 @@ export default function AdminLeads() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Lead</h2>
-                <button onClick={() => setShowEditModal(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {editingLead.first_name} {editingLead.last_name}
+                </h2>
+                <button onClick={() => { setShowEditModal(false); setEditModalTab('edit'); }} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                   <X className="h-6 w-6" />
                 </button>
               </div>
 
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name</label>
-                    <input
-                      type="text"
-                      name="first_name"
-                      value={editingLead.first_name}
-                      onChange={handleEditChange}
-                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name</label>
-                    <input
-                      type="text"
-                      name="last_name"
-                      value={editingLead.last_name}
-                      onChange={handleEditChange}
-                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
-                </div>
+              {/* Tabs */}
+              <div className="flex gap-1 mb-6 border-b dark:border-gray-700">
+                <button
+                  onClick={() => setEditModalTab('edit')}
+                  className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${
+                    editModalTab === 'edit'
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-b-2 border-blue-600'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}
+                >
+                  <Edit2 className="h-4 w-4 inline mr-2" />
+                  Edit
+                </button>
+                <button
+                  onClick={() => setEditModalTab('property')}
+                  className={`px-4 py-2 text-sm font-medium rounded-t-lg transition ${
+                    editModalTab === 'property'
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-b-2 border-blue-600'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                  }`}
+                >
+                  <Home className="h-4 w-4 inline mr-2" />
+                  Property
+                </button>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
-                  <input
-                    type="text"
-                    name="phone"
-                    value={editingLead.phone}
-                    onChange={handleEditChange}
-                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
+              {/* Edit Tab */}
+              {editModalTab === 'edit' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name</label>
+                      <input
+                        type="text"
+                        name="first_name"
+                        value={editingLead.first_name}
+                        onChange={handleEditChange}
+                        className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name</label>
+                      <input
+                        type="text"
+                        name="last_name"
+                        value={editingLead.last_name}
+                        onChange={handleEditChange}
+                        className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      />
+                    </div>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Property Address</label>
-                  <input
-                    type="text"
-                    name="property_address"
-                    value={editingLead.property_address}
-                    onChange={handleEditChange}
-                    className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone</label>
+                    <input
+                      type="text"
+                      name="phone"
+                      value={editingLead.phone}
+                      onChange={handleEditChange}
+                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                  </div>
 
-                <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Property Address</label>
                     <input
                       type="text"
-                      name="city"
-                      value={editingLead.city}
+                      name="property_address"
+                      value={editingLead.property_address}
                       onChange={handleEditChange}
                       className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State</label>
-                    <input
-                      type="text"
-                      name="state"
-                      value={editingLead.state}
-                      onChange={handleEditChange}
-                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zip Code</label>
-                    <input
-                      type="text"
-                      name="zip_code"
-                      value={editingLead.zip_code}
-                      onChange={handleEditChange}
-                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
-                </div>
 
-                <div className="border-t dark:border-gray-700 pt-4 mt-4">
-                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Mailing Address</h3>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
-                    <input
-                      type="text"
-                      name="mailing_address"
-                      value={editingLead.mailing_address}
-                      onChange={handleEditChange}
-                      className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-4 mt-3">
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City</label>
                       <input
                         type="text"
-                        name="mailing_city"
-                        value={editingLead.mailing_city}
+                        name="city"
+                        value={editingLead.city}
                         onChange={handleEditChange}
                         className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
@@ -1399,42 +1386,290 @@ export default function AdminLeads() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State</label>
                       <input
                         type="text"
-                        name="mailing_state"
-                        value={editingLead.mailing_state}
+                        name="state"
+                        value={editingLead.state}
                         onChange={handleEditChange}
                         className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zip</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zip Code</label>
                       <input
                         type="text"
-                        name="mailing_zip"
-                        value={editingLead.mailing_zip}
+                        name="zip_code"
+                        value={editingLead.zip_code}
                         onChange={handleEditChange}
                         className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       />
                     </div>
                   </div>
-                </div>
 
-                <div className="flex justify-end gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowEditModal(false)}
-                    className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSaveEdit}
-                    disabled={saving}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
-                  >
-                    {saving ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Save Changes'}
-                  </button>
+                  <div className="border-t dark:border-gray-700 pt-4 mt-4">
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Mailing Address</h3>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address</label>
+                      <input
+                        type="text"
+                        name="mailing_address"
+                        value={editingLead.mailing_address}
+                        onChange={handleEditChange}
+                        className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-4 mt-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City</label>
+                        <input
+                          type="text"
+                          name="mailing_city"
+                          value={editingLead.mailing_city}
+                          onChange={handleEditChange}
+                          className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State</label>
+                        <input
+                          type="text"
+                          name="mailing_state"
+                          value={editingLead.mailing_state}
+                          onChange={handleEditChange}
+                          className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Zip</label>
+                        <input
+                          type="text"
+                          name="mailing_zip"
+                          value={editingLead.mailing_zip}
+                          onChange={handleEditChange}
+                          className="w-full px-3 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => { setShowEditModal(false); setEditModalTab('edit'); }}
+                      className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveEdit}
+                      disabled={saving}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {saving ? <><Loader2 size={16} className="animate-spin" /> Saving...</> : 'Save Changes'}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Property Tab */}
+              {editModalTab === 'property' && (
+                <div className="space-y-6">
+                  {!editingLead.zestimate && !editingLead.bedrooms && !editingLead.year_built ? (
+                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                      <Home className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="font-medium">Property data not available</p>
+                      <p className="text-sm mt-1">Data will be fetched when leads are uploaded via CSV</p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Zestimate Value */}
+                      {editingLead.zestimate && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                            Estimated Value
+                          </h3>
+                          <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                                <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
+                              </div>
+                              <div>
+                                <p className="text-2xl font-bold text-green-700 dark:text-green-400">
+                                  ${parseFloat(editingLead.zestimate).toLocaleString()}
+                                </p>
+                                <p className="text-sm text-green-600 dark:text-green-500">Zestimate</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Property Details */}
+                      {(editingLead.bedrooms || editingLead.bathrooms || editingLead.living_area || editingLead.year_built || editingLead.home_type) && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                            Property Details
+                          </h3>
+                          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              {editingLead.bedrooms && (
+                                <div className="flex items-center gap-3">
+                                  <Bed className="h-5 w-5 text-blue-500" />
+                                  <div>
+                                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{editingLead.bedrooms}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">Bedrooms</p>
+                                  </div>
+                                </div>
+                              )}
+                              {editingLead.bathrooms && (
+                                <div className="flex items-center gap-3">
+                                  <Bath className="h-5 w-5 text-blue-500" />
+                                  <div>
+                                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{parseFloat(editingLead.bathrooms)}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">Bathrooms</p>
+                                  </div>
+                                </div>
+                              )}
+                              {editingLead.living_area && (
+                                <div className="flex items-center gap-3">
+                                  <Ruler className="h-5 w-5 text-blue-500" />
+                                  <div>
+                                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{editingLead.living_area.toLocaleString()}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">Sq Ft</p>
+                                  </div>
+                                </div>
+                              )}
+                              {editingLead.year_built && (
+                                <div className="flex items-center gap-3">
+                                  <Calendar className="h-5 w-5 text-blue-500" />
+                                  <div>
+                                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{editingLead.year_built}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">Year Built</p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            {editingLead.home_type && (
+                              <div className="mt-4 pt-4 border-t dark:border-gray-600 flex items-center gap-2">
+                                <Building className="h-4 w-4 text-gray-400" />
+                                <span className="text-sm text-gray-600 dark:text-gray-300">
+                                  {editingLead.home_type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Zestimate History Chart */}
+                      {editingLead.zestimate_history && editingLead.zestimate_history.length > 0 && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                            Value Trend
+                          </h3>
+                          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
+                            <ResponsiveContainer width="100%" height={200}>
+                              <LineChart
+                                data={editingLead.zestimate_history
+                                  .sort((a, b) => a.x - b.x)
+                                  .slice(-12)
+                                  .map(item => ({
+                                    date: new Date(item.x).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+                                    value: item.y,
+                                  }))}
+                              >
+                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                                <XAxis 
+                                  dataKey="date" 
+                                  tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                                  axisLine={{ stroke: '#4B5563' }}
+                                />
+                                <YAxis 
+                                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                                  tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                                  axisLine={{ stroke: '#4B5563' }}
+                                  width={60}
+                                />
+                                <Tooltip 
+                                  formatter={(value) => [`$${value.toLocaleString()}`, 'Zestimate']}
+                                  contentStyle={{ 
+                                    backgroundColor: '#1F2937', 
+                                    border: 'none', 
+                                    borderRadius: '8px',
+                                    color: '#F9FAFB'
+                                  }}
+                                />
+                                <Line 
+                                  type="monotone" 
+                                  dataKey="value" 
+                                  stroke="#10B981" 
+                                  strokeWidth={2} 
+                                  dot={false}
+                                  activeDot={{ r: 4, fill: '#10B981' }}
+                                />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Price History */}
+                      {editingLead.price_history && editingLead.price_history.length > 0 && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                            Sale History
+                          </h3>
+                          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl overflow-hidden">
+                            <div className="divide-y dark:divide-gray-600">
+                              {editingLead.price_history.slice(0, 5).map((item, index) => (
+                                <div key={index} className="px-4 py-3 flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                                      <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                        {item.event || 'Sale'}
+                                      </p>
+                                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        {item.date ? new Date(item.date).toLocaleDateString('en-US', { 
+                                          month: 'short', 
+                                          day: 'numeric', 
+                                          year: 'numeric' 
+                                        }) : '—'}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  {item.price && (
+                                    <span className="font-semibold text-gray-900 dark:text-white">
+                                      ${item.price.toLocaleString()}
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Property Photo */}
+                      {editingLead.property_photo && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                            Property Photo
+                          </h3>
+                          <div className="rounded-xl overflow-hidden">
+                            <img 
+                              src={editingLead.property_photo} 
+                              alt="Property" 
+                              className="w-full h-48 object-cover"
+                              onError={(e) => e.target.style.display = 'none'}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
