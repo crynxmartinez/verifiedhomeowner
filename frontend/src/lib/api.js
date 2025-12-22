@@ -75,6 +75,7 @@ export const userAPI = {
 // Dodo Payments API
 export const dodoAPI = {
   createCheckout: (plan, userId, useTrial = false) => api.post('/dodo/checkout', { plan, userId, useTrial }),
+  cancelSubscription: () => api.post('/dodo/cancel'),
 };
 
 // Legacy Stripe API (deprecated - kept for reference)

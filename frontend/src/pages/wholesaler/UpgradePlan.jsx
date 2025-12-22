@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import useAuthStore from '../../store/authStore';
 import { userAPI, dodoAPI, authAPI } from '../../lib/api';
-import { CheckCircle, TrendingUp, CreditCard, Mail, AlertTriangle, Loader2 } from 'lucide-react';
+import { CheckCircle, TrendingUp, CreditCard, Mail, AlertTriangle, Loader2, XCircle } from 'lucide-react';
 import SuccessModal from '../../components/SuccessModal';
 import TrialOfferModal from '../../components/TrialOfferModal';
 
@@ -18,6 +18,8 @@ export default function UpgradePlan() {
   const [trialModal, setTrialModal] = useState(null); // { plan: 'basic' | 'elite' | 'pro' }
   const [canUseTrial, setCanUseTrial] = useState(false);
   const [checkingTrial, setCheckingTrial] = useState(true);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   // Check if email is verified
   const isEmailVerified = user?.email_verified;
@@ -204,6 +206,47 @@ export default function UpgradePlan() {
     }
   };
 
+  // Handle subscription cancellation
+  const handleCancelSubscription = async () => {
+    setCancelling(true);
+    try {
+      const response = await dodoAPI.cancelSubscription();
+      
+      // Refresh user data to get updated subscription status
+      await refreshUser?.();
+      
+      setShowCancelModal(false);
+      setSuccessModal({
+        title: 'Subscription Cancelled',
+        message: response.data.details?.accessUntil 
+          ? `Your subscription has been cancelled. You will continue to have access until ${new Date(response.data.details.accessUntil).toLocaleDateString()}.`
+          : 'Your subscription has been cancelled. You will continue to have access until the end of your billing period.',
+        actionText: 'Got it!',
+        secondaryText: null
+      });
+    } catch (error) {
+      console.error('Cancel subscription error:', error);
+      setShowCancelModal(false);
+      setSuccessModal({
+        title: 'Error',
+        message: error.response?.data?.message || error.response?.data?.error || 'Failed to cancel subscription. Please try again or contact support.',
+        actionText: 'Close',
+        secondaryText: null
+      });
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  // Check if user has an active paid subscription that can be cancelled
+  const canCancelSubscription = user?.has_active_subscription && 
+    user?.plan_type !== 'free' && 
+    user?.subscription_status !== 'cancelled';
+
+  // Check if subscription is cancelled but still active
+  const isCancelledButActive = user?.subscription_status === 'cancelled' && 
+    user?.plan_type !== 'free';
+
   return (
     <Layout>
       <div className="space-y-8">
@@ -233,6 +276,52 @@ export default function UpgradePlan() {
                   {sendingVerification ? 'Sending...' : 'Resend Verification Email'}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Cancelled Subscription Notice */}
+        {isCancelledButActive && (
+          <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <AlertTriangle className="h-6 w-6 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-orange-900 dark:text-orange-300">Subscription Cancelled</h3>
+                <p className="text-sm text-orange-700 dark:text-orange-400 mt-1">
+                  Your subscription has been cancelled. You will continue to have access to your {user?.plan_type?.toUpperCase()} plan 
+                  {user?.subscription_end_date && (
+                    <> until <span className="font-semibold">{new Date(user.subscription_end_date).toLocaleDateString()}</span></>
+                  )}.
+                  After that, you will be downgraded to the Free plan.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Active Subscription - Cancel Option */}
+        {canCancelSubscription && (
+          <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-start space-x-3">
+                <CreditCard className="h-6 w-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Active Subscription</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    You have an active {user?.plan_type?.toUpperCase()} subscription.
+                    {user?.subscription_end_date && (
+                      <> Next billing date: <span className="font-medium">{new Date(user.subscription_end_date).toLocaleDateString()}</span></>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCancelModal(true)}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Cancel Subscription
+              </button>
             </div>
           </div>
         )}
@@ -413,6 +502,58 @@ export default function UpgradePlan() {
           onClose={() => setTrialModal(null)}
           loading={loading}
         />
+      )}
+
+      {/* Cancel Subscription Confirmation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => !cancelling && setShowCancelModal(false)}
+          />
+          <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900/30 rounded-full">
+                <XCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
+              </div>
+              <h2 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">
+                Cancel Subscription?
+              </h2>
+              <p className="text-center text-gray-600 dark:text-gray-400 mb-6">
+                Are you sure you want to cancel your <span className="font-semibold">{user?.plan_type?.toUpperCase()}</span> subscription?
+                {user?.subscription_end_date && (
+                  <> You will continue to have access until <span className="font-semibold">{new Date(user.subscription_end_date).toLocaleDateString()}</span>.</>
+                )}
+                {!user?.subscription_end_date && (
+                  <> You will continue to have access until the end of your current billing period.</>
+                )}
+              </p>
+              <div className="space-y-3">
+                <button
+                  onClick={handleCancelSubscription}
+                  disabled={cancelling}
+                  className="w-full py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {cancelling ? (
+                    <>
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      Cancelling...
+                    </>
+                  ) : (
+                    'Yes, Cancel Subscription'
+                  )}
+                </button>
+                <button
+                  onClick={() => setShowCancelModal(false)}
+                  disabled={cancelling}
+                  className="w-full py-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition disabled:opacity-50"
+                >
+                  Keep My Subscription
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </Layout>
   );

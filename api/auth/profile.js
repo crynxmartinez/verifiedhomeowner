@@ -23,6 +23,8 @@ async function handler(req, res) {
       role: user.role,
       plan_type: user.planType,
       subscription_status: user.subscriptionStatus,
+      subscription_end_date: user.subscriptionEndDate,
+      has_active_subscription: !!user.dodoSubscriptionId,
       email_verified: user.emailVerified,
       preferred_states: user.preferredStates || [],
       marketplace_emails: user.marketplaceEmails !== false,
