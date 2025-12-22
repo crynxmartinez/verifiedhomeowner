@@ -460,6 +460,19 @@ export default function AdminLeads() {
       mailing_city: lead.mailing_city || '',
       mailing_state: lead.mailing_state || '',
       mailing_zip: lead.mailing_zip || '',
+      // Property data from Zillow
+      zestimate: lead.zestimate,
+      bedrooms: lead.bedrooms,
+      bathrooms: lead.bathrooms,
+      living_area: lead.living_area,
+      lot_size: lead.lot_size,
+      year_built: lead.year_built,
+      home_type: lead.home_type,
+      last_sale_price: lead.last_sale_price,
+      last_sale_date: lead.last_sale_date,
+      property_photo: lead.property_photo,
+      price_history: lead.price_history,
+      zestimate_history: lead.zestimate_history,
     });
     setShowEditModal(true);
   };
