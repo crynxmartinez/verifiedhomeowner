@@ -38,16 +38,16 @@ export default function useActivityTracker() {
     trackEvent('marketplace_purchase', { leadId, state, price });
   }, [trackEvent]);
 
-  const trackWishlistVote = useCallback((featureId) => {
-    trackEvent('wishlist_vote', { featureId });
+  const trackFeedbackVote = useCallback((featureId) => {
+    trackEvent('feedback_vote', { featureId });
   }, [trackEvent]);
 
-  const trackWishlistComment = useCallback((featureId) => {
-    trackEvent('wishlist_comment', { featureId });
+  const trackFeedbackComment = useCallback((featureId) => {
+    trackEvent('feedback_comment', { featureId });
   }, [trackEvent]);
 
-  const trackWishlistSubmit = useCallback((featureId, title) => {
-    trackEvent('wishlist_submit', { featureId, title });
+  const trackFeedbackSubmit = useCallback((featureId, title) => {
+    trackEvent('feedback_submit', { featureId, title });
   }, [trackEvent]);
 
   const trackStatePreferenceUpdate = useCallback((states) => {
@@ -64,9 +64,9 @@ export default function useActivityTracker() {
     trackLeadView,
     trackLeadAction,
     trackMarketplacePurchase,
-    trackWishlistVote,
-    trackWishlistComment,
-    trackWishlistSubmit,
+    trackFeedbackVote,
+    trackFeedbackComment,
+    trackFeedbackSubmit,
     trackStatePreferenceUpdate,
     trackLogin,
   };

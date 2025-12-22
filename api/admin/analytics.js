@@ -192,7 +192,7 @@ async function handler(req, res) {
         where: { role: 'wholesaler', userMarketplaceLeads: { some: {} } }
       }) / totalWholesalers) * 100) : 0,
       statePreferences: totalWholesalers > 0 ? Math.round((allWholesalers.filter(u => u.preferredStates?.length > 0).length / totalWholesalers) * 100) : 0,
-      wishlist: totalWholesalers > 0 ? Math.round((await prisma.user.count({
+      feedback: totalWholesalers > 0 ? Math.round((await prisma.user.count({
         where: { role: 'wholesaler', OR: [{ featureVotes: { some: {} } }, { featureRequests: { some: {} } }] }
       }) / totalWholesalers) * 100) : 0,
       support: totalWholesalers > 0 ? Math.round((await prisma.user.count({

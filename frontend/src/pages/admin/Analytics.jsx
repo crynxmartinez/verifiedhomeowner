@@ -345,7 +345,7 @@ export default function AdminAnalytics() {
               { name: 'Lead Management', value: analytics?.featureAdoption?.leadManagement || 0, color: 'bg-blue-500' },
               { name: 'Marketplace', value: analytics?.featureAdoption?.marketplace || 0, color: 'bg-green-500' },
               { name: 'State Preferences', value: analytics?.featureAdoption?.statePreferences || 0, color: 'bg-purple-500' },
-              { name: 'Wishlist', value: analytics?.featureAdoption?.wishlist || 0, color: 'bg-orange-500' },
+              { name: 'Feedback', value: analytics?.featureAdoption?.feedback || 0, color: 'bg-orange-500' },
               { name: 'Support', value: analytics?.featureAdoption?.support || 0, color: 'bg-red-500' },
             ].map((feature) => (
               <div key={feature.name}>

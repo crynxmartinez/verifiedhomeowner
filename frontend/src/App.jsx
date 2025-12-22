@@ -24,7 +24,7 @@ import WholesalerMarketplace from './pages/wholesaler/Marketplace';
 import UpgradePlan from './pages/wholesaler/UpgradePlan';
 import WholesalerSupport from './pages/wholesaler/Support';
 import WholesalerProfile from './pages/wholesaler/Profile';
-import Wishlist from './pages/wholesaler/Wishlist';
+import Feedback from './pages/wholesaler/Feedback';
 
 // Admin pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -36,7 +36,7 @@ import AdminWholesalers from './pages/admin/Wholesalers';
 import AdminEmail from './pages/admin/Email';
 import AdminBlog from './pages/admin/Blog';
 import AdminBlogEditor from './pages/admin/BlogEditor';
-import AdminWishlist from './pages/admin/Wishlist';
+import AdminFeedback from './pages/admin/Feedback';
 
 // Public Blog pages
 import BlogList from './pages/BlogList';
@@ -129,10 +129,10 @@ function App() {
           }
         />
         <Route
-          path="/wishlist"
+          path="/feedback"
           element={
             <PrivateRoute>
-              <Wishlist />
+              <Feedback />
             </PrivateRoute>
           }
         />
@@ -195,10 +195,10 @@ function App() {
           }
         />
         <Route
-          path="/admin/wishlist"
+          path="/admin/feedback"
           element={
             <AdminRoute>
-              <AdminWishlist />
+              <AdminFeedback />
             </AdminRoute>
           }
         />

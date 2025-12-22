@@ -45,7 +45,7 @@ export default function Wishlist() {
       
       // Track vote event
       try {
-        await api.post('/analytics/track', { eventType: 'wishlist_vote', eventData: { featureId: requestId } });
+        await api.post('/analytics/track', { eventType: 'feedback_vote', eventData: { featureId: requestId } });
       } catch (e) { /* ignore */ }
       
       setRequests(prev =>

@@ -28,9 +28,9 @@ export default function SubmitIdeaModal({ onClose, onSuccess }) {
         title: title.trim(),
         description: description.trim(),
       });
-      // Track wishlist submit event
+      // Track feedback submit event
       try {
-        await api.post('/analytics/track', { eventType: 'wishlist_submit', eventData: { featureId: data.request.id, title: title.trim() } });
+        await api.post('/analytics/track', { eventType: 'feedback_submit', eventData: { featureId: data.request.id, title: title.trim() } });
       } catch (e) { /* ignore */ }
       onSuccess(data.request);
     } catch (err) {
