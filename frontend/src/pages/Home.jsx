@@ -336,7 +336,7 @@ export default function Home() {
                 { icon: '📞', label: 'Verified Phone' },
                 { icon: '🏠', label: 'Texas Address' },
                 { icon: '📊', label: 'Status Tracking' },
-                { icon: '⚡', label: 'One-Click Actions' },
+                { icon: '⚡', label: 'Action to Take Now' },
               ].map((item, i) => (
                 <div key={i} className="bg-white rounded-xl p-3 border border-gray-200 text-center">
                   <span className="text-xl mb-1 block">{item.icon}</span>
