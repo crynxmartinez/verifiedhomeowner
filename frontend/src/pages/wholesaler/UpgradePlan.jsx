@@ -101,30 +101,30 @@ export default function UpgradePlan() {
       id: 'free',
       name: 'Free',
       price: '$0',
-      leads: '1 lead/week',
-      features: ['1 lead every Monday', '1 state coverage', 'Lead tracking', 'Basic analytics'],
+      leads: '1 lead/day',
+      features: ['1 lead delivered daily', '1 state coverage', 'Lead tracking', 'Basic analytics'],
     },
     {
       id: 'basic',
       name: 'Basic',
       price: '$29',
-      leads: '1 lead/day',
-      features: ['1 lead delivered daily', '3 states coverage', 'Marketplace (5/month)', 'Hot alerts +4 hours', 'Advanced analytics'],
+      leads: '5 leads/day',
+      features: ['5 leads delivered daily', '3 states coverage', 'Marketplace (5/month)', 'Hot alerts +4 hours', 'Advanced analytics'],
       popular: true,
     },
     {
       id: 'elite',
       name: 'Elite',
       price: '$99',
-      leads: '5 leads/day',
-      features: ['5 leads delivered daily', '5 states coverage', 'Marketplace (15/month)', 'Hot alerts +30 min', 'Advanced analytics'],
+      leads: '10 leads/day',
+      features: ['10 leads delivered daily', '5 states coverage', 'Marketplace (15/month)', 'Hot alerts +30 min', 'Advanced analytics'],
     },
     {
       id: 'pro',
       name: 'Pro',
       price: '$149',
-      leads: '10 leads/day',
-      features: ['10 leads delivered daily', '7 states coverage', 'Unlimited marketplace', 'Instant hot alerts', 'Custom analytics', 'VIP support'],
+      leads: '20 leads/day',
+      features: ['20 leads delivered daily', '7 states coverage', 'Unlimited marketplace', 'Instant hot alerts', 'Custom analytics', 'VIP support'],
     },
   ];
 
@@ -410,10 +410,10 @@ export default function UpgradePlan() {
               <tbody>
                 <tr className="border-b dark:border-gray-700">
                   <td className="py-3 px-4 text-gray-900 dark:text-white">Daily Leads</td>
-                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">1/week</td>
                   <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">1/day</td>
                   <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">5/day</td>
                   <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">10/day</td>
+                  <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">20/day</td>
                 </tr>
                 <tr className="border-b dark:border-gray-700">
                   <td className="py-3 px-4 text-gray-900 dark:text-white">States Coverage</td>
