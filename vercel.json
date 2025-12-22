@@ -33,6 +33,10 @@
       "destination": "/api/support/[id]"
     },
     {
+      "source": "/api/wishlist/:id",
+      "destination": "/api/wishlist/[id]"
+    },
+    {
       "source": "/api/:path*",
       "destination": "/api/:path*"
     },

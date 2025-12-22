@@ -15,51 +15,53 @@ datasource db {
 // ============================================================================
 
 model User {
-  id                    String    @id @default(uuid()) @db.Uuid
-  email                 String    @unique @db.VarChar(255)
-  password              String    @db.VarChar(255)
-  name                  String    @db.VarChar(255)
-  role                  UserRole  @default(wholesaler)
-  planType              PlanType  @default(free) @map("plan_type")
-  subscriptionStatus    SubscriptionStatus @default(active) @map("subscription_status")
-  leadSequencePosition  Int       @default(0) @map("lead_sequence_position")
-  
+  id                   String             @id @default(uuid()) @db.Uuid
+  email                String             @unique @db.VarChar(255)
+  password             String             @db.VarChar(255)
+  name                 String             @db.VarChar(255)
+  role                 UserRole           @default(wholesaler)
+  planType             PlanType           @default(free) @map("plan_type")
+  subscriptionStatus   SubscriptionStatus @default(active) @map("subscription_status")
+  leadSequencePosition Int                @default(0) @map("lead_sequence_position")
+
   // Email Verification
-  emailVerified         Boolean   @default(false) @map("email_verified")
-  verificationToken     String?   @map("verification_token")
-  verificationExpires   DateTime? @map("verification_expires") @db.Timestamptz
-  
+  emailVerified       Boolean   @default(false) @map("email_verified")
+  verificationToken   String?   @map("verification_token")
+  verificationExpires DateTime? @map("verification_expires") @db.Timestamptz
+
   // Password Reset
-  resetToken            String?   @map("reset_token")
-  resetTokenExpires     DateTime? @map("reset_token_expires") @db.Timestamptz
-  
+  resetToken        String?   @map("reset_token")
+  resetTokenExpires DateTime? @map("reset_token_expires") @db.Timestamptz
+
   // Dodo Payments
-  dodoSubscriptionId    String?   @map("dodo_subscription_id")
-  dodoCustomerId        String?   @map("dodo_customer_id")
-  subscriptionEndDate   DateTime? @map("subscription_end_date") @db.Timestamptz
-  
+  dodoSubscriptionId  String?   @map("dodo_subscription_id")
+  dodoCustomerId      String?   @map("dodo_customer_id")
+  subscriptionEndDate DateTime? @map("subscription_end_date") @db.Timestamptz
+
   // Trial Tracking
-  hasUsedTrial          Boolean   @default(false) @map("has_used_trial")
-  trialUsedAt           DateTime? @map("trial_used_at") @db.Timestamptz
-  
+  hasUsedTrial Boolean   @default(false) @map("has_used_trial")
+  trialUsedAt  DateTime? @map("trial_used_at") @db.Timestamptz
+
   // Marketplace Preferences
-  preferredStates       String[]  @default([]) @map("preferred_states")
-  marketplaceEmails     Boolean   @default(true) @map("marketplace_emails")
-  lastLoginAt           DateTime? @map("last_login_at") @db.Timestamptz
-  
+  preferredStates   String[]  @default([]) @map("preferred_states")
+  marketplaceEmails Boolean   @default(true) @map("marketplace_emails")
+  lastLoginAt       DateTime? @map("last_login_at") @db.Timestamptz
+
   // Email Tracking
-  lastEmailSentAt       DateTime? @map("last_email_sent_at") @db.Timestamptz
-  lastEmailType         String?   @map("last_email_type") @db.VarChar(100)
-  
+  lastEmailSentAt DateTime? @map("last_email_sent_at") @db.Timestamptz
+  lastEmailType   String?   @map("last_email_type") @db.VarChar(100)
+
   // Timestamps
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  userLeads             UserLead[]
-  userMarketplaceLeads  UserMarketplaceLead[]
-  supportTickets        SupportTicket[]
-  notificationQueue     MarketplaceNotificationQueue[]
+  userLeads            UserLead[]
+  userMarketplaceLeads UserMarketplaceLead[]
+  supportTickets       SupportTicket[]
+  notificationQueue    MarketplaceNotificationQueue[]
+  featureRequests      FeatureRequest[]
+  featureVotes         FeatureVote[]
 
   @@index([email])
   @@index([role])
@@ -95,25 +97,25 @@ enum SubscriptionStatus {
 // ============================================================================
 
 model Lead {
-  id              String    @id @default(uuid()) @db.Uuid
-  firstName       String?   @map("first_name") @db.VarChar(255)
-  lastName        String?   @map("last_name") @db.VarChar(255)
-  fullName        String?   @map("full_name") @db.VarChar(255)
-  isBusiness      Boolean   @default(false) @map("is_business")
-  phone           String?   @db.VarChar(50)
-  propertyAddress String?   @map("property_address") @db.VarChar(500)
-  city            String?   @db.VarChar(255)
-  state           String?   @db.VarChar(100)
-  zipCode         String?   @map("zip_code") @db.VarChar(20)
-  mailingAddress  String?   @map("mailing_address") @db.VarChar(500)
-  mailingCity     String?   @map("mailing_city") @db.VarChar(255)
-  mailingState    String?   @map("mailing_state") @db.VarChar(100)
-  mailingZip      String?   @map("mailing_zip") @db.VarChar(20)
-  sequenceNumber  Int       @unique @map("sequence_number")
-  createdAt       DateTime  @default(now()) @map("created_at")
+  id              String   @id @default(uuid()) @db.Uuid
+  firstName       String?  @map("first_name") @db.VarChar(255)
+  lastName        String?  @map("last_name") @db.VarChar(255)
+  fullName        String?  @map("full_name") @db.VarChar(255)
+  isBusiness      Boolean  @default(false) @map("is_business")
+  phone           String?  @db.VarChar(50)
+  propertyAddress String?  @map("property_address") @db.VarChar(500)
+  city            String?  @db.VarChar(255)
+  state           String?  @db.VarChar(100)
+  zipCode         String?  @map("zip_code") @db.VarChar(20)
+  mailingAddress  String?  @map("mailing_address") @db.VarChar(500)
+  mailingCity     String?  @map("mailing_city") @db.VarChar(255)
+  mailingState    String?  @map("mailing_state") @db.VarChar(100)
+  mailingZip      String?  @map("mailing_zip") @db.VarChar(20)
+  sequenceNumber  Int      @unique @map("sequence_number")
+  createdAt       DateTime @default(now()) @map("created_at")
 
   // Relations
-  userLeads       UserLead[]
+  userLeads UserLead[]
 
   @@index([sequenceNumber])
   @@index([propertyAddress])
@@ -125,24 +127,24 @@ model Lead {
 // ============================================================================
 
 model UserLead {
-  id            String      @id @default(uuid()) @db.Uuid
-  userId        String      @map("user_id") @db.Uuid
-  leadId        String      @map("lead_id") @db.Uuid
-  status        LeadStatus  @default(new)
-  action        LeadAction  @default(call_now)
-  motivation    String?     @db.VarChar(100)
-  assignedAt    DateTime    @default(now()) @map("assigned_at")
-  lastCalledAt  DateTime?   @map("last_called_at")
-  followUpDate  DateTime?   @map("follow_up_date") @db.Date
-  countdownDays Int?        @map("countdown_days")
+  id            String     @id @default(uuid()) @db.Uuid
+  userId        String     @map("user_id") @db.Uuid
+  leadId        String     @map("lead_id") @db.Uuid
+  status        LeadStatus @default(new)
+  action        LeadAction @default(call_now)
+  motivation    String?    @db.VarChar(100)
+  assignedAt    DateTime   @default(now()) @map("assigned_at")
+  lastCalledAt  DateTime?  @map("last_called_at")
+  followUpDate  DateTime?  @map("follow_up_date") @db.Date
+  countdownDays Int?       @map("countdown_days")
   notes         String?
-  tags          String[]    @default([])
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+  tags          String[]   @default([])
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
 
   // Relations
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lead          Lead        @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
 
   @@unique([userId, leadId])
   @@index([userId])
@@ -170,27 +172,27 @@ enum LeadAction {
 // ============================================================================
 
 model MarketplaceLead {
-  id              String    @id @default(uuid()) @db.Uuid
-  ownerName       String?   @map("owner_name") @db.VarChar(255)
-  phone           String?   @db.VarChar(50)
-  propertyAddress String?   @map("property_address") @db.VarChar(500)
-  city            String?   @db.VarChar(255)
-  state           String?   @db.VarChar(100)
-  zipCode         String?   @map("zip_code") @db.VarChar(20)
-  mailingAddress  String?   @map("mailing_address") @db.VarChar(500)
-  mailingCity     String?   @map("mailing_city") @db.VarChar(255)
-  mailingState    String?   @map("mailing_state") @db.VarChar(100)
-  mailingZip      String?   @map("mailing_zip") @db.VarChar(20)
-  motivation      String    @db.VarChar(100)
-  timeline        String    @db.VarChar(100)
-  askingPrice     Decimal?  @map("asking_price") @db.Decimal(12, 2)
-  temperature     String?   @default("warm") @db.VarChar(20)
-  price           Decimal   @db.Decimal(10, 2)
-  maxBuyers       Int       @default(0) @map("max_buyers")
-  timesSold       Int       @default(0) @map("times_sold")
-  isHidden        Boolean   @default(false) @map("is_hidden")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id              String   @id @default(uuid()) @db.Uuid
+  ownerName       String?  @map("owner_name") @db.VarChar(255)
+  phone           String?  @db.VarChar(50)
+  propertyAddress String?  @map("property_address") @db.VarChar(500)
+  city            String?  @db.VarChar(255)
+  state           String?  @db.VarChar(100)
+  zipCode         String?  @map("zip_code") @db.VarChar(20)
+  mailingAddress  String?  @map("mailing_address") @db.VarChar(500)
+  mailingCity     String?  @map("mailing_city") @db.VarChar(255)
+  mailingState    String?  @map("mailing_state") @db.VarChar(100)
+  mailingZip      String?  @map("mailing_zip") @db.VarChar(20)
+  motivation      String   @db.VarChar(100)
+  timeline        String   @db.VarChar(100)
+  askingPrice     Decimal? @map("asking_price") @db.Decimal(12, 2)
+  temperature     String?  @default("warm") @db.VarChar(20)
+  price           Decimal  @db.Decimal(10, 2)
+  maxBuyers       Int      @default(0) @map("max_buyers")
+  timesSold       Int      @default(0) @map("times_sold")
+  isHidden        Boolean  @default(false) @map("is_hidden")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Relations
   userMarketplaceLeads UserMarketplaceLead[]
@@ -209,24 +211,24 @@ model MarketplaceLead {
 // ============================================================================
 
 model UserMarketplaceLead {
-  id                String          @id @default(uuid()) @db.Uuid
-  userId            String          @map("user_id") @db.Uuid
-  marketplaceLeadId String          @map("marketplace_lead_id") @db.Uuid
-  purchasedAt       DateTime        @default(now()) @map("purchased_at")
-  pricePaid         Decimal         @map("price_paid") @db.Decimal(10, 2)
-  status            LeadStatus      @default(new)
-  action            LeadAction      @default(call_now)
-  lastCalledAt      DateTime?       @map("last_called_at")
-  followUpDate      DateTime?       @map("follow_up_date") @db.Date
-  countdownDays     Int?            @map("countdown_days")
+  id                String     @id @default(uuid()) @db.Uuid
+  userId            String     @map("user_id") @db.Uuid
+  marketplaceLeadId String     @map("marketplace_lead_id") @db.Uuid
+  purchasedAt       DateTime   @default(now()) @map("purchased_at")
+  pricePaid         Decimal    @map("price_paid") @db.Decimal(10, 2)
+  status            LeadStatus @default(new)
+  action            LeadAction @default(call_now)
+  lastCalledAt      DateTime?  @map("last_called_at")
+  followUpDate      DateTime?  @map("follow_up_date") @db.Date
+  countdownDays     Int?       @map("countdown_days")
   notes             String?
-  tags              String[]        @default([])
-  createdAt         DateTime        @default(now()) @map("created_at")
-  updatedAt         DateTime        @updatedAt @map("updated_at")
+  tags              String[]   @default([])
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
 
   // Relations
-  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  marketplaceLead   MarketplaceLead @relation(fields: [marketplaceLeadId], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  marketplaceLead MarketplaceLead @relation(fields: [marketplaceLeadId], references: [id], onDelete: Cascade)
 
   @@unique([userId, marketplaceLeadId])
   @@index([userId])
@@ -251,7 +253,7 @@ model SupportTicket {
   updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
-  user      User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
@@ -269,10 +271,10 @@ enum TicketStatus {
 // ============================================================================
 
 model AdminSettings {
-  id        String   @id @default("default")
-  supportNotificationEmail String? @map("support_notification_email") @db.VarChar(255)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  id                       String   @id @default("default")
+  supportNotificationEmail String?  @map("support_notification_email") @db.VarChar(255)
+  createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   @@map("admin_settings")
 }
@@ -317,8 +319,8 @@ model EmailAutomation {
   updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
-  template            EmailTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  emailLogs           EmailLog[]
+  template  EmailTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  emailLogs EmailLog[]
 
   @@index([trigger])
   @@index([isActive])
@@ -326,17 +328,17 @@ model EmailAutomation {
 }
 
 model EmailLog {
-  id             String    @id @default(uuid()) @db.Uuid
-  userId         String    @map("user_id") @db.Uuid
-  automationId   String?   @map("automation_id") @db.Uuid
-  templateName   String    @map("template_name") @db.VarChar(100)
-  subject        String    @db.VarChar(500)
-  recipientEmail String    @map("recipient_email") @db.VarChar(255)
-  status         String    @default("sent") @db.VarChar(50)
-  sentAt         DateTime  @default(now()) @map("sent_at") @db.Timestamptz
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  automationId   String?  @map("automation_id") @db.Uuid
+  templateName   String   @map("template_name") @db.VarChar(100)
+  subject        String   @db.VarChar(500)
+  recipientEmail String   @map("recipient_email") @db.VarChar(255)
+  status         String   @default("sent") @db.VarChar(50)
+  sentAt         DateTime @default(now()) @map("sent_at") @db.Timestamptz
 
   // Relations
-  automation     EmailAutomation? @relation(fields: [automationId], references: [id], onDelete: SetNull)
+  automation EmailAutomation? @relation(fields: [automationId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([automationId])
@@ -359,8 +361,8 @@ model MarketplaceNotificationQueue {
   sentAt            DateTime? @map("sent_at") @db.Timestamptz
 
   // Relations
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  marketplaceLead   MarketplaceLead @relation(fields: [marketplaceLeadId], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  marketplaceLead MarketplaceLead @relation(fields: [marketplaceLeadId], references: [id], onDelete: Cascade)
 
   @@index([scheduledFor])
   @@index([status])
@@ -374,21 +376,21 @@ model MarketplaceNotificationQueue {
 // ============================================================================
 
 model BlogPost {
-  id            String      @id @default(uuid()) @db.Uuid
-  slug          String      @unique @db.VarChar(500)
-  title         String      @db.Text
-  excerpt       String?     @db.Text
-  content       String      @db.Text
-  bannerImage   String?     @map("banner_image") @db.Text
-  category      String?     @db.VarChar(200)
-  tags          String[]    @default([])
-  status        BlogStatus  @default(draft)
-  authorId      String      @map("author_id") @db.Uuid
-  scheduledAt   DateTime?   @map("scheduled_at") @db.Timestamptz
-  publishedAt   DateTime?   @map("published_at") @db.Timestamptz
-  viewCount     Int         @default(0) @map("view_count")
-  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz
+  id          String     @id @default(uuid()) @db.Uuid
+  slug        String     @unique @db.VarChar(500)
+  title       String     @db.Text
+  excerpt     String?    @db.Text
+  content     String     @db.Text
+  bannerImage String?    @map("banner_image") @db.Text
+  category    String?    @db.VarChar(200)
+  tags        String[]   @default([])
+  status      BlogStatus @default(draft)
+  authorId    String     @map("author_id") @db.Uuid
+  scheduledAt DateTime?  @map("scheduled_at") @db.Timestamptz
+  publishedAt DateTime?  @map("published_at") @db.Timestamptz
+  viewCount   Int        @default(0) @map("view_count")
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz
 
   @@index([slug])
   @@index([status])
@@ -403,4 +405,53 @@ enum BlogStatus {
   draft
   scheduled
   published
+}
+
+// ============================================================================
+// WISHLIST / FEATURE REQUESTS
+// ============================================================================
+
+model FeatureRequest {
+  id          String        @id @default(uuid()) @db.Uuid
+  title       String        @db.VarChar(255)
+  description String        @db.Text
+  status      FeatureStatus @default(open)
+  voteCount   Int           @default(0) @map("vote_count")
+  userId      String        @map("user_id") @db.Uuid
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes FeatureVote[]
+
+  @@index([voteCount(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@index([status])
+  @@index([userId])
+  @@map("feature_requests")
+}
+
+model FeatureVote {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  featureRequestId String   @map("feature_request_id") @db.Uuid
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  featureRequest FeatureRequest @relation(fields: [featureRequestId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, featureRequestId])
+  @@index([userId])
+  @@index([featureRequestId])
+  @@map("feature_votes")
+}
+
+enum FeatureStatus {
+  open
+  planned
+  in_progress
+  completed
+  closed
 }

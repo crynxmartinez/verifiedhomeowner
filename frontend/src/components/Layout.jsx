@@ -19,7 +19,8 @@ import {
   X,
   User,
   Mail,
-  BookOpen
+  BookOpen,
+  Lightbulb
 } from 'lucide-react';
 
 export default function Layout({ children }) {
@@ -74,6 +75,7 @@ export default function Layout({ children }) {
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/leads', icon: FileText, label: 'My Leads' },
     { path: '/marketplace', icon: ShoppingCart, label: 'Lead Marketplace' },
+    { path: '/wishlist', icon: Lightbulb, label: 'Wishlist' },
     { path: '/upgrade', icon: TrendingUp, label: 'Upgrade Plan' },
     { path: '/profile', icon: User, label: 'Profile' },
     { path: '/support', icon: MessageCircle, label: 'Contact Support' },

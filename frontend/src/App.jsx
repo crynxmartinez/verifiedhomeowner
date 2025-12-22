@@ -24,6 +24,7 @@ import WholesalerMarketplace from './pages/wholesaler/Marketplace';
 import UpgradePlan from './pages/wholesaler/UpgradePlan';
 import WholesalerSupport from './pages/wholesaler/Support';
 import WholesalerProfile from './pages/wholesaler/Profile';
+import Wishlist from './pages/wholesaler/Wishlist';
 
 // Admin pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -123,6 +124,14 @@ function App() {
           element={
             <PrivateRoute>
               <WholesalerProfile />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/wishlist"
+          element={
+            <PrivateRoute>
+              <Wishlist />
             </PrivateRoute>
           }
         />
