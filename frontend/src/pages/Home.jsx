@@ -98,7 +98,7 @@ export default function Home() {
           {/* Trust Badge */}
           <div className="inline-flex items-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2 mb-8">
             <MapPin className="h-4 w-4 text-orange-400 mr-2" />
-            <span className="text-white/80 text-sm">Texas-Only by Design</span>
+            <span className="text-white/80 text-sm">Starting in Texas</span>
           </div>
           
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 text-white leading-tight">
