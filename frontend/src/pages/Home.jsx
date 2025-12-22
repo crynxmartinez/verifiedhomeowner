@@ -109,17 +109,22 @@ export default function Home() {
             on Purpose.
           </h1>
           
-          <p className="text-lg md:text-xl mb-3 text-blue-100 max-w-3xl mx-auto">
-            We focus on one market so quality stays high — delivering ownership-matched, 
-            manually phone-verified homeowner leads to serious Texas wholesalers.
+          <p className="text-lg md:text-xl mb-4 text-blue-100 max-w-3xl mx-auto">
+            We focus on one market to keep quality high — delivering verified homeowner leads 
+            that are ownership-matched and phone-verified via direct confirmation for serious Texas wholesalers.
           </p>
           
           {/* Micro-proof line */}
-          <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm text-blue-200/70 mb-8">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm text-blue-200/70 mb-4">
             <span className="flex items-center"><CheckCircle className="h-4 w-4 mr-1.5 text-green-400" /> Fresh leads daily</span>
             <span className="flex items-center"><RefreshCw className="h-4 w-4 mr-1.5 text-green-400" /> Replacement policy</span>
             <span className="flex items-center"><Phone className="h-4 w-4 mr-1.5 text-green-400" /> Built for real conversations</span>
           </div>
+          
+          {/* Soundbite */}
+          <p className="text-orange-400 font-medium italic mb-6">
+            "If the number isn't verified, it's not a lead."
+          </p>
           
           {/* CTA Line */}
           <p className="text-white/90 font-medium mb-4">
@@ -152,11 +157,13 @@ export default function Home() {
       {/* ========== QUALITY-FIRST ROLLOUT (TEXAS ONLY) ========== */}
       <section className="py-16 md:py-20 bg-slate-50">
         <div className="max-w-4xl mx-auto px-4">
+          <div className="text-center mb-4">
+            <p className="text-orange-500 font-medium italic">"Quality over volume. Always."</p>
+          </div>
           <div className="text-center mb-10">
-            <p className="text-orange-500 font-semibold text-sm uppercase tracking-wide mb-2">Premium Focus</p>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Quality-First Rollout (Texas Only)</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              We're Texas-only by design — not because we can't scale, but because we won't sacrifice verification standards for volume.
+              We're Texas-only by design. Scaling too fast kills lead quality — so we're protecting verification standards before expanding.
             </p>
           </div>
           
@@ -165,17 +172,17 @@ export default function Home() {
               { 
                 icon: Shield, 
                 title: 'Quality-Controlled Supply', 
-                desc: 'Not mass volume. Every lead meets our verification standards before delivery.'
+                desc: 'Not mass volume. Built for consistency.'
               },
               { 
                 icon: Phone, 
                 title: 'Manual Phone Verification', 
-                desc: 'Our team validates each number through direct confirmation — not just data pulls.'
+                desc: 'Phone-verified via direct confirmation.'
               },
               { 
                 icon: Clock, 
                 title: 'Daily Delivery', 
-                desc: 'Fresh verified homeowner leads delivered to your dashboard every day.'
+                desc: 'Fresh leads delivered daily to your dashboard.'
               },
             ].map((item, i) => (
               <div key={i} className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition">
@@ -199,11 +206,11 @@ export default function Home() {
       <section className="py-16 md:py-24 bg-white">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-4">
-            <p className="text-lg md:text-xl text-gray-500 italic mb-2">"Stop calling ghosts."</p>
+            <p className="text-orange-500 font-medium italic">"Most lists aren't leads — they're homework."</p>
           </div>
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">We Know Your Pain</h2>
-            <p className="text-lg text-gray-600">Every Texas wholesaler faces these frustrating problems</p>
+            <p className="text-lg text-gray-600">Every wholesaler hits the same wall: dead numbers, wrong owners, and wasted hours.</p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-6">
@@ -213,24 +220,24 @@ export default function Home() {
                 iconBg: 'bg-red-100',
                 iconColor: 'text-red-500',
                 title: 'Endless Cold Calling', 
-                desc: 'Voicemail after voicemail. Disconnected lines. Wrong owners. Hours wasted before a single real conversation.',
-                soundbite: 'If the number isn\'t verified, it\'s not a lead.'
+                desc: 'Spending hours dialing just to reach voicemails and disconnected lines.',
+                soundbite: 'Stop calling ghosts.'
               },
               { 
                 icon: UserCheck,
                 iconBg: 'bg-orange-100',
                 iconColor: 'text-orange-500',
                 title: 'Wrong Numbers', 
-                desc: 'Outdated skip tracing data means you\'re calling people who moved years ago — or never owned the property.',
-                soundbite: 'Bad data costs more than money. It costs momentum.'
+                desc: 'Outdated data wastes money and kills momentum.',
+                soundbite: 'Bad data is expensive.'
               },
               { 
                 icon: Clock,
                 iconBg: 'bg-yellow-100',
                 iconColor: 'text-yellow-600',
                 title: 'Time Drain', 
-                desc: 'Hours spent researching, skip tracing, and verifying instead of what actually makes money — closing deals.',
-                soundbite: 'You should be closing, not chasing.'
+                desc: 'Time spent verifying data is time not spent closing deals.',
+                soundbite: 'Closers close. We verify.'
               },
             ].map((item, i) => (
               <div key={i} className="bg-gray-50 rounded-2xl p-6 border border-gray-100 hover:border-gray-200 transition">
