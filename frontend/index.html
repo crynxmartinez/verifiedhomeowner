@@ -81,7 +81,162 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Pre-rendered content for SEO/crawlers - hidden when React loads -->
+      <div id="seo-content" style="max-width: 1200px; margin: 0 auto; padding: 40px 20px; font-family: system-ui, sans-serif;">
+        <header style="text-align: center; margin-bottom: 60px;">
+          <h1 style="font-size: 2.5rem; color: #1e3a8a; margin-bottom: 20px;">Verified Homeowner Leads for Texas Wholesalers</h1>
+          <p style="font-size: 1.25rem; color: #4b5563;">Stop Wasting Time on Bad Data. Get Phone-Verified Texas Homeowner Leads Daily.</p>
+        </header>
+        
+        <main>
+          <section style="margin-bottom: 60px;">
+            <h2 style="font-size: 1.75rem; color: #111827; margin-bottom: 20px;">What We Offer</h2>
+            <ul style="line-height: 2; color: #374151;">
+              <li><strong>Phone-Verified Leads</strong> - Every number is validated to reach the actual homeowner</li>
+              <li><strong>Ownership-Matched</strong> - Cross-referenced with public records to confirm property ownership</li>
+              <li><strong>Texas-Only Focus</strong> - Quality over quantity, serving Texas wholesalers exclusively</li>
+              <li><strong>Daily Delivery</strong> - Fresh leads delivered to your dashboard every day</li>
+              <li><strong>No Skip Tracing Needed</strong> - We do the verification work for you</li>
+            </ul>
+          </section>
+          
+          <section style="margin-bottom: 60px;">
+            <h2 style="font-size: 1.75rem; color: #111827; margin-bottom: 20px;">Pricing Plans</h2>
+            <ul style="line-height: 2; color: #374151;">
+              <li><strong>Free Plan</strong> - $0/month - 1 lead per day, basic dashboard access</li>
+              <li><strong>Basic Plan</strong> - $29/month - 5 leads per day, marketplace access, priority support</li>
+              <li><strong>Elite Plan</strong> - $99/month - 10 leads per day, advanced analytics, premium support</li>
+              <li><strong>Pro Plan</strong> - $149/month - 20 leads per day, export data, VIP support</li>
+            </ul>
+            <p style="margin-top: 20px; color: #ea580c; font-weight: 600;">Try any plan free for 7 days. $0 during trial. Cancel anytime.</p>
+          </section>
+          
+          <section style="margin-bottom: 60px;">
+            <h2 style="font-size: 1.75rem; color: #111827; margin-bottom: 20px;">How It Works</h2>
+            <ol style="line-height: 2; color: #374151;">
+              <li><strong>Sign Up</strong> - Create your free account in under 60 seconds</li>
+              <li><strong>Choose Your Plan</strong> - Select the plan that fits your needs</li>
+              <li><strong>Receive Leads Daily</strong> - Verified homeowner leads delivered to your dashboard</li>
+              <li><strong>Start Calling</strong> - Every number connects to a real homeowner</li>
+            </ol>
+          </section>
+          
+          <section style="margin-bottom: 60px;">
+            <h2 style="font-size: 1.75rem; color: #111827; margin-bottom: 20px;">Frequently Asked Questions</h2>
+            <dl style="line-height: 1.8; color: #374151;">
+              <dt style="font-weight: 600; margin-top: 20px;">What does "phone verified" mean?</dt>
+              <dd>Our team actively validates the best working number for each homeowner through direct confirmation.</dd>
+              
+              <dt style="font-weight: 600; margin-top: 20px;">What is ownership matched?</dt>
+              <dd>We cross-reference public records to confirm the contact is the actual property owner at that address.</dd>
+              
+              <dt style="font-weight: 600; margin-top: 20px;">Where are leads available?</dt>
+              <dd>We currently serve Texas only to maintain strict verification standards.</dd>
+              
+              <dt style="font-weight: 600; margin-top: 20px;">How does the 7-day free trial work?</dt>
+              <dd>Start a free trial on any paid plan. Card required to activate, but you pay $0 during the trial. Cancel anytime.</dd>
+            </dl>
+          </section>
+          
+          <section style="text-align: center; padding: 40px; background: #1e3a8a; color: white; border-radius: 12px;">
+            <h2 style="font-size: 1.75rem; margin-bottom: 20px;">Ready to Talk to Real Homeowners?</h2>
+            <p style="margin-bottom: 20px;">Stop wasting hours on dead numbers. Start your 7-day free trial today.</p>
+            <a href="/register" style="display: inline-block; background: #ea580c; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">Start Free Trial</a>
+          </section>
+        </main>
+        
+        <footer style="margin-top: 60px; padding-top: 40px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280;">
+          <p>© 2024 Verified Homeowner. All rights reserved.</p>
+          <nav style="margin-top: 20px;">
+            <a href="/pricing" style="color: #4b5563; margin: 0 10px;">Pricing</a>
+            <a href="/about" style="color: #4b5563; margin: 0 10px;">About</a>
+            <a href="/terms" style="color: #4b5563; margin: 0 10px;">Terms</a>
+            <a href="/privacy" style="color: #4b5563; margin: 0 10px;">Privacy</a>
+          </nav>
+        </footer>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Static content for crawlers/bots that don't execute JavaScript -->
+    <noscript>
+      <div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px; font-family: system-ui, sans-serif;">
+        <header style="text-align: center; margin-bottom: 60px;">
+          <h1 style="font-size: 2.5rem; color: #1e3a8a; margin-bottom: 20px;">Verified Homeowner Leads</h1>
+          <p style="font-size: 1.25rem; color: #4b5563;">Stop Wasting Time on Bad Data. Get Phone-Verified Texas Homeowner Leads Daily.</p>
+        </header>
+        
+        <main>
+          <section style="margin-bottom: 60px;">
+            <h2 style="font-size: 1.75rem; color: #111827; margin-bottom: 20px;">What We Offer</h2>
+            <ul style="line-height: 2; color: #374151;">
+              <li><strong>Phone-Verified Leads</strong> - Every number is validated to reach the actual homeowner</li>
+              <li><strong>Ownership-Matched</strong> - Cross-referenced with public records to confirm property ownership</li>
+              <li><strong>Texas-Only Focus</strong> - Quality over quantity, serving Texas wholesalers exclusively</li>
+              <li><strong>Daily Delivery</strong> - Fresh leads delivered to your dashboard every day</li>
+              <li><strong>No Skip Tracing Needed</strong> - We do the verification work for you</li>
+            </ul>
+          </section>
+          
+          <section style="margin-bottom: 60px;">
+            <h2 style="font-size: 1.75rem; color: #111827; margin-bottom: 20px;">Pricing Plans</h2>
+            <ul style="line-height: 2; color: #374151;">
+              <li><strong>Free Plan</strong> - $0/month - 1 lead per day, basic dashboard access</li>
+              <li><strong>Basic Plan</strong> - $29/month - 5 leads per day, marketplace access, priority support</li>
+              <li><strong>Elite Plan</strong> - $99/month - 10 leads per day, advanced analytics, premium support</li>
+              <li><strong>Pro Plan</strong> - $149/month - 20 leads per day, export data, VIP support</li>
+            </ul>
+            <p style="margin-top: 20px; color: #ea580c; font-weight: 600;">Try any plan free for 7 days. $0 during trial. Cancel anytime.</p>
+          </section>
+          
+          <section style="margin-bottom: 60px;">
+            <h2 style="font-size: 1.75rem; color: #111827; margin-bottom: 20px;">How It Works</h2>
+            <ol style="line-height: 2; color: #374151;">
+              <li><strong>Sign Up</strong> - Create your free account in under 60 seconds</li>
+              <li><strong>Choose Your Plan</strong> - Select the plan that fits your needs</li>
+              <li><strong>Receive Leads Daily</strong> - Verified homeowner leads delivered to your dashboard</li>
+              <li><strong>Start Calling</strong> - Every number connects to a real homeowner</li>
+            </ol>
+          </section>
+          
+          <section style="margin-bottom: 60px;">
+            <h2 style="font-size: 1.75rem; color: #111827; margin-bottom: 20px;">Frequently Asked Questions</h2>
+            <dl style="line-height: 1.8; color: #374151;">
+              <dt style="font-weight: 600; margin-top: 20px;">What does "phone verified" mean?</dt>
+              <dd>Our team actively validates the best working number for each homeowner through direct confirmation. We don't just pull data — we verify it connects to the actual property owner.</dd>
+              
+              <dt style="font-weight: 600; margin-top: 20px;">What is ownership matched?</dt>
+              <dd>We cross-reference public records to confirm the contact is the actual property owner at that address. No renters, no outdated info.</dd>
+              
+              <dt style="font-weight: 600; margin-top: 20px;">Where are leads available?</dt>
+              <dd>We currently serve Texas only. This is by design — limiting our territory allows us to maintain strict verification standards.</dd>
+              
+              <dt style="font-weight: 600; margin-top: 20px;">How does the 7-day free trial work?</dt>
+              <dd>Start a free trial on any paid plan. Card required to activate, but you pay $0 during the trial. Cancel anytime before the trial ends and you won't be charged.</dd>
+              
+              <dt style="font-weight: 600; margin-top: 20px;">Can I cancel anytime?</dt>
+              <dd>Yes! Cancel from your dashboard anytime — no calls, no hassle. Your access continues until the end of your billing period.</dd>
+            </dl>
+          </section>
+          
+          <section style="text-align: center; padding: 40px; background: #1e3a8a; color: white; border-radius: 12px;">
+            <h2 style="font-size: 1.75rem; margin-bottom: 20px;">Ready to Talk to Real Homeowners?</h2>
+            <p style="margin-bottom: 20px;">Stop wasting hours on dead numbers. Start your 7-day free trial today.</p>
+            <a href="/register" style="display: inline-block; background: #ea580c; color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">Start Free Trial</a>
+          </section>
+        </main>
+        
+        <footer style="margin-top: 60px; padding-top: 40px; border-top: 1px solid #e5e7eb; text-align: center; color: #6b7280;">
+          <p>&copy; 2024 Verified Homeowner. All rights reserved.</p>
+          <nav style="margin-top: 20px;">
+            <a href="/pricing" style="color: #4b5563; margin: 0 10px;">Pricing</a>
+            <a href="/about" style="color: #4b5563; margin: 0 10px;">About</a>
+            <a href="/terms" style="color: #4b5563; margin: 0 10px;">Terms</a>
+            <a href="/privacy" style="color: #4b5563; margin: 0 10px;">Privacy</a>
+          </nav>
+        </footer>
+      </div>
+    </noscript>
   </body>
 </html>
