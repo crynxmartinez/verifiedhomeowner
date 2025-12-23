@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { leadsAPI } from '../../lib/api';
 import useAuthStore from '../../store/authStore';
-import { Phone, Clock, DollarSign, Package, Copy, Check, X, ChevronLeft, ChevronRight, Search, SlidersHorizontal, Download, Loader2, Eye, Lock } from 'lucide-react';
+import { Phone, Clock, DollarSign, Package, Copy, Check, X, ChevronLeft, ChevronRight, Search, SlidersHorizontal, Download, Loader2, Eye, Lock, Home } from 'lucide-react';
 import TagInput from '../../components/TagInput';
 import FilterPanel from '../../components/FilterPanel';
 import LeadDetailModal from '../../components/LeadDetailModal';
@@ -40,6 +40,23 @@ export default function WholesalerLeads() {
     countdownCompare: 'gte' // eq (equals), gte (more than or equal), lte (less than or equal)
   });
   const [tempFilters, setTempFilters] = useState({ ...filters }); // For Apply button
+
+  // Property filters state
+  const [showPropertyFilters, setShowPropertyFilters] = useState(false);
+  const [propertyFilters, setPropertyFilters] = useState({
+    minPrice: '',
+    maxPrice: '',
+    minBeds: '',
+    maxBeds: '',
+    minBaths: '',
+    maxBaths: '',
+    minSqft: '',
+    maxSqft: '',
+    minYear: '',
+    maxYear: '',
+    homeType: '',
+    scoreFilter: '', // hot, good, normal, low
+  });
 
   useEffect(() => {
     fetchLeads();
@@ -194,6 +211,54 @@ export default function WholesalerLeads() {
           case 'lte': return days <= targetDays;
           case 'gte': 
           default: return days >= targetDays;
+        }
+      });
+    }
+
+    // Property filters
+    if (propertyFilters.minPrice) {
+      filtered = filtered.filter(l => l.lead?.zestimate && l.lead.zestimate >= parseInt(propertyFilters.minPrice));
+    }
+    if (propertyFilters.maxPrice) {
+      filtered = filtered.filter(l => l.lead?.zestimate && l.lead.zestimate <= parseInt(propertyFilters.maxPrice));
+    }
+    if (propertyFilters.minBeds) {
+      filtered = filtered.filter(l => l.lead?.bedrooms && l.lead.bedrooms >= parseInt(propertyFilters.minBeds));
+    }
+    if (propertyFilters.maxBeds) {
+      filtered = filtered.filter(l => l.lead?.bedrooms && l.lead.bedrooms <= parseInt(propertyFilters.maxBeds));
+    }
+    if (propertyFilters.minBaths) {
+      filtered = filtered.filter(l => l.lead?.bathrooms && l.lead.bathrooms >= parseFloat(propertyFilters.minBaths));
+    }
+    if (propertyFilters.maxBaths) {
+      filtered = filtered.filter(l => l.lead?.bathrooms && l.lead.bathrooms <= parseFloat(propertyFilters.maxBaths));
+    }
+    if (propertyFilters.minSqft) {
+      filtered = filtered.filter(l => l.lead?.living_area && l.lead.living_area >= parseInt(propertyFilters.minSqft));
+    }
+    if (propertyFilters.maxSqft) {
+      filtered = filtered.filter(l => l.lead?.living_area && l.lead.living_area <= parseInt(propertyFilters.maxSqft));
+    }
+    if (propertyFilters.minYear) {
+      filtered = filtered.filter(l => l.lead?.year_built && l.lead.year_built >= parseInt(propertyFilters.minYear));
+    }
+    if (propertyFilters.maxYear) {
+      filtered = filtered.filter(l => l.lead?.year_built && l.lead.year_built <= parseInt(propertyFilters.maxYear));
+    }
+    if (propertyFilters.homeType) {
+      filtered = filtered.filter(l => l.lead?.home_type === propertyFilters.homeType);
+    }
+    if (propertyFilters.scoreFilter) {
+      filtered = filtered.filter(l => {
+        if (!l.lead?.zestimate || !l.lead?.last_sale_price) return false;
+        const equityPercent = ((l.lead.zestimate - l.lead.last_sale_price) / l.lead.zestimate) * 100;
+        switch (propertyFilters.scoreFilter) {
+          case 'hot': return equityPercent >= 30;
+          case 'good': return equityPercent >= 15 && equityPercent < 30;
+          case 'normal': return equityPercent >= 0 && equityPercent < 15;
+          case 'low': return equityPercent < 0;
+          default: return true;
         }
       });
     }
@@ -501,6 +566,24 @@ export default function WholesalerLeads() {
           )}
         </td>
         <td className="px-4 py-3">
+          {lead.zestimate && lead.last_sale_price ? (
+            (() => {
+              const equityPercent = ((lead.zestimate - lead.last_sale_price) / lead.zestimate) * 100;
+              if (equityPercent >= 30) {
+                return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">🔥 Hot</span>;
+              } else if (equityPercent >= 15) {
+                return <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">⭐ Good</span>;
+              } else if (equityPercent >= 0) {
+                return <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">📊 Normal</span>;
+              } else {
+                return <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">📉 Low</span>;
+              }
+            })()
+          ) : (
+            <span className="text-gray-400 dark:text-gray-500 text-sm">—</span>
+          )}
+        </td>
+        <td className="px-4 py-3">
           <select
             value={userLead.status}
             onChange={(e) => handleStatusChange(userLead.id, userLead.source, e.target.value)}
@@ -709,6 +792,19 @@ export default function WholesalerLeads() {
             )}
           </button>
 
+          {/* Property Filters Button */}
+          <button
+            onClick={() => setShowPropertyFilters(!showPropertyFilters)}
+            className={`flex items-center justify-center gap-2 px-4 py-2.5 border rounded-lg transition-colors ${
+              showPropertyFilters 
+                ? 'bg-green-600 border-green-600 text-white' 
+                : 'dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            <Home size={18} />
+            <span>Property</span>
+          </button>
+
           {/* Export Button - Pro Plan Only */}
           <div className="relative group">
             <button
@@ -730,6 +826,95 @@ export default function WholesalerLeads() {
             )}
           </div>
         </div>
+
+        {/* Property Filters Panel */}
+        {showPropertyFilters && (
+          <div className="bg-gray-50 dark:bg-gray-800/50 border dark:border-gray-700 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                <Home size={16} className="text-green-600" />
+                Property Filters
+              </h3>
+              <button
+                onClick={() => setPropertyFilters({
+                  minPrice: '', maxPrice: '', minBeds: '', maxBeds: '',
+                  minBaths: '', maxBaths: '', minSqft: '', maxSqft: '',
+                  minYear: '', maxYear: '', homeType: '', scoreFilter: ''
+                })}
+                className="text-sm text-gray-500 hover:text-red-500"
+              >
+                Clear All
+              </button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Min Price</label>
+                <input
+                  type="number"
+                  value={propertyFilters.minPrice}
+                  onChange={(e) => setPropertyFilters(p => ({ ...p, minPrice: e.target.value }))}
+                  placeholder="$0"
+                  className="w-full px-2 py-1.5 text-sm border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Max Price</label>
+                <input
+                  type="number"
+                  value={propertyFilters.maxPrice}
+                  onChange={(e) => setPropertyFilters(p => ({ ...p, maxPrice: e.target.value }))}
+                  placeholder="Any"
+                  className="w-full px-2 py-1.5 text-sm border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Min Beds</label>
+                <input
+                  type="number"
+                  value={propertyFilters.minBeds}
+                  onChange={(e) => setPropertyFilters(p => ({ ...p, minBeds: e.target.value }))}
+                  placeholder="0"
+                  className="w-full px-2 py-1.5 text-sm border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Min Baths</label>
+                <input
+                  type="number"
+                  step="0.5"
+                  value={propertyFilters.minBaths}
+                  onChange={(e) => setPropertyFilters(p => ({ ...p, minBaths: e.target.value }))}
+                  placeholder="0"
+                  className="w-full px-2 py-1.5 text-sm border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Min Sqft</label>
+                <input
+                  type="number"
+                  value={propertyFilters.minSqft}
+                  onChange={(e) => setPropertyFilters(p => ({ ...p, minSqft: e.target.value }))}
+                  placeholder="0"
+                  className="w-full px-2 py-1.5 text-sm border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Score</label>
+                <select
+                  value={propertyFilters.scoreFilter}
+                  onChange={(e) => setPropertyFilters(p => ({ ...p, scoreFilter: e.target.value }))}
+                  className="w-full px-2 py-1.5 text-sm border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="">All</option>
+                  <option value="hot">🔥 Hot</option>
+                  <option value="good">⭐ Good</option>
+                  <option value="normal">📊 Normal</option>
+                  <option value="low">📉 Low</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Active Filter Chips */}
         {(activeFilterCount > 0 || searchTerm) && (
@@ -855,6 +1040,9 @@ export default function WholesalerLeads() {
                       Equity
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Score
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                       Status
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
@@ -948,6 +1136,9 @@ export default function WholesalerLeads() {
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                       Equity
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Score
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                       Status

@@ -488,6 +488,65 @@ export default function LeadDetailModal({ lead, userLead, onClose, onUpdate }) {
                     </div>
                   )}
 
+                  {/* Deal Analysis Calculator */}
+                  {lead?.zestimate && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                        Deal Analysis
+                      </h3>
+                      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Zestimate (ARV)</p>
+                            <p className="text-lg font-bold text-gray-900 dark:text-white">${lead.zestimate.toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Last Sale Price</p>
+                            <p className="text-lg font-bold text-gray-900 dark:text-white">
+                              {lead.last_sale_price ? `$${lead.last_sale_price.toLocaleString()}` : '—'}
+                            </p>
+                          </div>
+                        </div>
+                        {lead.last_sale_price && (
+                          <>
+                            <div className="border-t dark:border-blue-700 pt-4 mb-4">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600 dark:text-gray-300">Potential Equity</span>
+                                <span className={`text-lg font-bold ${
+                                  lead.zestimate - lead.last_sale_price >= 0 
+                                    ? 'text-green-600 dark:text-green-400' 
+                                    : 'text-red-600 dark:text-red-400'
+                                }`}>
+                                  ${Math.abs(lead.zestimate - lead.last_sale_price).toLocaleString()}
+                                  <span className="text-sm ml-1">
+                                    ({(((lead.zestimate - lead.last_sale_price) / lead.zestimate) * 100).toFixed(1)}%)
+                                  </span>
+                                </span>
+                              </div>
+                            </div>
+                            <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Quick Offer Calculator</p>
+                              <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                                <div className="bg-gray-50 dark:bg-gray-700 rounded p-2">
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">60% ARV</p>
+                                  <p className="font-semibold text-gray-900 dark:text-white">${(lead.zestimate * 0.6).toLocaleString()}</p>
+                                </div>
+                                <div className="bg-gray-50 dark:bg-gray-700 rounded p-2">
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">70% ARV</p>
+                                  <p className="font-semibold text-gray-900 dark:text-white">${(lead.zestimate * 0.7).toLocaleString()}</p>
+                                </div>
+                                <div className="bg-gray-50 dark:bg-gray-700 rounded p-2">
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">80% ARV</p>
+                                  <p className="font-semibold text-gray-900 dark:text-white">${(lead.zestimate * 0.8).toLocaleString()}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Property Details */}
                   {(lead?.bedrooms || lead?.bathrooms || lead?.living_area || lead?.year_built || lead?.home_type) && (
                     <div>
