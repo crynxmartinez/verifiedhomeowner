@@ -77,7 +77,7 @@ export default function Pricing() {
   ];
 
   const faqs = [
-    { q: 'How does the 3-day free trial work?', a: 'Start a free trial on any paid plan (Basic, Elite, or Pro). Card required to activate, but you pay $0 during the trial. Cancel anytime before the trial ends and you won\'t be charged.' },
+    { q: 'How does the 7-day free trial work?', a: 'Start a free trial on any paid plan (Basic, Elite, or Pro). Card required to activate, but you pay $0 during the trial. Cancel anytime before the trial ends and you won\'t be charged.' },
     { q: 'What does "phone verified" mean?', a: 'Our team actively validates the best working number for each homeowner through direct confirmation. We don\'t just pull data — we verify it connects to the actual property owner.' },
     { q: 'What is ownership matched?', a: 'We cross-reference public records to confirm the contact is the actual property owner at that address. No renters, no outdated info.' },
     { q: 'Where are leads available?', a: 'We currently serve Texas only. This is by design — limiting our territory allows us to maintain strict verification standards.' },
@@ -106,7 +106,7 @@ export default function Pricing() {
             Ownership-matched, phone-verified homeowner leads for Texas wholesalers.
           </p>
           <p className="text-white/90 font-medium mb-2">
-            Try any plan free for 3 days. <span className="text-orange-400">$0 during trial.</span> Cancel anytime.
+            Try any plan free for 7 days. <span className="text-orange-400">$0 during trial.</span> Cancel anytime.
           </p>
           <p className="text-xs text-blue-200/50">Card required to activate trial.</p>
         </div>

@@ -52,7 +52,7 @@ export default function Home() {
     },
     { 
       q: 'How does the free trial work?', 
-      a: 'Start a 3-day free trial on any plan (including Pro). Card required to activate, but you pay $0 during the trial. Cancel anytime before the trial ends and you won\'t be charged.' 
+      a: 'Start a 7-day free trial on any plan (including Pro). Card required to activate, but you pay $0 during the trial. Cancel anytime before the trial ends and you won\'t be charged.' 
     },
     { 
       q: 'Are leads exclusive?', 
@@ -128,7 +128,7 @@ export default function Home() {
           
           {/* CTA Line */}
           <p className="text-white/90 font-medium mb-4">
-            Start a 3-Day Free Trial (any plan). <span className="text-orange-400">$0 during trial.</span> Cancel anytime.
+            Start a 7-Day Free Trial (any plan). <span className="text-orange-400">$0 during trial.</span> Cancel anytime.
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-4">
@@ -322,7 +322,7 @@ export default function Home() {
           <div className="relative">
             <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
               <img 
-                src="https://storage.googleapis.com/msgsndr/xzA6eU8kOYmBuwFdr3CF/media/694915d4aca6ab114d0cc76a.png" 
+                src="https://storage.googleapis.com/msgsndr/xzA6eU8kOYmBuwFdr3CF/media/694a0d099cbb504b6db9dc39.png" 
                 alt="VerifiedHomeowner Dashboard - My Leads view showing verified homeowner contacts with phone numbers and Texas property addresses"
                 className="w-full h-auto"
                 loading="lazy"
@@ -420,13 +420,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ========== PLANS + 3-DAY FREE TRIAL ========== */}
+      {/* ========== PLANS + 7-DAY FREE TRIAL ========== */}
       <section className="py-16 md:py-24 bg-slate-50">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Plans + 3-Day Free Trial</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Plans + 7-Day Free Trial</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Try any plan free for 3 days. Card required to activate, but you pay <span className="font-semibold text-orange-500">$0 during trial</span>. Cancel anytime.
+              Try any plan free for 7 days. Card required to activate, but you pay <span className="font-semibold text-orange-500">$0 during trial</span>. Cancel anytime.
             </p>
           </div>
           
@@ -476,7 +476,7 @@ export default function Home() {
             <div className="space-y-3 text-sm">
               <div>
                 <p className="font-medium text-gray-900">When will I be charged?</p>
-                <p className="text-gray-600">Only after your 3-day trial ends. Cancel before then and pay nothing.</p>
+                <p className="text-gray-600">Only after your 7-day trial ends. Cancel before then and pay nothing.</p>
               </div>
               <div>
                 <p className="font-medium text-gray-900">Can I cancel anytime?</p>
@@ -484,7 +484,7 @@ export default function Home() {
               </div>
               <div>
                 <p className="font-medium text-gray-900">Can I try the Pro plan?</p>
-                <p className="text-gray-600">Absolutely. The 3-day free trial works on any plan, including Pro.</p>
+                <p className="text-gray-600">Absolutely. The 7-day free trial works on any plan, including Pro.</p>
               </div>
             </div>
           </div>
@@ -532,7 +532,7 @@ export default function Home() {
             Ready to Talk to Real Homeowners?
           </h2>
           <p className="text-lg text-blue-200 mb-8 max-w-2xl mx-auto">
-            Stop wasting hours on dead numbers. Start your 3-day free trial and experience what verified homeowner leads feel like.
+            Stop wasting hours on dead numbers. Start your 7-day free trial and experience what verified homeowner leads feel like.
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">

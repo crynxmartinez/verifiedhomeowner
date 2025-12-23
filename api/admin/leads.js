@@ -328,6 +328,22 @@ async function handler(req, res) {
           }
         });
 
+        // Add to LeadQueue
+        const maxQueuePosition = await prisma.leadQueue.aggregate({
+          _max: { queuePosition: true }
+        });
+        const queuePosition = (maxQueuePosition._max.queuePosition || 0) + 1;
+        
+        await prisma.leadQueue.create({
+          data: {
+            leadId: data.id,
+            queuePosition: queuePosition,
+            uploadBatch: `single-${new Date().toISOString().replace(/[:.]/g, '-')}`,
+            uploadedAt: data.createdAt
+          }
+        });
+        console.log(`[LeadQueue] Added single lead to queue at position ${queuePosition}`);
+
         return res.status(201).json({ lead: data, updated: false });
       }
 
@@ -410,6 +426,42 @@ async function handler(req, res) {
         // Insert new leads
         if (leadsToInsert.length > 0) {
           await prisma.lead.createMany({ data: leadsToInsert });
+          
+          // Add newly created leads to LeadQueue
+          const newLeadsForQueue = await prisma.lead.findMany({
+            where: {
+              sequenceNumber: {
+                gte: leadsToInsert[0].sequenceNumber,
+                lte: leadsToInsert[leadsToInsert.length - 1].sequenceNumber
+              }
+            },
+            select: { id: true, createdAt: true }
+          });
+          
+          // Get current max queue position
+          const maxQueuePosition = await prisma.leadQueue.aggregate({
+            _max: { queuePosition: true }
+          });
+          let queuePosition = (maxQueuePosition._max.queuePosition || 0);
+          
+          // Generate batch ID for this upload
+          const uploadBatch = `upload-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+          
+          // Insert into LeadQueue
+          const queueEntries = newLeadsForQueue.map((lead, index) => ({
+            leadId: lead.id,
+            queuePosition: queuePosition + index + 1,
+            uploadBatch: uploadBatch,
+            uploadedAt: lead.createdAt
+          }));
+          
+          if (queueEntries.length > 0) {
+            await prisma.leadQueue.createMany({ 
+              data: queueEntries,
+              skipDuplicates: true 
+            });
+            console.log(`[LeadQueue] Added ${queueEntries.length} leads to queue (batch: ${uploadBatch})`);
+          }
         }
 
         // Update existing leads
@@ -515,6 +567,42 @@ async function handler(req, res) {
         // Insert new leads
         if (leadsToInsert.length > 0) {
           await prisma.lead.createMany({ data: leadsToInsert });
+          
+          // Add newly created leads to LeadQueue
+          const newLeadsForQueue = await prisma.lead.findMany({
+            where: {
+              sequenceNumber: {
+                gte: leadsToInsert[0].sequenceNumber,
+                lte: leadsToInsert[leadsToInsert.length - 1].sequenceNumber
+              }
+            },
+            select: { id: true, createdAt: true }
+          });
+          
+          // Get current max queue position
+          const maxQueuePosition = await prisma.leadQueue.aggregate({
+            _max: { queuePosition: true }
+          });
+          let queuePosition = (maxQueuePosition._max.queuePosition || 0);
+          
+          // Generate batch ID for this upload
+          const uploadBatch = `upload-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+          
+          // Insert into LeadQueue
+          const queueEntries = newLeadsForQueue.map((lead, index) => ({
+            leadId: lead.id,
+            queuePosition: queuePosition + index + 1,
+            uploadBatch: uploadBatch,
+            uploadedAt: lead.createdAt
+          }));
+          
+          if (queueEntries.length > 0) {
+            await prisma.leadQueue.createMany({ 
+              data: queueEntries,
+              skipDuplicates: true 
+            });
+            console.log(`[LeadQueue] Added ${queueEntries.length} leads to queue (batch: ${uploadBatch})`);
+          }
         }
 
         // Update existing leads

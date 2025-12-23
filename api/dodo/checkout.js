@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     pro: process.env.DODO_PRODUCT_PRO,
   };
 
-  // Trial Product IDs (3-day free trial)
+  // Trial Product IDs (7-day free trial)
   const DODO_TRIAL_PRODUCTS = {
     basic: 'pdt_0NUQtfVY3PGUDWkPiVIVn',
     elite: 'pdt_0NUQtc06hwEs5upizxaTm',

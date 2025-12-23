@@ -1,5 +1,73 @@
 import prisma from '../../lib/prisma.js';
-import { PLAN_CONFIG } from '../../lib/planConfig.js';
+
+/**
+ * Plan quotas - daily leads per plan type
+ */
+const PLAN_QUOTAS = {
+  free: 1,
+  basic: 5,      // Starter plan
+  elite: 10,     // Elite plan
+  pro: 20        // Pro plan - full access
+};
+
+const POOL_SIZE = 600;
+
+/**
+ * Get current month string in YYYY-MM format (Philippine Time)
+ */
+function getCurrentPoolMonth() {
+  // Philippine Time is UTC+8
+  const now = new Date();
+  const phTime = new Date(now.getTime() + (8 * 60 * 60 * 1000));
+  const year = phTime.getUTCFullYear();
+  const month = String(phTime.getUTCMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}
+
+/**
+ * Generate monthly pool if it doesn't exist
+ */
+async function ensurePoolExists(poolMonth) {
+  const existingPool = await prisma.monthlyPool.count({
+    where: { poolMonth }
+  });
+  
+  if (existingPool > 0) {
+    return { exists: true, count: existingPool };
+  }
+  
+  // Generate pool from queue
+  const queuedLeads = await prisma.leadQueue.findMany({
+    where: { assignedToPool: null },
+    orderBy: { queuePosition: 'asc' },
+    take: POOL_SIZE,
+    select: { id: true, leadId: true }
+  });
+  
+  if (queuedLeads.length === 0) {
+    return { exists: false, count: 0, error: 'No leads in queue' };
+  }
+  
+  // Create pool entries
+  const poolEntries = queuedLeads.map(q => ({
+    poolMonth,
+    leadId: q.leadId
+  }));
+  
+  await prisma.monthlyPool.createMany({
+    data: poolEntries,
+    skipDuplicates: true
+  });
+  
+  // Mark as assigned in queue
+  await prisma.leadQueue.updateMany({
+    where: { id: { in: queuedLeads.map(q => q.id) } },
+    data: { assignedToPool: poolMonth }
+  });
+  
+  console.log(`[Pool] Auto-generated pool for ${poolMonth} with ${queuedLeads.length} leads`);
+  return { exists: true, count: queuedLeads.length, generated: true };
+}
 
 export default async function handler(req, res) {
   // Verify this is a cron request
@@ -9,11 +77,42 @@ export default async function handler(req, res) {
   }
 
   try {
+    const currentMonth = getCurrentPoolMonth();
+    console.log(`[CRON Distribution] Starting daily distribution for ${currentMonth}...`);
+    
+    // Ensure pool exists for current month
+    const poolStatus = await ensurePoolExists(currentMonth);
+    if (!poolStatus.exists) {
+      return res.status(200).json({ 
+        message: 'No pool available - queue is empty',
+        poolMonth: currentMonth
+      });
+    }
+    
+    if (poolStatus.generated) {
+      console.log(`[CRON Distribution] Auto-generated pool for ${currentMonth}`);
+    }
+    
+    // Get current month's pool
+    const pool = await prisma.monthlyPool.findMany({
+      where: { poolMonth: currentMonth },
+      select: { leadId: true }
+    });
+    
+    const poolLeadIds = pool.map(p => p.leadId);
+    console.log(`[CRON Distribution] Pool has ${poolLeadIds.length} leads`);
+    
     // Get all active wholesalers
     const users = await prisma.user.findMany({
       where: {
         role: 'wholesaler',
         subscriptionStatus: 'active'
+      },
+      select: {
+        id: true,
+        planType: true,
+        email: true,
+        name: true
       }
     });
 
@@ -21,149 +120,94 @@ export default async function handler(req, res) {
       return res.status(200).json({ message: 'No active wholesalers found' });
     }
 
-    // Get total leads count for validation
-    const totalLeadsCount = await prisma.lead.count();
-
-    if (!totalLeadsCount || totalLeadsCount === 0) {
-      return res.status(200).json({ message: 'No leads available' });
-    }
+    console.log(`[CRON Distribution] Processing ${users.length} active subscribers`);
 
     let totalAssigned = 0;
     const results = [];
-    const today = new Date().getDay(); // 0 = Sunday, 1 = Monday
-
-    console.log(`[CRON Distribution] Starting daily distribution:`);
-    console.log(`  - Day of week: ${today} (1 = Monday)`);
-    console.log(`  - Users to process: ${users.length}`);
-    console.log(`  - Total leads in DB: ${totalLeadsCount}`);
 
     // Process each user
     for (const user of users) {
-      const planConfig = PLAN_CONFIG[user.planType] || PLAN_CONFIG.free;
-      let leadsToAssign = 0;
-
-      // Determine how many leads to assign based on plan
-      if (planConfig.dailyLeads) {
-        leadsToAssign = planConfig.dailyLeads;
-      } else if (planConfig.weeklyLeads) {
-        // Free plan: only on Mondays
-        if (today === 1) {
-          leadsToAssign = planConfig.weeklyLeads;
-        }
-      }
-
-      if (leadsToAssign === 0) {
-        console.log(`[User: ${user.name}] Skipping - no leads for plan ${user.planType} today`);
-        continue;
-      }
-
-      let currentPosition = user.leadSequencePosition || 0;
-
-      console.log(`\n[User: ${user.name} (${user.email})]`);
-      console.log(`  - Plan: ${user.planType}`);
-      console.log(`  - Current position: ${currentPosition}`);
-      console.log(`  - Daily allocation: ${leadsToAssign}`);
-
-      // Get leads already assigned to this user
-      const assignedLeadIds = await prisma.userLead.findMany({
-        where: { userId: user.id },
+      const dailyQuota = PLAN_QUOTAS[user.planType] || PLAN_QUOTAS.free;
+      
+      // Get leads this user already received this month (from distribution log)
+      const existingDistributions = await prisma.distributionLog.findMany({
+        where: {
+          userId: user.id,
+          distributionMonth: currentMonth
+        },
         select: { leadId: true }
       });
-      const assignedIds = assignedLeadIds.map(l => l.leadId);
-
-      // Get unassigned leads starting from current position
-      let unassignedLeads = await prisma.lead.findMany({
-        where: {
-          id: { notIn: assignedIds },
-          sequenceNumber: { gte: currentPosition }
-        },
-        orderBy: { sequenceNumber: 'asc' },
-        take: leadsToAssign
-      });
-
-      // If we need more leads, wrap around to beginning
-      if (unassignedLeads.length < leadsToAssign) {
-        const remaining = leadsToAssign - unassignedLeads.length;
-        const moreLeads = await prisma.lead.findMany({
-          where: {
-            id: { notIn: [...assignedIds, ...unassignedLeads.map(l => l.id)] },
-            sequenceNumber: { lt: currentPosition }
-          },
-          orderBy: { sequenceNumber: 'asc' },
-          take: remaining
-        });
-        unassignedLeads = [...unassignedLeads, ...moreLeads];
-      }
-
-      if (!unassignedLeads || unassignedLeads.length === 0) {
-        console.log(`  - User has all available leads`);
-        results.push({
-          userId: user.id,
-          userName: user.name,
-          assigned: 0,
-          message: 'User has all available leads'
-        });
-        continue;
-      }
-
-      console.log(`  - Available unassigned: ${unassignedLeads.length}`);
-
-      if (unassignedLeads.length < leadsToAssign) {
-        console.warn(`  - Warning: Only ${unassignedLeads.length} of ${leadsToAssign} available`);
-      }
-
-      // Bulk insert assignments
-      const assignments = unassignedLeads.map(lead => ({
-        userId: user.id,
-        leadId: lead.id,
-        status: 'new',
-        action: 'call_now',
-      }));
-
-      try {
-        const inserted = await prisma.userLead.createMany({
-          data: assignments
-        });
-
-        const assigned = inserted.count || 0;
-        totalAssigned += assigned;
-
-        // Update position: move forward by number assigned, wrap around
-        const newPosition = (currentPosition + assigned) % totalLeadsCount;
-
-        console.log(`  - Assigned: ${assigned} leads`);
-        console.log(`  - New position: ${newPosition}`);
-
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { leadSequencePosition: newPosition }
-        });
-
+      
+      const existingLeadIds = new Set(existingDistributions.map(d => d.leadId));
+      
+      // Filter pool to only leads user hasn't received yet this month
+      const availableLeadIds = poolLeadIds.filter(id => !existingLeadIds.has(id));
+      
+      if (availableLeadIds.length === 0) {
+        console.log(`[User: ${user.name}] Already received all pool leads this month`);
         results.push({
           userId: user.id,
           userName: user.name,
           plan: user.planType,
-          assigned,
-          newPosition
-        });
-      } catch (insertError) {
-        console.error(`  - Error inserting leads:`, insertError);
-        results.push({
-          userId: user.id,
-          userName: user.name,
           assigned: 0,
-          error: insertError.message
+          reason: 'Already received all pool leads'
         });
         continue;
       }
+      
+      // Randomly select leads up to daily quota
+      const shuffled = availableLeadIds.sort(() => Math.random() - 0.5);
+      const toDistribute = shuffled.slice(0, Math.min(dailyQuota, availableLeadIds.length));
+      
+      console.log(`[User: ${user.name} (${user.planType})] Distributing ${toDistribute.length}/${dailyQuota} leads`);
+      
+      // Create distribution logs
+      const distributionLogs = toDistribute.map(leadId => ({
+        userId: user.id,
+        leadId: leadId,
+        distributionMonth: currentMonth
+      }));
+      
+      if (distributionLogs.length > 0) {
+        await prisma.distributionLog.createMany({
+          data: distributionLogs,
+          skipDuplicates: true
+        });
+        
+        // Also create UserLead records so users can see these leads
+        const userLeadRecords = toDistribute.map(leadId => ({
+          userId: user.id,
+          leadId: leadId,
+          status: 'new',
+          action: 'call_now'
+        }));
+        
+        await prisma.userLead.createMany({
+          data: userLeadRecords,
+          skipDuplicates: true
+        });
+      }
+      
+      totalAssigned += toDistribute.length;
+      
+      results.push({
+        userId: user.id,
+        userName: user.name,
+        plan: user.planType,
+        assigned: toDistribute.length,
+        quota: dailyQuota
+      });
     }
 
     console.log(`\n[CRON Distribution Complete]`);
+    console.log(`  - Pool month: ${currentMonth}`);
     console.log(`  - Total assigned: ${totalAssigned}`);
     console.log(`  - Users processed: ${users.length}`);
 
     res.status(200).json({
       message: `Daily distribution: ${totalAssigned} leads to ${users.length} wholesalers`,
+      poolMonth: currentMonth,
+      poolSize: poolLeadIds.length,
       totalAssigned,
       wholesalersProcessed: users.length,
       timestamp: new Date().toISOString(),

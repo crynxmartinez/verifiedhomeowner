@@ -58,7 +58,7 @@ export default function TrialOfferModal({ plan, onSelectTrial, onSelectFull, onC
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-purple-700 dark:text-purple-400 text-lg">Try Free for 3 Days</span>
+                  <span className="font-bold text-purple-700 dark:text-purple-400 text-lg">Try Free for 7 Days</span>
                   <span className="px-2 py-0.5 bg-purple-500 text-white text-xs font-medium rounded-full">RECOMMENDED</span>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
