@@ -8,11 +8,13 @@ import FilterPanel from '../../components/FilterPanel';
 import LeadDetailModal from '../../components/LeadDetailModal';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonLeadCard } from '../../components/Skeleton';
+import { useSensitiveBlur } from '../../hooks/useSensitiveBlur';
 
 export default function WholesalerLeads() {
   const toast = useToast();
   const user = useAuthStore((state) => state.user);
   const isProPlan = user?.plan_type === 'pro';
+  const { formatName, formatPhone, formatPropertyAddress } = useSensitiveBlur();
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingLeads, setSavingLeads] = useState(new Set());
@@ -477,7 +479,11 @@ export default function WholesalerLeads() {
     const lead = userLead.lead;
     const isSaving = savingLeads.has(userLead.id);
 
-    const displayName = lead.owner_name || lead.full_name || `${lead.first_name || ''} ${lead.last_name || ''}`.trim() || 'Unknown';
+    // Apply blur formatting
+    const nameData = formatName(lead.first_name, lead.last_name);
+    const displayName = lead.owner_name || lead.full_name || nameData.fullName || 'Unknown';
+    const phoneData = formatPhone(lead.phone);
+    const propertyData = formatPropertyAddress(lead.property_address, lead.city, lead.state, lead.zip_code);
     
     return (
       <tr key={userLead.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -488,7 +494,7 @@ export default function WholesalerLeads() {
             </div>
             <div className="min-w-0">
               <div 
-                className="font-medium dark:text-white cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+                className={`font-medium dark:text-white cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 ${nameData.fullNameClass}`}
                 onClick={() => setSelectedLead(userLead)}
               >
                 {displayName}
@@ -512,7 +518,7 @@ export default function WholesalerLeads() {
                     <Copy size={14} className="text-blue-600 dark:text-blue-400" />
                   )}
                 </button>
-                <span className="text-sm text-gray-500 dark:text-gray-400">{lead.phone}</span>
+                <span className={`text-sm text-gray-500 dark:text-gray-400 ${phoneData.className}`}>{phoneData.value}</span>
               </div>
             </div>
           </div>
@@ -532,9 +538,9 @@ export default function WholesalerLeads() {
               </div>
             )}
             <div>
-              <div className="dark:text-white">{lead.property_address}</div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                {lead.city}, {lead.state} {lead.zip_code}
+              <div className={`dark:text-white ${propertyData.addressClass}`}>{propertyData.address}</div>
+              <div className={`text-sm text-gray-500 dark:text-gray-400 ${propertyData.cityStateZipClass}`}>
+                {propertyData.cityStateZip}
               </div>
             </div>
           </div>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import useAuthStore from '../../store/authStore';
 import api, { userAPI, authAPI } from '../../lib/api';
-import { User, Mail, Lock, CheckCircle, XCircle, Loader2, Eye, EyeOff, AlertTriangle, MapPin, Bell, X } from 'lucide-react';
+import { User, Mail, Lock, CheckCircle, XCircle, Loader2, Eye, EyeOff, AlertTriangle, MapPin, Bell, X, Shield } from 'lucide-react';
 
 function PasswordCheck({ password }) {
   const checks = [
@@ -50,6 +50,24 @@ export default function Profile() {
   const [preferredStates, setPreferredStates] = useState([]);
   const [marketplaceEmails, setMarketplaceEmails] = useState(true);
   const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
+
+  // Sensitive Info Blur Modal
+  const [showBlurModal, setShowBlurModal] = useState(false);
+  const [blurSettings, setBlurSettings] = useState(() => {
+    const saved = localStorage.getItem('sensitiveInfoBlur');
+    return saved ? JSON.parse(saved) : {
+      firstName: false,
+      lastName: false,
+      propertyAddress: false,
+      propertyAddressPartial: false,
+      mailingAddress: false,
+      mailingAddressPartial: false,
+      phoneNumber: false,
+      phoneNumberPartial: false,
+      email: false,
+      emailPartial: false,
+    };
+  });
 
   useEffect(() => {
     if (user) {
@@ -175,6 +193,43 @@ export default function Profile() {
     } finally {
       setSendingVerification(false);
     }
+  };
+
+  // Save blur settings to localStorage and apply CSS
+  const updateBlurSetting = (key, value) => {
+    const newSettings = { ...blurSettings, [key]: value };
+    // If enabling full blur, disable partial and vice versa
+    if (key === 'propertyAddress' && value) newSettings.propertyAddressPartial = false;
+    if (key === 'propertyAddressPartial' && value) newSettings.propertyAddress = false;
+    if (key === 'mailingAddress' && value) newSettings.mailingAddressPartial = false;
+    if (key === 'mailingAddressPartial' && value) newSettings.mailingAddress = false;
+    if (key === 'phoneNumber' && value) newSettings.phoneNumberPartial = false;
+    if (key === 'phoneNumberPartial' && value) newSettings.phoneNumber = false;
+    if (key === 'email' && value) newSettings.emailPartial = false;
+    if (key === 'emailPartial' && value) newSettings.email = false;
+    
+    setBlurSettings(newSettings);
+    localStorage.setItem('sensitiveInfoBlur', JSON.stringify(newSettings));
+    // Dispatch event so other components can react
+    window.dispatchEvent(new CustomEvent('blurSettingsChanged', { detail: newSettings }));
+  };
+
+  const resetBlurSettings = () => {
+    const defaultSettings = {
+      firstName: false,
+      lastName: false,
+      propertyAddress: false,
+      propertyAddressPartial: false,
+      mailingAddress: false,
+      mailingAddressPartial: false,
+      phoneNumber: false,
+      phoneNumberPartial: false,
+      email: false,
+      emailPartial: false,
+    };
+    setBlurSettings(defaultSettings);
+    localStorage.setItem('sensitiveInfoBlur', JSON.stringify(defaultSettings));
+    window.dispatchEvent(new CustomEvent('blurSettingsChanged', { detail: defaultSettings }));
   };
 
   return (
@@ -337,6 +392,31 @@ export default function Profile() {
             </div>
           </div>
 
+          {/* Sensitive Info Blur */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
+              <Shield className="h-5 w-5 mr-2 text-purple-600" />
+              Sensitive Information
+            </h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Blur sensitive lead data on screen to protect privacy during screen sharing or presentations.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowBlurModal(true)}
+              className="inline-flex items-center px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/50 transition text-sm font-medium"
+            >
+              <Shield className="h-4 w-4 mr-2" />
+              Configure Blur Settings
+            </button>
+            {Object.values(blurSettings).some(v => v) && (
+              <p className="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Blur protection is active
+              </p>
+            )}
+          </div>
+
           {/* Target Markets */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
@@ -458,6 +538,234 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {/* Blur Settings Modal */}
+      {showBlurModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Blur Sensitive Information</h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Manage which information you want to blur on the screen to avoid people seeing on presentations.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowBlurModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* First Name */}
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">First Name</span>
+                  <button
+                    type="button"
+                    onClick={() => updateBlurSetting('firstName', !blurSettings.firstName)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      blurSettings.firstName ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      blurSettings.firstName ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {/* Last Name */}
+                <div className="flex items-center justify-between py-2">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">Last Name</span>
+                  <button
+                    type="button"
+                    onClick={() => updateBlurSetting('lastName', !blurSettings.lastName)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      blurSettings.lastName ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      blurSettings.lastName ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {/* Property Address */}
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">Property Address</span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Blur address completely</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updateBlurSetting('propertyAddress', !blurSettings.propertyAddress)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      blurSettings.propertyAddress ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      blurSettings.propertyAddress ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {/* Property Address Partial */}
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">Property Address Partial</span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Blur only State, City and Zipcode</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updateBlurSetting('propertyAddressPartial', !blurSettings.propertyAddressPartial)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      blurSettings.propertyAddressPartial ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      blurSettings.propertyAddressPartial ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {/* Mailing Address */}
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">Mailing Address</span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Blur address completely</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updateBlurSetting('mailingAddress', !blurSettings.mailingAddress)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      blurSettings.mailingAddress ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      blurSettings.mailingAddress ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {/* Mailing Address Partial */}
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">Mailing Address Partial</span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Blur only State, City and Zipcode</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updateBlurSetting('mailingAddressPartial', !blurSettings.mailingAddressPartial)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      blurSettings.mailingAddressPartial ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      blurSettings.mailingAddressPartial ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {/* Phone Number */}
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">Phone Number</span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Blur phone number completely</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updateBlurSetting('phoneNumber', !blurSettings.phoneNumber)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      blurSettings.phoneNumber ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      blurSettings.phoneNumber ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {/* Phone Number Partial */}
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">Phone Number Partial</span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Show only last 4 digits</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updateBlurSetting('phoneNumberPartial', !blurSettings.phoneNumberPartial)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      blurSettings.phoneNumberPartial ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      blurSettings.phoneNumberPartial ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {/* Email */}
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">Email</span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Blur email completely</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updateBlurSetting('email', !blurSettings.email)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      blurSettings.email ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      blurSettings.email ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+
+                {/* Email Partial */}
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">Email Partial</span>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Show only first 2 or 4 characters</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updateBlurSetting('emailPartial', !blurSettings.emailPartial)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      blurSettings.emailPartial ? 'bg-purple-600' : 'bg-gray-300 dark:bg-gray-600'
+                    }`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      blurSettings.emailPartial ? 'translate-x-6' : 'translate-x-1'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex gap-3 mt-6 pt-4 border-t dark:border-gray-700">
+                <button
+                  type="button"
+                  onClick={resetBlurSettings}
+                  className="flex-1 px-4 py-2 border dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm font-medium"
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowBlurModal(false)}
+                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm font-medium"
+                >
+                  Done!
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
