@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import { adminAPI } from '../../lib/api';
-import { Upload, Plus, X, FileText, Search, ArrowRight, Trash2, Loader2, Edit2, Home, DollarSign, Bed, Bath, Ruler, Calendar, Building } from 'lucide-react';
+import { Upload, Plus, X, FileText, Search, ArrowRight, Trash2, Loader2, Edit2, Home, DollarSign, Bed, Bath, Ruler, Calendar, Building, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
@@ -53,6 +53,18 @@ export default function AdminLeads() {
   const [saving, setSaving] = useState(false);
   const [editModalTab, setEditModalTab] = useState('edit');
   const [enriching, setEnriching] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [propertyFilters, setPropertyFilters] = useState({
+    minPrice: '',
+    maxPrice: '',
+    bedrooms: '',
+    bathrooms: '',
+    minSqft: '',
+    maxSqft: '',
+    yearBuiltMin: '',
+    yearBuiltMax: '',
+    homeType: '',
+  });
 
   useEffect(() => {
     fetchLeads();
@@ -514,22 +526,55 @@ export default function AdminLeads() {
     }
   };
 
-  // Filter leads based on search query
+  // Clear all property filters
+  const clearPropertyFilters = () => {
+    setPropertyFilters({
+      minPrice: '',
+      maxPrice: '',
+      bedrooms: '',
+      bathrooms: '',
+      minSqft: '',
+      maxSqft: '',
+      yearBuiltMin: '',
+      yearBuiltMax: '',
+      homeType: '',
+    });
+  };
+
+  // Check if any property filters are active
+  const hasActiveFilters = Object.values(propertyFilters).some(v => v !== '');
+
+  // Filter leads based on search query and property filters
   const filteredLeads = leads.filter(lead => {
-    if (!searchQuery) return true;
-    
-    const query = searchQuery.toLowerCase();
-    return (
-      (lead.full_name && lead.full_name.toLowerCase().includes(query)) ||
-      (lead.first_name && lead.first_name.toLowerCase().includes(query)) ||
-      (lead.last_name && lead.last_name.toLowerCase().includes(query)) ||
-      (lead.owner_name && lead.owner_name.toLowerCase().includes(query)) ||
-      (lead.phone && lead.phone.toLowerCase().includes(query)) ||
-      (lead.property_address && lead.property_address.toLowerCase().includes(query)) ||
-      (lead.city && lead.city.toLowerCase().includes(query)) ||
-      (lead.state && lead.state.toLowerCase().includes(query)) ||
-      (lead.zip_code && lead.zip_code.toLowerCase().includes(query))
-    );
+    // Search query filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = (
+        (lead.full_name && lead.full_name.toLowerCase().includes(query)) ||
+        (lead.first_name && lead.first_name.toLowerCase().includes(query)) ||
+        (lead.last_name && lead.last_name.toLowerCase().includes(query)) ||
+        (lead.owner_name && lead.owner_name.toLowerCase().includes(query)) ||
+        (lead.phone && lead.phone.toLowerCase().includes(query)) ||
+        (lead.property_address && lead.property_address.toLowerCase().includes(query)) ||
+        (lead.city && lead.city.toLowerCase().includes(query)) ||
+        (lead.state && lead.state.toLowerCase().includes(query)) ||
+        (lead.zip_code && lead.zip_code.toLowerCase().includes(query))
+      );
+      if (!matchesSearch) return false;
+    }
+
+    // Property filters
+    if (propertyFilters.minPrice && (!lead.zestimate || lead.zestimate < Number(propertyFilters.minPrice))) return false;
+    if (propertyFilters.maxPrice && (!lead.zestimate || lead.zestimate > Number(propertyFilters.maxPrice))) return false;
+    if (propertyFilters.bedrooms && (!lead.bedrooms || lead.bedrooms < Number(propertyFilters.bedrooms))) return false;
+    if (propertyFilters.bathrooms && (!lead.bathrooms || lead.bathrooms < Number(propertyFilters.bathrooms))) return false;
+    if (propertyFilters.minSqft && (!lead.living_area || lead.living_area < Number(propertyFilters.minSqft))) return false;
+    if (propertyFilters.maxSqft && (!lead.living_area || lead.living_area > Number(propertyFilters.maxSqft))) return false;
+    if (propertyFilters.yearBuiltMin && (!lead.year_built || lead.year_built < Number(propertyFilters.yearBuiltMin))) return false;
+    if (propertyFilters.yearBuiltMax && (!lead.year_built || lead.year_built > Number(propertyFilters.yearBuiltMax))) return false;
+    if (propertyFilters.homeType && lead.home_type !== propertyFilters.homeType) return false;
+
+    return true;
   });
 
   if (loading) {
@@ -595,6 +640,19 @@ export default function AdminLeads() {
               className="w-full pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
             />
           </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition ${
+              hasActiveFilters 
+                ? 'bg-blue-600 text-white' 
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+            }`}
+          >
+            <Filter className="h-4 w-4" />
+            <span>Filters</span>
+            {hasActiveFilters && <span className="bg-white text-blue-600 text-xs px-1.5 py-0.5 rounded-full">{Object.values(propertyFilters).filter(v => v !== '').length}</span>}
+            {showFilters ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </button>
           {selectedLeads.length > 0 && (
             <button
               onClick={handleBulkDelete}
@@ -605,6 +663,139 @@ export default function AdminLeads() {
             </button>
           )}
         </div>
+
+        {/* Property Filters Panel */}
+        {showFilters && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <Filter className="h-4 w-4" />
+                Property Filters
+              </h3>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearPropertyFilters}
+                  className="text-sm text-red-600 hover:text-red-700 dark:text-red-400"
+                >
+                  Clear All
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {/* Price Range */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Min Price</label>
+                <input
+                  type="number"
+                  placeholder="$0"
+                  value={propertyFilters.minPrice}
+                  onChange={(e) => setPropertyFilters(prev => ({ ...prev, minPrice: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Max Price</label>
+                <input
+                  type="number"
+                  placeholder="Any"
+                  value={propertyFilters.maxPrice}
+                  onChange={(e) => setPropertyFilters(prev => ({ ...prev, maxPrice: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              {/* Bedrooms */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Min Beds</label>
+                <select
+                  value={propertyFilters.bedrooms}
+                  onChange={(e) => setPropertyFilters(prev => ({ ...prev, bedrooms: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="">Any</option>
+                  <option value="1">1+</option>
+                  <option value="2">2+</option>
+                  <option value="3">3+</option>
+                  <option value="4">4+</option>
+                  <option value="5">5+</option>
+                </select>
+              </div>
+              {/* Bathrooms */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Min Baths</label>
+                <select
+                  value={propertyFilters.bathrooms}
+                  onChange={(e) => setPropertyFilters(prev => ({ ...prev, bathrooms: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="">Any</option>
+                  <option value="1">1+</option>
+                  <option value="2">2+</option>
+                  <option value="3">3+</option>
+                  <option value="4">4+</option>
+                </select>
+              </div>
+              {/* Home Type */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Home Type</label>
+                <select
+                  value={propertyFilters.homeType}
+                  onChange={(e) => setPropertyFilters(prev => ({ ...prev, homeType: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="">Any</option>
+                  <option value="SINGLE_FAMILY">Single Family</option>
+                  <option value="CONDO">Condo</option>
+                  <option value="TOWNHOUSE">Townhouse</option>
+                  <option value="MULTI_FAMILY">Multi Family</option>
+                  <option value="MANUFACTURED">Manufactured</option>
+                  <option value="LOT">Lot/Land</option>
+                </select>
+              </div>
+              {/* Sqft Range */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Min Sqft</label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={propertyFilters.minSqft}
+                  onChange={(e) => setPropertyFilters(prev => ({ ...prev, minSqft: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Max Sqft</label>
+                <input
+                  type="number"
+                  placeholder="Any"
+                  value={propertyFilters.maxSqft}
+                  onChange={(e) => setPropertyFilters(prev => ({ ...prev, maxSqft: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              {/* Year Built */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Year Built (Min)</label>
+                <input
+                  type="number"
+                  placeholder="1900"
+                  value={propertyFilters.yearBuiltMin}
+                  onChange={(e) => setPropertyFilters(prev => ({ ...prev, yearBuiltMin: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Year Built (Max)</label>
+                <input
+                  type="number"
+                  placeholder="2024"
+                  value={propertyFilters.yearBuiltMax}
+                  onChange={(e) => setPropertyFilters(prev => ({ ...prev, yearBuiltMax: e.target.value }))}
+                  className="w-full px-3 py-2 text-sm border dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow dark:shadow-gray-900 overflow-hidden">
           {/* Pagination Controls */}
@@ -678,6 +869,9 @@ export default function AdminLeads() {
                     Price
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                    Equity
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Mailing Address
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
@@ -688,7 +882,7 @@ export default function AdminLeads() {
               <tbody>
                 {filteredLeads.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan="9" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                       No leads found. Upload some leads to get started.
                     </td>
                   </tr>
@@ -732,9 +926,25 @@ export default function AdminLeads() {
                           <div className="text-gray-600 dark:text-gray-400">{lead.phone}</div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-gray-900 dark:text-white">{lead.property_address}</div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {lead.city}, {lead.state} {lead.zip_code}
+                          <div className="flex items-center gap-3">
+                            {lead.property_photo ? (
+                              <img 
+                                src={lead.property_photo} 
+                                alt="" 
+                                className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                                onError={(e) => e.target.style.display = 'none'}
+                              />
+                            ) : (
+                              <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-600 flex items-center justify-center flex-shrink-0">
+                                <Home className="h-5 w-5 text-gray-400" />
+                              </div>
+                            )}
+                            <div>
+                              <div className="text-gray-900 dark:text-white">{lead.property_address}</div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">
+                                {lead.city}, {lead.state} {lead.zip_code}
+                              </div>
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -742,6 +952,27 @@ export default function AdminLeads() {
                             <span className="font-semibold text-green-600 dark:text-green-400">
                               ${lead.zestimate.toLocaleString()}
                             </span>
+                          ) : (
+                            <span className="text-gray-400 dark:text-gray-500 text-sm">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          {lead.zestimate && lead.last_sale_price ? (
+                            (() => {
+                              const equity = lead.zestimate - lead.last_sale_price;
+                              const equityPercent = ((equity / lead.zestimate) * 100).toFixed(0);
+                              const isPositive = equity >= 0;
+                              return (
+                                <div className="text-center">
+                                  <span className={`font-semibold ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                    {isPositive ? '+' : ''}${Math.abs(equity).toLocaleString()}
+                                  </span>
+                                  <div className={`text-xs ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                                    {isPositive ? '+' : ''}{equityPercent}%
+                                  </div>
+                                </div>
+                              );
+                            })()
                           ) : (
                             <span className="text-gray-400 dark:text-gray-500 text-sm">—</span>
                           )}

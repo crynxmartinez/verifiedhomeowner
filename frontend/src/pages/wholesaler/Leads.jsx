@@ -449,9 +449,25 @@ export default function WholesalerLeads() {
           </div>
         </td>
         <td className="px-4 py-3 cursor-pointer" onClick={() => setSelectedLead(userLead)}>
-          <div className="dark:text-white">{lead.property_address}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            {lead.city}, {lead.state} {lead.zip_code}
+          <div className="flex items-center gap-2">
+            {lead.property_photo ? (
+              <img 
+                src={lead.property_photo} 
+                alt="" 
+                className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                onError={(e) => e.target.style.display = 'none'}
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-600 flex items-center justify-center flex-shrink-0">
+                <Home className="h-4 w-4 text-gray-400" />
+              </div>
+            )}
+            <div>
+              <div className="dark:text-white">{lead.property_address}</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                {lead.city}, {lead.state} {lead.zip_code}
+              </div>
+            </div>
           </div>
         </td>
         <td className="px-4 py-3">
@@ -459,6 +475,27 @@ export default function WholesalerLeads() {
             <span className="font-semibold text-green-600 dark:text-green-400">
               ${lead.zestimate.toLocaleString()}
             </span>
+          ) : (
+            <span className="text-gray-400 dark:text-gray-500 text-sm">—</span>
+          )}
+        </td>
+        <td className="px-4 py-3">
+          {lead.zestimate && lead.last_sale_price ? (
+            (() => {
+              const equity = lead.zestimate - lead.last_sale_price;
+              const equityPercent = ((equity / lead.zestimate) * 100).toFixed(0);
+              const isPositive = equity >= 0;
+              return (
+                <div className="text-center">
+                  <span className={`font-semibold text-sm ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {isPositive ? '+' : ''}${Math.abs(equity).toLocaleString()}
+                  </span>
+                  <div className={`text-xs ${isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                    {isPositive ? '+' : ''}{equityPercent}%
+                  </div>
+                </div>
+              );
+            })()
           ) : (
             <span className="text-gray-400 dark:text-gray-500 text-sm">—</span>
           )}
@@ -815,6 +852,9 @@ export default function WholesalerLeads() {
                       Price
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Equity
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                       Status
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
@@ -831,7 +871,7 @@ export default function WholesalerLeads() {
                 <tbody>
                   {callNowPaginatedLeads.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                      <td colSpan="8" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                         No leads to call right now
                       </td>
                     </tr>
@@ -907,6 +947,9 @@ export default function WholesalerLeads() {
                       Price
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                      Equity
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                       Status
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
@@ -923,7 +966,7 @@ export default function WholesalerLeads() {
                 <tbody>
                   {pendingPaginatedLeads.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                      <td colSpan="8" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                         No pending leads
                       </td>
                     </tr>
