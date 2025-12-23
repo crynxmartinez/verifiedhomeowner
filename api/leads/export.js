@@ -52,6 +52,15 @@ async function handler(req, res) {
         tags: (ul.tags || []).join(', '),
         assigned_at: ul.assignedAt ? new Date(ul.assignedAt).toISOString().split('T')[0] : '',
         follow_up_date: ul.followUpDate ? new Date(ul.followUpDate).toISOString().split('T')[0] : '',
+        // Property data
+        zestimate: ul.lead.zestimate ? Number(ul.lead.zestimate) : '',
+        bedrooms: ul.lead.bedrooms || '',
+        bathrooms: ul.lead.bathrooms ? Number(ul.lead.bathrooms) : '',
+        sqft: ul.lead.livingArea || '',
+        year_built: ul.lead.yearBuilt || '',
+        home_type: ul.lead.homeType || '',
+        last_sale_price: ul.lead.lastSalePrice ? Number(ul.lead.lastSalePrice) : '',
+        last_sale_date: ul.lead.lastSaleDate || '',
       }));
 
     // Format marketplace leads
@@ -90,7 +99,8 @@ async function handler(req, res) {
     const headers = [
       'Source', 'Name', 'Phone', 'Property Address', 'City', 'State', 'Zip Code',
       'Mailing Address', 'Mailing City', 'Mailing State', 'Mailing Zip',
-      'Status', 'Action', 'Notes', 'Tags', 'Assigned Date', 'Follow Up Date'
+      'Status', 'Action', 'Notes', 'Tags', 'Assigned Date', 'Follow Up Date',
+      'Zestimate', 'Bedrooms', 'Bathrooms', 'Sqft', 'Year Built', 'Home Type', 'Last Sale Price', 'Last Sale Date'
     ];
 
     // Escape CSV values
@@ -123,6 +133,14 @@ async function handler(req, res) {
         escapeCSV(lead.tags),
         escapeCSV(lead.assigned_at),
         escapeCSV(lead.follow_up_date),
+        escapeCSV(lead.zestimate),
+        escapeCSV(lead.bedrooms),
+        escapeCSV(lead.bathrooms),
+        escapeCSV(lead.sqft),
+        escapeCSV(lead.year_built),
+        escapeCSV(lead.home_type),
+        escapeCSV(lead.last_sale_price),
+        escapeCSV(lead.last_sale_date),
       ].join(','))
     ];
 

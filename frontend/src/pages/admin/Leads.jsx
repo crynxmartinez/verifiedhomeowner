@@ -872,6 +872,9 @@ export default function AdminLeads() {
                     Equity
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
+                    Score
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
                     Mailing Address
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">
@@ -882,7 +885,7 @@ export default function AdminLeads() {
               <tbody>
                 {filteredLeads.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                    <td colSpan="10" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                       No leads found. Upload some leads to get started.
                     </td>
                   </tr>
@@ -972,6 +975,40 @@ export default function AdminLeads() {
                                   </div>
                                 </div>
                               );
+                            })()
+                          ) : (
+                            <span className="text-gray-400 dark:text-gray-500 text-sm">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          {lead.zestimate && lead.last_sale_price ? (
+                            (() => {
+                              const equityPercent = ((lead.zestimate - lead.last_sale_price) / lead.zestimate) * 100;
+                              if (equityPercent >= 30) {
+                                return (
+                                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full text-xs font-semibold">
+                                    🔥 Hot
+                                  </span>
+                                );
+                              } else if (equityPercent >= 15) {
+                                return (
+                                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-semibold">
+                                    ⭐ Good
+                                  </span>
+                                );
+                              } else if (equityPercent >= 0) {
+                                return (
+                                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-full text-xs font-semibold">
+                                    📊 Normal
+                                  </span>
+                                );
+                              } else {
+                                return (
+                                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-full text-xs font-semibold">
+                                    📉 Low
+                                  </span>
+                                );
+                              }
                             })()
                           ) : (
                             <span className="text-gray-400 dark:text-gray-500 text-sm">—</span>
@@ -1778,6 +1815,65 @@ export default function AdminLeads() {
                                 <p className="text-sm text-green-600 dark:text-green-500">Zestimate</p>
                               </div>
                             </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Deal Analysis Calculator */}
+                      {editingLead.zestimate && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-3">
+                            Deal Analysis
+                          </h3>
+                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                              <div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Zestimate (ARV)</p>
+                                <p className="text-lg font-bold text-gray-900 dark:text-white">${parseFloat(editingLead.zestimate).toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Last Sale Price</p>
+                                <p className="text-lg font-bold text-gray-900 dark:text-white">
+                                  {editingLead.last_sale_price ? `$${parseFloat(editingLead.last_sale_price).toLocaleString()}` : '—'}
+                                </p>
+                              </div>
+                            </div>
+                            {editingLead.last_sale_price && (
+                              <>
+                                <div className="border-t dark:border-blue-700 pt-4 mb-4">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm text-gray-600 dark:text-gray-300">Potential Equity</span>
+                                    <span className={`text-lg font-bold ${
+                                      parseFloat(editingLead.zestimate) - parseFloat(editingLead.last_sale_price) >= 0 
+                                        ? 'text-green-600 dark:text-green-400' 
+                                        : 'text-red-600 dark:text-red-400'
+                                    }`}>
+                                      ${Math.abs(parseFloat(editingLead.zestimate) - parseFloat(editingLead.last_sale_price)).toLocaleString()}
+                                      <span className="text-sm ml-1">
+                                        ({(((parseFloat(editingLead.zestimate) - parseFloat(editingLead.last_sale_price)) / parseFloat(editingLead.zestimate)) * 100).toFixed(1)}%)
+                                      </span>
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="bg-white dark:bg-gray-800 rounded-lg p-3">
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Quick Offer Calculator</p>
+                                  <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                                    <div className="bg-gray-50 dark:bg-gray-700 rounded p-2">
+                                      <p className="text-xs text-gray-500 dark:text-gray-400">60% ARV</p>
+                                      <p className="font-semibold text-gray-900 dark:text-white">${(parseFloat(editingLead.zestimate) * 0.6).toLocaleString()}</p>
+                                    </div>
+                                    <div className="bg-gray-50 dark:bg-gray-700 rounded p-2">
+                                      <p className="text-xs text-gray-500 dark:text-gray-400">70% ARV</p>
+                                      <p className="font-semibold text-gray-900 dark:text-white">${(parseFloat(editingLead.zestimate) * 0.7).toLocaleString()}</p>
+                                    </div>
+                                    <div className="bg-gray-50 dark:bg-gray-700 rounded p-2">
+                                      <p className="text-xs text-gray-500 dark:text-gray-400">80% ARV</p>
+                                      <p className="font-semibold text-gray-900 dark:text-white">${(parseFloat(editingLead.zestimate) * 0.8).toLocaleString()}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
                       )}

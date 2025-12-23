@@ -172,6 +172,43 @@ async function handler(req, res) {
       by: ['state'],
       _count: { state: true }
     });
+
+    // Property analytics - portfolio value and stats
+    const propertyStats = await prisma.lead.aggregate({
+      _sum: { zestimate: true },
+      _avg: { zestimate: true, bedrooms: true, bathrooms: true, livingArea: true, yearBuilt: true },
+      _count: { zestimate: true },
+    });
+
+    // Count leads by home type
+    const homeTypeCounts = await prisma.lead.groupBy({
+      by: ['homeType'],
+      where: { homeType: { not: null } },
+      _count: { homeType: true }
+    });
+
+    // Count leads with property data
+    const leadsWithPropertyData = await prisma.lead.count({
+      where: { propertyDataFetchedAt: { not: null } }
+    });
+
+    // Calculate equity distribution (Hot/Good/Normal/Low)
+    const leadsWithEquity = await prisma.lead.findMany({
+      where: { 
+        zestimate: { not: null },
+        lastSalePrice: { not: null }
+      },
+      select: { zestimate: true, lastSalePrice: true }
+    });
+
+    let equityDistribution = { hot: 0, good: 0, normal: 0, low: 0 };
+    leadsWithEquity.forEach(lead => {
+      const equityPercent = ((Number(lead.zestimate) - Number(lead.lastSalePrice)) / Number(lead.zestimate)) * 100;
+      if (equityPercent >= 30) equityDistribution.hot++;
+      else if (equityPercent >= 15) equityDistribution.good++;
+      else if (equityPercent >= 0) equityDistribution.normal++;
+      else equityDistribution.low++;
+    });
     
     const leadStateMap = {};
     leadsByState.forEach(l => { leadStateMap[l.state] = l._count.state; });
@@ -263,6 +300,19 @@ async function handler(req, res) {
           marketplacePurchases: marketplacePurchases || 0,
           wishlistRequests: wishlistStats || 0,
           supportTickets: supportTicketCount || 0,
+        },
+        // Property analytics
+        propertyAnalytics: {
+          totalPortfolioValue: propertyStats._sum.zestimate ? Number(propertyStats._sum.zestimate) : 0,
+          averagePropertyValue: propertyStats._avg.zestimate ? Number(propertyStats._avg.zestimate) : 0,
+          leadsWithPropertyData: leadsWithPropertyData || 0,
+          leadsWithZestimate: propertyStats._count.zestimate || 0,
+          averageBedrooms: propertyStats._avg.bedrooms ? Number(propertyStats._avg.bedrooms).toFixed(1) : 0,
+          averageBathrooms: propertyStats._avg.bathrooms ? Number(propertyStats._avg.bathrooms).toFixed(1) : 0,
+          averageSqft: propertyStats._avg.livingArea ? Math.round(Number(propertyStats._avg.livingArea)) : 0,
+          averageYearBuilt: propertyStats._avg.yearBuilt ? Math.round(Number(propertyStats._avg.yearBuilt)) : 0,
+          homeTypeDistribution: Object.fromEntries(homeTypeCounts.map(h => [h.homeType, h._count.homeType])),
+          equityDistribution,
         },
       },
     });
