@@ -1,6 +1,3 @@
-// Verified Homeowner - Prisma Schema
-// Migrated from Supabase PostgreSQL
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,60 +7,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================================================
-// USERS
-// ============================================================================
-
 model User {
-  id                   String             @id @default(uuid()) @db.Uuid
-  email                String             @unique @db.VarChar(255)
-  password             String             @db.VarChar(255)
-  name                 String             @db.VarChar(255)
-  role                 UserRole           @default(wholesaler)
-  planType             PlanType           @default(free) @map("plan_type")
-  subscriptionStatus   SubscriptionStatus @default(active) @map("subscription_status")
-  leadSequencePosition Int                @default(0) @map("lead_sequence_position")
-
-  // Email Verification
-  emailVerified       Boolean   @default(false) @map("email_verified")
-  verificationToken   String?   @map("verification_token")
-  verificationExpires DateTime? @map("verification_expires") @db.Timestamptz
-
-  // Password Reset
-  resetToken        String?   @map("reset_token")
-  resetTokenExpires DateTime? @map("reset_token_expires") @db.Timestamptz
-
-  // Dodo Payments
-  dodoSubscriptionId  String?   @map("dodo_subscription_id")
-  dodoCustomerId      String?   @map("dodo_customer_id")
-  subscriptionEndDate DateTime? @map("subscription_end_date") @db.Timestamptz
-
-  // Trial Tracking
-  hasUsedTrial Boolean   @default(false) @map("has_used_trial")
-  trialUsedAt  DateTime? @map("trial_used_at") @db.Timestamptz
-
-  // Marketplace Preferences
-  preferredStates   String[]  @default([]) @map("preferred_states")
-  marketplaceEmails Boolean   @default(true) @map("marketplace_emails")
-  lastLoginAt       DateTime? @map("last_login_at") @db.Timestamptz
-
-  // Email Tracking
-  lastEmailSentAt DateTime? @map("last_email_sent_at") @db.Timestamptz
-  lastEmailType   String?   @map("last_email_type") @db.VarChar(100)
-
-  // Timestamps
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  userLeads            UserLead[]
-  userMarketplaceLeads UserMarketplaceLead[]
-  supportTickets       SupportTicket[]
-  notificationQueue    MarketplaceNotificationQueue[]
+  id                   String                         @id @default(uuid()) @db.Uuid
+  email                String                         @unique @db.VarChar(255)
+  password             String                         @db.VarChar(255)
+  name                 String                         @db.VarChar(255)
+  role                 UserRole                       @default(wholesaler)
+  planType             PlanType                       @default(free) @map("plan_type")
+  subscriptionStatus   SubscriptionStatus             @default(active) @map("subscription_status")
+  leadSequencePosition Int                            @default(0) @map("lead_sequence_position")
+  dodoSubscriptionId   String?                        @map("dodo_subscription_id")
+  dodoCustomerId       String?                        @map("dodo_customer_id")
+  subscriptionEndDate  DateTime?                      @map("subscription_end_date") @db.Timestamptz(6)
+  createdAt            DateTime                       @default(now()) @map("created_at")
+  updatedAt            DateTime                       @updatedAt @map("updated_at")
+  emailVerified        Boolean                        @default(false) @map("email_verified")
+  verificationExpires  DateTime?                      @map("verification_expires") @db.Timestamptz(6)
+  verificationToken    String?                        @map("verification_token")
+  resetToken           String?                        @map("reset_token")
+  resetTokenExpires    DateTime?                      @map("reset_token_expires") @db.Timestamptz(6)
+  lastLoginAt          DateTime?                      @map("last_login_at") @db.Timestamptz(6)
+  marketplaceEmails    Boolean                        @default(true) @map("marketplace_emails")
+  preferredStates      String[]                       @default([]) @map("preferred_states")
+  lastEmailSentAt      DateTime?                      @map("last_email_sent_at") @db.Timestamptz(6)
+  lastEmailType        String?                        @map("last_email_type") @db.VarChar(100)
+  hasUsedTrial         Boolean                        @default(false) @map("has_used_trial")
+  trialUsedAt          DateTime?                      @map("trial_used_at") @db.Timestamptz(6)
+  featureComments      FeatureComment[]
   featureRequests      FeatureRequest[]
   featureVotes         FeatureVote[]
-  featureComments      FeatureComment[]
+  notificationQueue    MarketplaceNotificationQueue[]
+  supportTickets       SupportTicket[]
   activities           UserActivity[]
+  userLeads            UserLead[]
+  userMarketplaceLeads UserMarketplaceLead[]
 
   @@index([email])
   @@index([role])
@@ -72,6 +49,329 @@ model User {
   @@index([verificationToken])
   @@index([resetToken])
   @@map("users")
+}
+
+model Lead {
+  id                    String     @id @default(uuid()) @db.Uuid
+  firstName             String?    @map("first_name") @db.VarChar(255)
+  lastName              String?    @map("last_name") @db.VarChar(255)
+  fullName              String?    @map("full_name") @db.VarChar(255)
+  isBusiness            Boolean    @default(false) @map("is_business")
+  phone                 String?    @db.VarChar(50)
+  propertyAddress       String?    @map("property_address") @db.VarChar(500)
+  city                  String?    @db.VarChar(255)
+  state                 String?    @db.VarChar(100)
+  zipCode               String?    @map("zip_code") @db.VarChar(20)
+  mailingAddress        String?    @map("mailing_address") @db.VarChar(500)
+  mailingCity           String?    @map("mailing_city") @db.VarChar(255)
+  mailingState          String?    @map("mailing_state") @db.VarChar(100)
+  mailingZip            String?    @map("mailing_zip") @db.VarChar(20)
+  sequenceNumber        Int        @unique @map("sequence_number")
+  createdAt             DateTime   @default(now()) @map("created_at")
+  bathrooms             Decimal?   @db.Decimal(3, 1)
+  bedrooms              Int?
+  homeType              String?    @map("home_type") @db.VarChar(50)
+  lastSaleDate          DateTime?  @map("last_sale_date") @db.Date
+  lastSalePrice         Decimal?   @map("last_sale_price") @db.Decimal(12, 2)
+  livingArea            Int?       @map("living_area")
+  lotSize               Int?       @map("lot_size")
+  priceHistory          Json?      @map("price_history")
+  propertyDataFetchedAt DateTime?  @map("property_data_fetched_at")
+  propertyPhoto         String?    @map("property_photo")
+  yearBuilt             Int?       @map("year_built")
+  zestimate             Decimal?   @db.Decimal(12, 2)
+  zestimateHistory      Json?      @map("zestimate_history")
+  zpid                  String?    @db.VarChar(50)
+  userLeads             UserLead[]
+
+  @@index([sequenceNumber])
+  @@index([propertyAddress])
+  @@map("leads")
+}
+
+model UserLead {
+  id            String     @id @default(uuid()) @db.Uuid
+  userId        String     @map("user_id") @db.Uuid
+  leadId        String     @map("lead_id") @db.Uuid
+  status        LeadStatus @default(new)
+  action        LeadAction @default(call_now)
+  motivation    String?    @db.VarChar(100)
+  assignedAt    DateTime   @default(now()) @map("assigned_at")
+  lastCalledAt  DateTime?  @map("last_called_at")
+  followUpDate  DateTime?  @map("follow_up_date") @db.Date
+  countdownDays Int?       @map("countdown_days")
+  notes         String?
+  tags          String[]   @default([])
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  lead          Lead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, leadId])
+  @@index([userId])
+  @@index([status])
+  @@index([action])
+  @@index([assignedAt(sort: Desc)])
+  @@index([followUpDate])
+  @@map("user_leads")
+}
+
+model MarketplaceLead {
+  id                   String                         @id @default(uuid()) @db.Uuid
+  ownerName            String?                        @map("owner_name") @db.VarChar(255)
+  phone                String?                        @db.VarChar(50)
+  propertyAddress      String?                        @map("property_address") @db.VarChar(500)
+  city                 String?                        @db.VarChar(255)
+  state                String?                        @db.VarChar(100)
+  zipCode              String?                        @map("zip_code") @db.VarChar(20)
+  mailingAddress       String?                        @map("mailing_address") @db.VarChar(500)
+  mailingCity          String?                        @map("mailing_city") @db.VarChar(255)
+  mailingState         String?                        @map("mailing_state") @db.VarChar(100)
+  mailingZip           String?                        @map("mailing_zip") @db.VarChar(20)
+  motivation           String                         @db.VarChar(100)
+  timeline             String                         @db.VarChar(100)
+  price                Decimal                        @db.Decimal(10, 2)
+  maxBuyers            Int                            @default(0) @map("max_buyers")
+  timesSold            Int                            @default(0) @map("times_sold")
+  createdAt            DateTime                       @default(now()) @map("created_at")
+  updatedAt            DateTime                       @updatedAt @map("updated_at")
+  askingPrice          Decimal?                       @map("asking_price") @db.Decimal(12, 2)
+  isHidden             Boolean                        @default(false) @map("is_hidden")
+  temperature          String?                        @default("warm") @db.VarChar(20)
+  notificationQueue    MarketplaceNotificationQueue[]
+  userMarketplaceLeads UserMarketplaceLead[]
+
+  @@index([state])
+  @@index([motivation])
+  @@index([timeline])
+  @@index([createdAt(sort: Desc)])
+  @@index([price])
+  @@map("marketplace_leads")
+}
+
+model UserMarketplaceLead {
+  id                String          @id @default(uuid()) @db.Uuid
+  userId            String          @map("user_id") @db.Uuid
+  marketplaceLeadId String          @map("marketplace_lead_id") @db.Uuid
+  purchasedAt       DateTime        @default(now()) @map("purchased_at")
+  pricePaid         Decimal         @map("price_paid") @db.Decimal(10, 2)
+  status            LeadStatus      @default(new)
+  action            LeadAction      @default(call_now)
+  lastCalledAt      DateTime?       @map("last_called_at")
+  followUpDate      DateTime?       @map("follow_up_date") @db.Date
+  countdownDays     Int?            @map("countdown_days")
+  notes             String?
+  tags              String[]        @default([])
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  marketplaceLead   MarketplaceLead @relation(fields: [marketplaceLeadId], references: [id], onDelete: Cascade)
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, marketplaceLeadId])
+  @@index([userId])
+  @@index([status])
+  @@index([purchasedAt(sort: Desc)])
+  @@map("user_marketplace_leads")
+}
+
+model SupportTicket {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String?      @map("user_id") @db.Uuid
+  name      String       @db.VarChar(255)
+  email     String       @db.VarChar(255)
+  category  String       @db.VarChar(100)
+  message   String
+  status    TicketStatus @default(open)
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  user      User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+  @@map("support_tickets")
+}
+
+model AdminSettings {
+  id                       String   @id @default("default")
+  supportNotificationEmail String?  @map("support_notification_email") @db.VarChar(255)
+  createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("admin_settings")
+}
+
+model EmailTemplate {
+  id          String            @id @default(uuid()) @db.Uuid
+  name        String            @unique @db.VarChar(100)
+  displayName String            @map("display_name") @db.VarChar(255)
+  subject     String            @db.VarChar(500)
+  htmlContent String            @map("html_content")
+  textContent String            @map("text_content")
+  variables   String[]          @default([])
+  isActive    Boolean           @default(true) @map("is_active")
+  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  automations EmailAutomation[]
+
+  @@index([name])
+  @@index([isActive])
+  @@map("email_templates")
+}
+
+model EmailAutomation {
+  id                  String        @id @default(uuid()) @db.Uuid
+  name                String        @db.VarChar(255)
+  description         String?       @db.VarChar(500)
+  templateId          String        @map("template_id") @db.Uuid
+  trigger             String        @db.VarChar(100)
+  delayHours          Int           @default(0) @map("delay_hours")
+  repeatIntervalHours Int           @default(0) @map("repeat_interval_hours")
+  maxSends            Int           @default(1) @map("max_sends")
+  isActive            Boolean       @default(true) @map("is_active")
+  totalSent           Int           @default(0) @map("total_sent")
+  lastRunAt           DateTime?     @map("last_run_at") @db.Timestamptz(6)
+  createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  template            EmailTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  emailLogs           EmailLog[]
+
+  @@index([trigger])
+  @@index([isActive])
+  @@map("email_automations")
+}
+
+model EmailLog {
+  id             String           @id @default(uuid()) @db.Uuid
+  userId         String           @map("user_id") @db.Uuid
+  automationId   String?          @map("automation_id") @db.Uuid
+  templateName   String           @map("template_name") @db.VarChar(100)
+  subject        String           @db.VarChar(500)
+  recipientEmail String           @map("recipient_email") @db.VarChar(255)
+  status         String           @default("sent") @db.VarChar(50)
+  sentAt         DateTime         @default(now()) @map("sent_at") @db.Timestamptz(6)
+  automation     EmailAutomation? @relation(fields: [automationId], references: [id])
+
+  @@index([userId])
+  @@index([automationId])
+  @@index([templateName])
+  @@index([sentAt(sort: Desc)])
+  @@map("email_logs")
+}
+
+model MarketplaceNotificationQueue {
+  id                String          @id @default(uuid()) @db.Uuid
+  userId            String          @map("user_id") @db.Uuid
+  marketplaceLeadId String          @map("marketplace_lead_id") @db.Uuid
+  scheduledFor      DateTime        @map("scheduled_for") @db.Timestamptz(6)
+  status            String          @default("pending") @db.VarChar(50)
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  sentAt            DateTime?       @map("sent_at") @db.Timestamptz(6)
+  marketplaceLead   MarketplaceLead @relation(fields: [marketplaceLeadId], references: [id], onDelete: Cascade)
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([scheduledFor])
+  @@index([status])
+  @@index([userId])
+  @@index([marketplaceLeadId])
+  @@map("marketplace_notification_queue")
+}
+
+model BlogPost {
+  id          String     @id @default(uuid()) @db.Uuid
+  slug        String     @unique @db.VarChar(500)
+  title       String
+  excerpt     String?
+  content     String
+  bannerImage String?    @map("banner_image")
+  category    String?    @db.VarChar(200)
+  tags        String[]   @default([])
+  status      BlogStatus @default(draft)
+  authorId    String     @map("author_id") @db.Uuid
+  scheduledAt DateTime?  @map("scheduled_at") @db.Timestamptz(6)
+  publishedAt DateTime?  @map("published_at") @db.Timestamptz(6)
+  viewCount   Int        @default(0) @map("view_count")
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([slug])
+  @@index([status])
+  @@index([category])
+  @@index([scheduledAt])
+  @@index([publishedAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@map("blog_posts")
+}
+
+model FeatureRequest {
+  id          String           @id @default(uuid()) @db.Uuid
+  title       String           @db.VarChar(255)
+  description String
+  status      FeatureStatus    @default(open)
+  voteCount   Int              @default(0) @map("vote_count")
+  userId      String           @map("user_id") @db.Uuid
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  comments    FeatureComment[]
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  votes       FeatureVote[]
+
+  @@index([voteCount(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@index([status])
+  @@index([userId])
+  @@map("feature_requests")
+}
+
+model FeatureVote {
+  id               String         @id @default(uuid()) @db.Uuid
+  userId           String         @map("user_id") @db.Uuid
+  featureRequestId String         @map("feature_request_id") @db.Uuid
+  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  featureRequest   FeatureRequest @relation(fields: [featureRequestId], references: [id], onDelete: Cascade)
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, featureRequestId])
+  @@index([userId])
+  @@index([featureRequestId])
+  @@map("feature_votes")
+}
+
+model FeatureComment {
+  id               String           @id @default(uuid()) @db.Uuid
+  content          String
+  userId           String           @map("user_id") @db.Uuid
+  featureRequestId String           @map("feature_request_id") @db.Uuid
+  parentId         String?          @map("parent_id") @db.Uuid
+  createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  featureRequest   FeatureRequest   @relation(fields: [featureRequestId], references: [id], onDelete: Cascade)
+  parent           FeatureComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies          FeatureComment[] @relation("CommentReplies")
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([featureRequestId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([createdAt(sort: Desc)])
+  @@map("feature_comments")
+}
+
+model UserActivity {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  eventType String   @map("event_type") @db.VarChar(50)
+  eventData Json?    @map("event_data")
+  pagePath  String?  @map("page_path") @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt(sort: Desc)])
+  @@index([userId, eventType])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("user_activities")
 }
 
 enum UserRole {
@@ -94,85 +394,6 @@ enum SubscriptionStatus {
   on_hold
 }
 
-// ============================================================================
-// LEADS (Master Lead Database)
-// ============================================================================
-
-model Lead {
-  id              String   @id @default(uuid()) @db.Uuid
-  firstName       String?  @map("first_name") @db.VarChar(255)
-  lastName        String?  @map("last_name") @db.VarChar(255)
-  fullName        String?  @map("full_name") @db.VarChar(255)
-  isBusiness      Boolean  @default(false) @map("is_business")
-  phone           String?  @db.VarChar(50)
-  propertyAddress String?  @map("property_address") @db.VarChar(500)
-  city            String?  @db.VarChar(255)
-  state           String?  @db.VarChar(100)
-  zipCode         String?  @map("zip_code") @db.VarChar(20)
-  mailingAddress  String?  @map("mailing_address") @db.VarChar(500)
-  mailingCity     String?  @map("mailing_city") @db.VarChar(255)
-  mailingState    String?  @map("mailing_state") @db.VarChar(100)
-  mailingZip      String?  @map("mailing_zip") @db.VarChar(20)
-  sequenceNumber  Int      @unique @map("sequence_number")
-  createdAt       DateTime @default(now()) @map("created_at")
-
-  // Property Data (from Zillow API)
-  zpid                    String?   @db.VarChar(50)
-  zestimate               Decimal?  @db.Decimal(12, 2)
-  bedrooms                Int?
-  bathrooms               Decimal?  @db.Decimal(3, 1)
-  livingArea              Int?      @map("living_area")
-  lotSize                 Int?      @map("lot_size")
-  yearBuilt               Int?      @map("year_built")
-  homeType                String?   @map("home_type") @db.VarChar(50)
-  lastSalePrice           Decimal?  @map("last_sale_price") @db.Decimal(12, 2)
-  lastSaleDate            DateTime? @map("last_sale_date") @db.Date
-  propertyPhoto           String?   @map("property_photo") @db.Text
-  priceHistory            Json?     @map("price_history")
-  zestimateHistory        Json?     @map("zestimate_history")
-  propertyDataFetchedAt   DateTime? @map("property_data_fetched_at")
-
-  // Relations
-  userLeads UserLead[]
-
-  @@index([sequenceNumber])
-  @@index([propertyAddress])
-  @@map("leads")
-}
-
-// ============================================================================
-// USER LEADS (Assigned Subscription Leads)
-// ============================================================================
-
-model UserLead {
-  id            String     @id @default(uuid()) @db.Uuid
-  userId        String     @map("user_id") @db.Uuid
-  leadId        String     @map("lead_id") @db.Uuid
-  status        LeadStatus @default(new)
-  action        LeadAction @default(call_now)
-  motivation    String?    @db.VarChar(100)
-  assignedAt    DateTime   @default(now()) @map("assigned_at")
-  lastCalledAt  DateTime?  @map("last_called_at")
-  followUpDate  DateTime?  @map("follow_up_date") @db.Date
-  countdownDays Int?       @map("countdown_days")
-  notes         String?
-  tags          String[]   @default([])
-  createdAt     DateTime   @default(now()) @map("created_at")
-  updatedAt     DateTime   @updatedAt @map("updated_at")
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, leadId])
-  @@index([userId])
-  @@index([status])
-  @@index([action])
-  @@index([assignedAt(sort: Desc)])
-  @@index([followUpDate])
-  @@map("user_leads")
-}
-
 enum LeadStatus {
   new
   follow_up
@@ -185,238 +406,9 @@ enum LeadAction {
   pending
 }
 
-// ============================================================================
-// MARKETPLACE LEADS (Hot Leads for Purchase)
-// ============================================================================
-
-model MarketplaceLead {
-  id              String   @id @default(uuid()) @db.Uuid
-  ownerName       String?  @map("owner_name") @db.VarChar(255)
-  phone           String?  @db.VarChar(50)
-  propertyAddress String?  @map("property_address") @db.VarChar(500)
-  city            String?  @db.VarChar(255)
-  state           String?  @db.VarChar(100)
-  zipCode         String?  @map("zip_code") @db.VarChar(20)
-  mailingAddress  String?  @map("mailing_address") @db.VarChar(500)
-  mailingCity     String?  @map("mailing_city") @db.VarChar(255)
-  mailingState    String?  @map("mailing_state") @db.VarChar(100)
-  mailingZip      String?  @map("mailing_zip") @db.VarChar(20)
-  motivation      String   @db.VarChar(100)
-  timeline        String   @db.VarChar(100)
-  askingPrice     Decimal? @map("asking_price") @db.Decimal(12, 2)
-  temperature     String?  @default("warm") @db.VarChar(20)
-  price           Decimal  @db.Decimal(10, 2)
-  maxBuyers       Int      @default(0) @map("max_buyers")
-  timesSold       Int      @default(0) @map("times_sold")
-  isHidden        Boolean  @default(false) @map("is_hidden")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-
-  // Relations
-  userMarketplaceLeads UserMarketplaceLead[]
-  notificationQueue    MarketplaceNotificationQueue[]
-
-  @@index([state])
-  @@index([motivation])
-  @@index([timeline])
-  @@index([createdAt(sort: Desc)])
-  @@index([price])
-  @@map("marketplace_leads")
-}
-
-// ============================================================================
-// USER MARKETPLACE LEADS (Purchased Hot Leads)
-// ============================================================================
-
-model UserMarketplaceLead {
-  id                String     @id @default(uuid()) @db.Uuid
-  userId            String     @map("user_id") @db.Uuid
-  marketplaceLeadId String     @map("marketplace_lead_id") @db.Uuid
-  purchasedAt       DateTime   @default(now()) @map("purchased_at")
-  pricePaid         Decimal    @map("price_paid") @db.Decimal(10, 2)
-  status            LeadStatus @default(new)
-  action            LeadAction @default(call_now)
-  lastCalledAt      DateTime?  @map("last_called_at")
-  followUpDate      DateTime?  @map("follow_up_date") @db.Date
-  countdownDays     Int?       @map("countdown_days")
-  notes             String?
-  tags              String[]   @default([])
-  createdAt         DateTime   @default(now()) @map("created_at")
-  updatedAt         DateTime   @updatedAt @map("updated_at")
-
-  // Relations
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  marketplaceLead MarketplaceLead @relation(fields: [marketplaceLeadId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, marketplaceLeadId])
-  @@index([userId])
-  @@index([status])
-  @@index([purchasedAt(sort: Desc)])
-  @@map("user_marketplace_leads")
-}
-
-// ============================================================================
-// SUPPORT TICKETS
-// ============================================================================
-
-model SupportTicket {
-  id        String       @id @default(uuid()) @db.Uuid
-  userId    String?      @map("user_id") @db.Uuid
-  name      String       @db.VarChar(255)
-  email     String       @db.VarChar(255)
-  category  String       @db.VarChar(100)
-  message   String
-  status    TicketStatus @default(open)
-  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz
-
-  // Relations
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt(sort: Desc)])
-  @@map("support_tickets")
-}
-
 enum TicketStatus {
   open
   resolved
-}
-
-// ============================================================================
-// ADMIN SETTINGS
-// ============================================================================
-
-model AdminSettings {
-  id                       String   @id @default("default")
-  supportNotificationEmail String?  @map("support_notification_email") @db.VarChar(255)
-  createdAt                DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt                DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  @@map("admin_settings")
-}
-
-// ============================================================================
-// EMAIL AUTOMATION SYSTEM
-// ============================================================================
-
-model EmailTemplate {
-  id          String   @id @default(uuid()) @db.Uuid
-  name        String   @unique @db.VarChar(100)
-  displayName String   @map("display_name") @db.VarChar(255)
-  subject     String   @db.VarChar(500)
-  htmlContent String   @map("html_content") @db.Text
-  textContent String   @map("text_content") @db.Text
-  variables   String[] @default([])
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  // Relations
-  automations EmailAutomation[]
-
-  @@index([name])
-  @@index([isActive])
-  @@map("email_templates")
-}
-
-model EmailAutomation {
-  id                  String    @id @default(uuid()) @db.Uuid
-  name                String    @db.VarChar(255)
-  description         String?   @db.VarChar(500)
-  templateId          String    @map("template_id") @db.Uuid
-  trigger             String    @db.VarChar(100)
-  delayHours          Int       @default(0) @map("delay_hours")
-  repeatIntervalHours Int       @default(0) @map("repeat_interval_hours")
-  maxSends            Int       @default(1) @map("max_sends")
-  isActive            Boolean   @default(true) @map("is_active")
-  totalSent           Int       @default(0) @map("total_sent")
-  lastRunAt           DateTime? @map("last_run_at") @db.Timestamptz
-  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-
-  // Relations
-  template  EmailTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  emailLogs EmailLog[]
-
-  @@index([trigger])
-  @@index([isActive])
-  @@map("email_automations")
-}
-
-model EmailLog {
-  id             String   @id @default(uuid()) @db.Uuid
-  userId         String   @map("user_id") @db.Uuid
-  automationId   String?  @map("automation_id") @db.Uuid
-  templateName   String   @map("template_name") @db.VarChar(100)
-  subject        String   @db.VarChar(500)
-  recipientEmail String   @map("recipient_email") @db.VarChar(255)
-  status         String   @default("sent") @db.VarChar(50)
-  sentAt         DateTime @default(now()) @map("sent_at") @db.Timestamptz
-
-  // Relations
-  automation EmailAutomation? @relation(fields: [automationId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
-  @@index([automationId])
-  @@index([templateName])
-  @@index([sentAt(sort: Desc)])
-  @@map("email_logs")
-}
-
-// ============================================================================
-// MARKETPLACE NOTIFICATION QUEUE (for delayed notifications by plan tier)
-// ============================================================================
-
-model MarketplaceNotificationQueue {
-  id                String    @id @default(uuid()) @db.Uuid
-  userId            String    @map("user_id") @db.Uuid
-  marketplaceLeadId String    @map("marketplace_lead_id") @db.Uuid
-  scheduledFor      DateTime  @map("scheduled_for") @db.Timestamptz
-  status            String    @default("pending") @db.VarChar(50) // pending, sent, cancelled
-  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  sentAt            DateTime? @map("sent_at") @db.Timestamptz
-
-  // Relations
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  marketplaceLead MarketplaceLead @relation(fields: [marketplaceLeadId], references: [id], onDelete: Cascade)
-
-  @@index([scheduledFor])
-  @@index([status])
-  @@index([userId])
-  @@index([marketplaceLeadId])
-  @@map("marketplace_notification_queue")
-}
-
-// ============================================================================
-// BLOG SYSTEM
-// ============================================================================
-
-model BlogPost {
-  id          String     @id @default(uuid()) @db.Uuid
-  slug        String     @unique @db.VarChar(500)
-  title       String     @db.Text
-  excerpt     String?    @db.Text
-  content     String     @db.Text
-  bannerImage String?    @map("banner_image") @db.Text
-  category    String?    @db.VarChar(200)
-  tags        String[]   @default([])
-  status      BlogStatus @default(draft)
-  authorId    String     @map("author_id") @db.Uuid
-  scheduledAt DateTime?  @map("scheduled_at") @db.Timestamptz
-  publishedAt DateTime?  @map("published_at") @db.Timestamptz
-  viewCount   Int        @default(0) @map("view_count")
-  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime   @updatedAt @map("updated_at") @db.Timestamptz
-
-  @@index([slug])
-  @@index([status])
-  @@index([category])
-  @@index([scheduledAt])
-  @@index([publishedAt(sort: Desc)])
-  @@index([createdAt(sort: Desc)])
-  @@map("blog_posts")
 }
 
 enum BlogStatus {
@@ -425,96 +417,10 @@ enum BlogStatus {
   published
 }
 
-// ============================================================================
-// WISHLIST / FEATURE REQUESTS
-// ============================================================================
-
-model FeatureRequest {
-  id          String        @id @default(uuid()) @db.Uuid
-  title       String        @db.VarChar(255)
-  description String        @db.Text
-  status      FeatureStatus @default(open)
-  voteCount   Int           @default(0) @map("vote_count")
-  userId      String        @map("user_id") @db.Uuid
-  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz
-
-  // Relations
-  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  votes    FeatureVote[]
-  comments FeatureComment[]
-
-  @@index([voteCount(sort: Desc)])
-  @@index([createdAt(sort: Desc)])
-  @@index([status])
-  @@index([userId])
-  @@map("feature_requests")
-}
-
-model FeatureVote {
-  id               String   @id @default(uuid()) @db.Uuid
-  userId           String   @map("user_id") @db.Uuid
-  featureRequestId String   @map("feature_request_id") @db.Uuid
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
-
-  // Relations
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  featureRequest FeatureRequest @relation(fields: [featureRequestId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, featureRequestId])
-  @@index([userId])
-  @@index([featureRequestId])
-  @@map("feature_votes")
-}
-
 enum FeatureStatus {
   open
   planned
   in_progress
   completed
   closed
-}
-
-model FeatureComment {
-  id               String   @id @default(uuid()) @db.Uuid
-  content          String   @db.Text
-  userId           String   @map("user_id") @db.Uuid
-  featureRequestId String   @map("feature_request_id") @db.Uuid
-  parentId         String?  @map("parent_id") @db.Uuid
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  // Relations
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  featureRequest FeatureRequest   @relation(fields: [featureRequestId], references: [id], onDelete: Cascade)
-  parent         FeatureComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies        FeatureComment[] @relation("CommentReplies")
-
-  @@index([featureRequestId])
-  @@index([userId])
-  @@index([parentId])
-  @@index([createdAt(sort: Desc)])
-  @@map("feature_comments")
-}
-
-// ============================================================================
-// USER ACTIVITY TRACKING
-// ============================================================================
-
-model UserActivity {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  eventType String   @map("event_type") @db.VarChar(50)
-  eventData Json?    @map("event_data")
-  pagePath  String?  @map("page_path") @db.VarChar(255)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([eventType])
-  @@index([createdAt(sort: Desc)])
-  @@index([userId, eventType])
-  @@index([userId, createdAt(sort: Desc)])
-  @@map("user_activities")
 }

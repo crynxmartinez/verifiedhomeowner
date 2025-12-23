@@ -114,17 +114,38 @@ function normalizePropertyData(detailsResponse, historyResponse, zestimateRespon
   }
 
   // Find last sale from price history
+  // Strategy: Find ANY usable price in the history
+  // 1. First try "Sold" events with a price
+  // 2. Then try any non-rental event with a price
+  // 3. Finally use any event with a price > $10k (skip low rental prices)
   let lastSalePrice = null;
   let lastSaleDate = null;
   if (priceHistory && priceHistory.length > 0) {
-    const soldEvents = priceHistory.filter(h => 
-      h.event?.toLowerCase().includes('sold') || 
-      h.priceChangeRate === undefined
+    // 1. Try sold events with price
+    const soldWithPrice = priceHistory.find(h => 
+      h.event?.toLowerCase().includes('sold') && h.price && h.price > 0
     );
-    if (soldEvents.length > 0) {
-      const lastSale = soldEvents[0];
-      lastSalePrice = lastSale.price;
-      lastSaleDate = lastSale.date;
+    
+    if (soldWithPrice) {
+      lastSalePrice = soldWithPrice.price;
+      lastSaleDate = soldWithPrice.date;
+    } else {
+      // 2. Try any non-rental event with price
+      const nonRentalWithPrice = priceHistory.find(h => 
+        !h.postingIsRental && h.price && h.price > 0
+      );
+      
+      if (nonRentalWithPrice) {
+        lastSalePrice = nonRentalWithPrice.price;
+        lastSaleDate = nonRentalWithPrice.date;
+      } else {
+        // 3. Use any price > $10k (skip low rental prices)
+        const anyHighPrice = priceHistory.find(h => h.price && h.price > 10000);
+        if (anyHighPrice) {
+          lastSalePrice = anyHighPrice.price;
+          lastSaleDate = anyHighPrice.date;
+        }
+      }
     }
   }
 
