@@ -196,7 +196,9 @@ export default function FilterPanel({
                 { value: 'all', label: 'All Statuses' },
                 { value: 'follow_up', label: 'Follow-up' },
                 { value: 'not_interested', label: 'Not Interested' },
-                { value: 'pending', label: 'Pending' }
+                { value: 'pending', label: 'Pending' },
+                { value: 'in_contract', label: 'In Contract' },
+                { value: 'closed', label: 'Closed' }
               ].map((option) => (
                 <label key={option.value} className="flex items-center gap-2 cursor-pointer">
                   <input

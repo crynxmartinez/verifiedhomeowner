@@ -35,7 +35,7 @@ export default function WholesalerLeads() {
     source: 'all',        // all, subscription, purchased
     city: 'all',          // all, or specific city
     tag: 'all',           // all, or specific tag
-    pendingStatus: 'all', // all, follow_up, not_interested, pending
+    pendingStatus: 'all', // all, follow_up, not_interested, pending, in_contract, closed
     countdownDays: 'all', // all, or number
     countdownCompare: 'gte' // eq (equals), gte (more than or equal), lte (less than or equal)
   });
@@ -101,7 +101,7 @@ export default function WholesalerLeads() {
     try {
       // Determine action based on status
       let action = 'call_now';
-      if (newStatus === 'follow_up' || newStatus === 'not_interested' || newStatus === 'pending') {
+      if (newStatus === 'follow_up' || newStatus === 'not_interested' || newStatus === 'pending' || newStatus === 'in_contract' || newStatus === 'closed') {
         action = 'pending';
       }
       
@@ -269,11 +269,13 @@ export default function WholesalerLeads() {
   // Apply global filters first
   const filteredLeads = applyFilters(leads);
 
-  // Pending leads: follow-up, not interested, or pending status
+  // Pending leads: follow-up, not interested, pending, in_contract, or closed status
   let pendingLeads = filteredLeads.filter((l) => 
     l.status === 'follow_up' || 
     l.status === 'not_interested' || 
-    l.status === 'pending'
+    l.status === 'pending' ||
+    l.status === 'in_contract' ||
+    l.status === 'closed'
   );
 
   // Apply pending status filter (only for pending board)
@@ -284,7 +286,7 @@ export default function WholesalerLeads() {
   // Call Now leads: new or call_now action (but NOT if in pending)
   const callNowLeads = filteredLeads.filter((l) => {
     // Exclude if already in pending
-    if (l.status === 'follow_up' || l.status === 'not_interested' || l.status === 'pending') {
+    if (l.status === 'follow_up' || l.status === 'not_interested' || l.status === 'pending' || l.status === 'in_contract' || l.status === 'closed') {
       return false;
     }
     // Include if new or call_now action
@@ -419,6 +421,8 @@ export default function WholesalerLeads() {
               <option value="follow_up">Follow-up</option>
               <option value="not_interested">Not Interested</option>
               <option value="pending">Pending</option>
+              <option value="in_contract">In Contract</option>
+              <option value="closed">Closed</option>
             </select>
           </div>
         </div>
@@ -594,13 +598,15 @@ export default function WholesalerLeads() {
             <option value="follow_up">Follow-up</option>
             <option value="not_interested">Not Interested</option>
             <option value="pending">Pending</option>
+            <option value="in_contract">In Contract</option>
+            <option value="closed">Closed</option>
           </select>
           {isSaving && (
             <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Saving...</div>
           )}
         </td>
         <td className="px-4 py-3">
-          {(userLead.status === 'follow_up' || userLead.status === 'not_interested' || userLead.status === 'pending') ? (
+          {(userLead.status === 'follow_up' || userLead.status === 'not_interested' || userLead.status === 'pending' || userLead.status === 'in_contract' || userLead.status === 'closed') ? (
             <div className="flex items-center gap-2">
               {userLead.countdown_days > 0 ? (
                 <div className="flex items-center gap-2">

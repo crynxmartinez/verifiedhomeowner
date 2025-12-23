@@ -399,6 +399,8 @@ enum LeadStatus {
   follow_up
   not_interested
   pending
+  in_contract
+  closed
 }
 
 enum LeadAction {
